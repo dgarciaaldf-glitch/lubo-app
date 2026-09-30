@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lubó - Centro de Caza de Oportunidades</title>
+
+    <!-- Librería de Mapas Interactivos (Leaflet) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Librería Oficial de Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --card-bg: #121826;
+            --widget-bg: #090d16;
+            
+            --gold-gradient: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%);
+            --gold-bright: #ffd700;
+            --gold-glow: 0 0 15px rgba(251, 191, 36, 0.45);
+            --gold-soft: rgba(234, 179, 8, 0.15);
+
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border-gold: #2a3447;
+
+            --live-green: #22c55e;
+            --live-green-glow: 0 0 10px rgba(34, 197, 94, 0.85);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
+
+        p, div, label { text-align: justify; }
+
+        /* PANTALLA 0: SPLASH SCREEN LUBÓ */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020617;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            animation: autoHideSplash 0.5s ease-out 2.5s forwards;
+        }
+        @keyframes autoHideSplash {
+            0% { opacity: 1; visibility: visible; }
+            90% { opacity: 0; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        
+        .lubo-splash-title { 
+            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+        }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+
+        .loader-container {
+            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: var(--gold-gradient);
+            box-shadow: var(--gold-glow);
+            animation: fillLoading 2.4s linear forwards;
+        }
+        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* PANTALLA 1: BIENVENIDA OBLIGATORIA */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
+            z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .welcome-hero { 
+            max-width: 500px; width: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-hero h1 { 
+            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
+        }
+        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+
+        /* HEADER */
+        header {
+            background: #020617; padding: 12px 20px; border-bottom: 1px solid var(--border-gold); position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .menu-hamburger-btn {
+            background: transparent; border: 1px solid var(--border-gold); color: var(--gold-bright); font-size: 1.3rem;
+            padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: var(--gold-glow);
+        }
+
+        .header-brand { display: flex; align-items: center; gap: 8px; }
+        .trident-header { font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6)); }
+        .header-title { 
+            font-size: 1.6rem; letter-spacing: -0.5px; font-weight: 900; font-family: 'Georgia', serif; font-style: italic;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .user-name-badge {
+            background: rgba(234, 179, 8, 0.12); color: var(--gold-bright);
+            padding: 6px 14px; border-radius: 8px; border: 1px solid var(--gold-bright);
+            font-size: 0.8rem; font-weight: 700; display: inline-block;
+        }
+
+        .btn-clean-logout {
+            background: rgba(239, 68, 68, 0.12); color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4); padding: 10px;
+            border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+            cursor: pointer; transition: 0.2s; text-align: center; width: 100%;
+            display: none; margin-top: 10px;
+        }
+        .btn-clean-logout:hover {
+            background: rgba(239, 68, 68, 0.25); color: #ffffff;
+            border-color: #ef4444;
+        }
+
+        .tab-switch {
+            display: flex; justify-content: center; background: #020617; padding: 10px; border-bottom: 1px solid var(--border-gold); position: sticky; top: 58px; z-index: 99;
+        }
+        .tab-btn {
+            flex: 1; max-width: 200px; padding: 10px; border: none; background: transparent; color: var(--text-sub);
+            font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; font-size: 0.85rem;
+        }
+        .tab-btn.active-tengo, .tab-btn.active-quiero, .tab-btn.active-leyendas { 
+            color: var(--gold-bright); border-bottom-color: var(--gold-bright); text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); 
+        }
+
+        /* BARRA DE CATEGORÍAS */
+        .category-filter-bar {
+            display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px; background: #070c18;
+            border-bottom: 1px solid #1a2333; scrollbar-width: none;
+            justify-content: flex-start;
+        }
+        .category-filter-bar::-webkit-scrollbar { display: none; }
+
+        @media (min-width: 820px) {
+            .category-filter-bar { justify-content: center; }
+        }
+
+        .cat-chip {
+            background: var(--widget-bg); color: var(--text-sub); border: 1px solid var(--border-gold);
+            padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+            white-space: nowrap; transition: 0.2s;
+        }
+        .cat-chip.active {
+            background: var(--gold-soft); color: var(--gold-bright); border-color: var(--gold-bright);
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.3);
+        }
+
+        .dashboard-layout {
+            width: 100%; max-width: 1550px; margin: 0 auto; padding: 20px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard-layout {
+                display: grid; grid-template-columns: 380px 1fr 380px; align-items: start;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .side-panel-desktop { display: none; }
+        }
+
+        .side-panel { display: flex; flex-direction: column; gap: 15px; }
+        .side-widget {
+            background: var(--card-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border-gold); overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .widget-title { 
+            font-size: 0.92rem; font-weight: bold; color: var(--gold-bright); margin-bottom: 12px; border-bottom: 1px solid var(--border-gold); padding-bottom: 8px; 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+        }
+
+        .live-indicator-tag {
+            font-size: 0.72rem; font-weight: 800; color: #4ade80;
+            background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.4);
+            padding: 3px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;
+            letter-spacing: 0.5px;
+        }
+        .live-dot-glow {
+            width: 8px; height: 8px; border-radius: 50%;
+            background-color: var(--live-green);
+            box-shadow: var(--live-green-glow);
+            animation: pulseLiveGreen 1.4s infinite ease-in-out;
+        }
+        @keyframes pulseLiveGreen {
+            0%   { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
+            50%  { transform: scale(1.3); opacity: 1;   box-shadow: 0 0 12px var(--live-green); }
+            100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
+        }
+
+        .mini-map {
+            width: 100%; height: 300px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
+            position: relative; overflow: hidden; z-index: 1;
+        }
+
+        .leaflet-tile-pane {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+        }
+
+        .map-marker-pin {
+            background: var(--gold-gradient);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+            cursor: pointer;
+        }
+
+        .map-marker-sponsor {
+            background: linear-gradient(135deg, #ffd700, #b45309);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.95);
+            cursor: pointer;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: #0f172a !important;
+            color: #f8fafc !important;
+            border: 1px solid var(--gold-bright) !important;
+            border-radius: 8px !important;
+        }
+        .leaflet-popup-tip { background: #0f172a !important; }
+
+        .radius-picker { display: flex; gap: 5px; margin-top: 10px; }
+        .radius-btn { flex: 1; background: var(--widget-bg); border: 1px solid var(--border-gold); color: var(--text-sub); padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; }
+        .radius-btn.active { background: var(--gold-gradient); color: #000; border-color: transparent; font-weight: 800; box-shadow: var(--gold-glow); }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .stat-card { 
+            background: var(--widget-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-gold); 
+            text-align: center; cursor: pointer; transition: transform 0.15s, border-color 0.15s, background 0.15s; 
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--gold-bright); background: rgba(234, 179, 8, 0.08); }
+        .stat-number { font-size: 1.3rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; }
+
+        .feed { display: flex; flex-direction: column; gap: 15px; width: 100%; transition: opacity 0.15s ease-in-out; scroll-margin-top: 120px; }
+        .feed.flash-update { opacity: 0.2; }
+
+        .card { background: var(--card-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border-gold); position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card.expired { opacity: 0.7; border-color: #1e293b; }
+        .card.in-deal { border: 2px solid var(--gold-bright); background: #182030; box-shadow: 0 0 20px rgba(251, 191, 36, 0.25); }
+
+        .card.sponsor-card {
+            border: 2px solid #eab308;
+            background: linear-gradient(145deg, #141a29 0%, #0d121f 100%);
+            box-shadow: 0 4px 22px rgba(234, 179, 8, 0.25);
+            overflow: hidden;
+        }
+        .sponsor-media-header {
+            width: calc(100% + 36px);
+            margin: -18px -18px 14px -18px;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .sponsor-media-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(to bottom, rgba(2,6,23,0.1) 0%, rgba(18,24,38,0.95) 100%);
+        }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
+        
+        .badge { font-size: 0.72rem; font-weight: 800; padding: 4px 9px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-tengo, .badge-quiero, .badge-leyenda, .badge-deal { 
+            background: var(--gold-soft); color: var(--gold-bright); border: 1px solid var(--gold-bright); box-shadow: var(--gold-glow); 
+        }
+
+        .badge-sponsor {
+            background: #eab308; color: #020617; border: none; font-weight: 900;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.6);
+        }
+
+        .badge-category {
+            background: rgba(255,255,255,0.06); color: var(--text-sub); border: 1px solid #334155;
+            font-size: 0.7rem; padding: 3px 8px; border-radius: 12px;
+        }
+
+        .badge-discretion {
+            background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid #a855f7;
+            font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: bold;
+        }
+        
+        .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; line-height: 1.6; text-align: justify; word-break: break-word; color: #fff; }
+        .card-change { font-size: 0.88rem; color: var(--text-sub); margin-bottom: 14px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; text-align: justify; line-height: 1.5; border: 1px solid var(--border-gold); }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--border-gold); padding-top: 12px; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--border-gold); color: var(--gold-bright); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; border: 1px solid #eab308; overflow:hidden; }
+        
+        .user-rank {
+            font-size: 0.68rem; color: var(--gold-bright); background: rgba(234,179,8,0.12);
+            padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(234,179,8,0.3); font-weight: bold;
+        }
+
+        .btn-action {
+            background: var(--gold-gradient); color: #000; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; font-size: 0.85rem;
+            box-shadow: var(--gold-glow);
+        }
+        .btn-action:disabled { background: #1e293b; color: var(--text-sub); cursor: not-allowed; opacity: 0.6; box-shadow: none; filter: grayscale(1); }
+        .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
+
+        .floating-actions-row {
+            position: fixed; bottom: 20px; right: 20px; z-index: 90;
+            display: flex; gap: 12px; align-items: center;
+        }
+
+        .fab-chat, .fab {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--gold-gradient); color: #000; font-size: 1.8rem; border: none; cursor: pointer;
+            box-shadow: var(--gold-glow); display: flex; align-items: center; justify-content: center; font-weight: 900;
+        }
+
+        .drawer-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 250; backdrop-filter: blur(4px);
+        }
+        .drawer-content {
+            position: fixed; top: 0; left: -82%; width: 82%; max-width: 360px; height: 100%;
+            background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
+            padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+        }
+        .drawer-content.open { left: 0; }
+
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-gold); padding-bottom: 12px; }
+
+        .accordion-item { border: 1px solid var(--border-gold); border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: var(--card-bg); }
+        .accordion-header { 
+            padding: 14px; font-size: 0.9rem; font-weight: 800; color: var(--gold-bright); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; background: var(--widget-bg);
+        }
+        .accordion-body { display: none; padding: 14px; border-top: 1px solid var(--border-gold); }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content {
+            background: var(--card-bg); width: 100%; max-width: 480px; border-radius: 12px; padding: 20px; border: 1px solid #eab308;
+            max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(234, 179, 8, 0.25);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-btn { background: none; border: none; color: var(--text-sub); font-size: 1.5rem; cursor: pointer; }
+
+        form { display: flex; flex-direction: column; gap: 12px; }
+        input, textarea, select {
+            background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
+        }
+
+        .chat-box {
+            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
+        }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.3; text-align: justify; }
+        .msg-them { background: #1e293b; align-self: flex-start; color: #fff; border: 1px solid var(--border-gold); }
+        .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
+        .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
+
+        .btn-safe-point {
+            background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);
+            padding: 8px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: bold; cursor: pointer;
+            width: 100%; margin-top: 6px; text-align: center; transition: 0.2s;
+        }
+        .btn-safe-point:hover { background: rgba(34, 197, 94, 0.25); color: #fff; }
+
+        .btn-google-sso {
+            background: #ffffff;
+            color: #1f2937;
+            font-weight: 700;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .btn-google-sso:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+
+        .legal-link {
+            color: var(--gold-bright);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-app-btn {
+            background: var(--widget-bg);
+            border: 1px solid var(--border-gold);
+            color: #fff;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 100%;
+        }
+        .nav-app-btn:hover { border-color: var(--gold-bright); background: rgba(234, 179, 8, 0.1); }
+
+        #toast {
+            visibility: hidden; min-width: 250px; background: var(--gold-gradient); color: #000; font-weight: 800;
+            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 11000;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.85rem;
+            box-shadow: var(--gold-glow); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Notificación</div>
+
+    <!-- PANTALLA 0: SPLASH SCREEN LUBÓ -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <div class="trident-splash">🔱</div>
+            <div class="lubo-splash-title">Lubó</div>
+            <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
+            
+            <div class="loader-container">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA -->
+    <div id="welcomeScreen">
+        <div class="welcome-hero">
+            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
+            <h1>Lubó</h1>
+            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
+            <p>
+                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
+            </p>
+            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
+                Iniciar Experiencia
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <button class="menu-hamburger-btn" onclick="toggleDrawer(true)">☰</button>
+
+        <div class="header-brand">
+            <span class="trident-header">🔱</span>
+            <div class="header-title">Lubó</div>
+        </div>
+        
+        <div id="userHeaderArea">
+            <button class="btn-action" id="btnAuthHeader" style="font-size:0.75rem; padding: 6px 12px;" onclick="openRegisterModal()">Iniciar Sesión</button>
+            <span id="userNameHeaderDisplay" class="user-name-badge" style="display:none;"></span>
+        </div>
+    </header>
+
+    <nav class="tab-switch">
+        <button class="tab-btn active-tengo" id="btnTengo" onclick="switchTab('TENGO')">YO TENGO</button>
+        <button class="tab-btn" id="btnQuiero" onclick="switchTab('QUIERO')">YO QUIERO</button>
+        <button class="tab-btn" id="btnLeyendas" onclick="switchTab('LEYENDAS')">SALÓN DE LEYENDAS 🏆</button>
+    </nav>
+
+    <!-- BARRA DE CATEGORÍAS -->
+    <div class="category-filter-bar" id="categoryFilterBar">
+        <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
+        <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
+        <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
+        <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
+    </div>
+
+    <!-- MENÚ LATERAL IZQUIERDO HAMBURGUESA -->
+    <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+    <div id="drawerContent" class="drawer-content">
+        <div class="drawer-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.4rem;">🔱</span>
+                <span class="header-title" style="font-size:1.3rem;">Menú Lubó</span>
+            </div>
+            <button class="close-btn" onclick="toggleDrawer(false)">&times;</button>
+        </div>
+
+        <div id="drawerUserStatusBox" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); margin-bottom:15px;">
+            <p style="font-size:0.72rem; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px;">Cuenta Actual</p>
+            <p id="drawerUserLabel" style="font-weight:bold; color:#fff; font-size:0.92rem; margin-top:4px;">Sin sesión iniciada</p>
+            <p id="drawerUserRankLabel" style="font-size:0.75rem; color:var(--gold-bright); margin-top:3px; display:none;">Rango: Cazador Novato</p>
+            <button id="drawerLogoutBtn" class="btn-clean-logout" onclick="confirmLogout(); toggleDrawer(false);">
+                Cerrar Sesión
+            </button>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('acc1')">
+                <span>⚙ Ajustes y Notificaciones</span>
+                <span>▼</span>
+            </div>
+            <div id="acc1" class="accordion-body">
+                <div style="display:flex; flex-direction:column; gap:10px; font-size:0.82rem;">
+                    <label style="display:flex; align-items:center; justify-content:space-between; color:#fff; cursor:pointer;">
+                        <span>🔔 Notificaciones Push</span>
+                        <input type="checkbox" id="togglePushAlerts" checked onchange="handlePushToggle(this)">
+                    </label>
+                    <label style="display:flex; align-items:center; justify-content:space-between; color:#fff; cursor:pointer;">
+                        <span>🔕 Silenciar Modo Noche</span>
+                        <input type="checkbox" onchange="showToast('Modo noche actualizado')">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:10px 4px; border-bottom:1px solid #1e293b; margin-bottom:8px;">
+            <p style="font-size:0.82rem; color:var(--gold-bright); cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;" onclick="openSponsorModal(); toggleDrawer(false);">
+                <span>💼</span> <span>Lubó para Negocios y Alianzas</span>
+            </p>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('acc2')">
+                <span>⚖️ Marco Legal y Privacidad</span>
+                <span>▼</span>
+            </div>
+            <div id="acc2" class="accordion-body">
+                <p style="font-size:0.8rem; color:var(--text-sub); line-height:1.5;">
+                    Lubó opera bajo estricto cumplimiento de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP).
+                </p>
+                <button class="btn-action" style="font-size:0.75rem; width:100%; margin-top:8px;" onclick="openPrivacyModal()">Leer Aviso Integral</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- RADAR GPS CON LUZ VERDE FLUORESCENTE -->
+        <aside class="side-panel">
+            <div class="side-widget">
+                <div class="widget-title">
+                    <span>🎯 Radar GPS de Oportunidades</span>
+                    
+                    <span class="live-indicator-tag">
+                        <span class="live-dot-glow"></span>
+                        <span>EN VIVO</span>
+                    </span>
+                </div>
+                
+                <div class="mini-map" id="mapBox"></div>
+
+                <div style="margin-top: 12px;">
+                    <label style="font-size:0.75rem; color:var(--text-sub); font-weight:bold;">Radio de Búsqueda:</label>
+                    <div class="radius-picker">
+                        <button class="radius-btn" onclick="setRadius(this, '1 km', 15)">1 km</button>
+                        <button class="radius-btn active" onclick="setRadius(this, '3 km', 13)">3 km</button>
+                        <button class="radius-btn" onclick="setRadius(this, '5 km', 12)">5 km</button>
+                        <button class="radius-btn" onclick="setRadius(this, '+10 km', 11)">+10 km</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL DE MÉTRICAS ESCRITORIO -->
+            <div class="side-widget side-panel-desktop">
+                <div class="widget-title">
+                    <span>📊 Métricas del Entorno</span>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-card" onclick="handleMetricClick('NEARBY')" title="Ver tratos cercanos">
+                        <div class="stat-number stat-count-nearby" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-label">Cerca de ti</div>
+                    </div>
+                    <div class="stat-card" onclick="handleMetricClick('EXPIRING')" title="Ver tratos por expirar">
+                        <div class="stat-number stat-count-expiring" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-label">Por expirar</div>
+                    </div>
+                    <div class="stat-card" onclick="handleMetricClick('INDEAL')" title="Ver tratos en negociación">
+                        <div class="stat-number stat-count-indeal" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-label">En proceso</div>
+                    </div>
+                    <div class="stat-card" onclick="handleMetricClick('LEGENDS')" title="Ver Salón de Leyendas">
+                        <div class="stat-number stat-count-legends" style="color:#94a3b8;">0</div>
+                        <div class="stat-label">Leyendas</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- COLUMNA CENTRO (MURO PRINCIPAL) -->
+        <main id="feed" class="feed"></main>
+
+        <!-- COLUMNA DERECHA (DESKTOP) -->
+        <aside class="side-panel side-panel-desktop">
+            <div class="side-widget">
+                <div class="widget-title">
+                    <span>📡 Alertas en tu Entorno</span>
+                </div>
+                <div style="background: rgba(234, 179, 8, 0.1); padding:10px; border-radius:8px; border:1px solid var(--border-gold); font-size:0.8rem; color:var(--gold-bright); text-align:center;">
+                    ⚡ <strong id="alertExpiringCount">0 Tratos</strong> por expirar en tu radar.
+                </div>
+            </div>
+
+            <div class="side-widget" style="border: 1px solid var(--gold-bright);">
+                <div class="widget-title" style="border-bottom: 1px solid var(--gold-bright);">
+                    <span>⭐ Aliado Destacado</span>
+                    <span style="font-size:0.7rem; color:var(--gold-bright);">PUNTO SEGURO</span>
+                </div>
+                <div style="background:var(--widget-bg); padding:14px; border-radius:8px; font-size:0.85rem; color:var(--text-sub);">
+                    <p style="color:#fff; font-weight:bold; margin-bottom:4px;">☕ Café Obsidiana • Barista Studio</p>
+                    <p style="font-size:0.78rem; color:var(--gold-bright); margin-bottom:8px;">Punto Seguro Oficial de Lubó</p>
+                    <p style="font-size:0.8rem; line-height:1.4; margin-bottom:12px;">
+                        ¿Cierras un trato hoy? Muestra tu chat activo de Lubó en caja y recibe <strong>2x1 en café de autor</strong> al reunirte aquí.
+                    </p>
+                    <button class="btn-action" style="font-size:0.8rem; width:100%; padding:10px;" onclick="openNavChoice(19.3780, -99.1650, 'Café Obsidiana')">
+                        🧭 Cómo llegar al Local
+                    </button>
+                </div>
+            </div>
+
+            <div class="side-widget">
+                <div class="widget-title">
+                    <span>💬 Centro de Tratos y Negociaciones</span>
+                </div>
+                <div id="activeChatWidget" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); font-size:0.85rem; color:var(--text-sub);">
+                    <p style="color:#fff; font-weight:bold; margin-bottom:4px;">Negociación Comunitaria</p>
+                    <p style="font-size:0.8rem; color:var(--gold-bright); margin-bottom:10px;">⏳ Estado: En Espera</p>
+                    <button class="btn-action" style="font-size:0.8rem; width:100%; padding:10px;" onclick="checkAuthAndRun(function(){ showToast('Selecciona un trato activo del muro'); })">Abrir Negociación</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- BOTONES FLOTANTES INFERIORES (+ Y CHAT) -->
+    <div class="floating-actions-row">
+        <button class="fab-chat" onclick="checkAuthAndRun(function(){ showToast('Selecciona un trato en el muro para abrir conversación'); })" title="Conversaciones">💬</button>
+        <button class="fab" onclick="checkAuthAndRun(openPublishModal)" title="Crear Publicación">+</button>
+    </div>
+
+    <!-- MODAL SELECTOR DE NAVEGACIÓN GPS -->
+    <div id="navModal" class="modal">
+        <div class="modal-content" style="max-width:380px; border: 2px solid var(--gold-bright);">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color:#fff; font-size:1.1rem;">Ruta y Navegación</h3>
+                    <p id="navDestinationTitle" style="font-size:0.75rem; color:var(--gold-bright); margin-top:2px;">Destino</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('navModal')">&times;</button>
+            </div>
+
+            <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:14px;">Elige tu aplicación preferida para iniciar el recorrido guiado:</p>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <a id="btnNavGoogle" href="#" target="_blank" class="nav-app-btn">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.4rem;">🗺️</span>
+                        <span>Google Maps</span>
+                    </div>
+                    <span style="color:var(--gold-bright);">Abrir ➔</span>
+                </a>
+
+                <a id="btnNavWaze" href="#" target="_blank" class="nav-app-btn">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.4rem;">🚗</span>
+                        <span>Waze</span>
+                    </div>
+                    <span style="color:var(--gold-bright);">Abrir ➔</span>
+                </a>
+
+                <a id="btnNavApple" href="#" target="_blank" class="nav-app-btn">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.4rem;">🍏</span>
+                        <span>Apple Maps (iOS)</span>
+                    </div>
+                    <span style="color:var(--gold-bright);">Abrir ➔</span>
+                </a>
+            </div>
+
+            <button class="btn-action" style="width:100%; margin-top:15px; padding:10px;" onclick="closeModal('navModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PARA NEGOCIOS Y PATROCINIOS (.COM.MX) -->
+    <div id="sponsorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color:#fff; font-size:1.1rem;">Anuncia tu Negocio en Lubó</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">Publicidad Nativa y Puntos Seguros</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('sponsorModal')">&times;</button>
+            </div>
+
+            <div style="font-size:0.85rem; color:var(--text-sub); line-height:1.5; display:flex; flex-direction:column; gap:10px;">
+                <p>Haz que miles de usuarios locales vean tu marca mientras intercambian y cierran tratos en tiempo real.</p>
+                <div style="background:var(--widget-bg); padding:10px; border-radius:8px; border:1px solid var(--border-gold);">
+                    <strong style="color:#fff;">Opciones Disponibles:</strong>
+                    <ul style="margin-left:15px; margin-top:5px; font-size:0.8rem; line-height:1.4;">
+                        <li>📍 <strong>Pin Destacado en el Radar GPS</strong></li>
+                        <li>🏷️ <strong>Tarjeta con Foto/Video en el Muro</strong></li>
+                        <li>☕ <strong>Distintivo de Punto Seguro Oficial</strong></li>
+                    </ul>
+                </div>
+                <p style="font-size:0.8rem;">Contáctanos directamente para activar tu espacio promocional:</p>
+                <button class="btn-action" style="width:100%; padding:12px;" onclick="showToast('Solicitud enviada a alianzas@lubo.com.mx'); closeModal('sponsorModal');">
+                    Contactar por WhatsApp / Correo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FICHA DE LEYENDA -->
+    <div id="legendModal" class="modal">
+        <div class="modal-content" style="border: 2px solid var(--gold-bright);">
+            <div class="modal-header">
+                <div>
+                    <span style="font-size: 0.75rem; background: rgba(234, 179, 8, 0.2); color: var(--gold-bright); padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">🏆 Salón de Leyendas</span>
+                    <h3 id="legendModalTitle" style="color: #fff; margin-top: 5px; font-size: 1.1rem;">Cargando Leyenda...</h3>
+                </div>
+                <button class="close-btn" onclick="closeModal('legendModal')">&times;</button>
+            </div>
+
+            <div style="background: var(--widget-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-gold); margin-bottom: 15px;">
+                <p style="font-size: 0.8rem; color: var(--gold-bright); font-weight: bold; margin-bottom: 5px;">📜 Intercambio Completado:</p>
+                <p id="legendModalChange" style="font-size: 0.9rem; color: #fff; line-height: 1.4;">Cargando detalles...</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-gold);">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);" id="legendModalVotes">48 / 26</div>
+                    <div style="font-size: 0.7rem; color: var(--text-sub);">Votos Comunitarios</div>
+                </div>
+                <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-gold);">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);">VERIFICADO</div>
+                    <div style="font-size: 0.7rem; color: var(--text-sub);">Registro Inmutable</div>
+                </div>
+            </div>
+
+            <div style="background: rgba(234, 179, 8, 0.1); padding: 12px; border-radius: 8px; border: 1px solid var(--border-gold); margin-bottom: 15px;">
+                <p style="font-size: 0.8rem; color: var(--gold-bright); font-weight: bold; margin-bottom: 4px;">💬 Testimonio de Gratitud:</p>
+                <p style="font-style: italic; font-size: 0.85rem; color: #fff;">"Trato cerrado con total amabilidad, puntualidad y cumplimiento. Una muestra real de confianza comunitaria."</p>
+            </div>
+
+            <button class="btn-action" style="width: 100%; padding: 12px;" onclick="closeModal('legendModal')">Cerrar Ficha</button>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO: GOOGLE SIGN-IN REAL -->
+    <div id="registerModal" class="modal" style="backdrop-filter: blur(8px);">
+        <div class="modal-content" style="border: 2px solid var(--gold-bright);">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
+                <!-- Botón Oficial de Google -->
+                <button type="button" class="btn-google-sso" onclick="triggerOfficialGoogleLogin()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Continuar con Google</span>
+                </button>
+
+                <!-- Tarjeta de Identidad Verificada por Google -->
+                <div id="googleVerifiedBox" style="display:none; background:var(--widget-bg); padding:12px; border-radius:8px; border:1px solid var(--gold-bright);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img id="verifiedUserAvatar" src="" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--gold-bright); display:none;">
+                        <div>
+                            <p id="verifiedEmailText" style="font-size:0.85rem; color:#fff; font-weight:bold;"></p>
+                            <span style="font-size:0.75rem; color:var(--live-green); font-weight:bold;">✓ Cuenta de Google Verificada</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label style="font-size:0.8rem; color:#fff; display:block; margin-bottom:5px;">Tu Alias Oficial para Tratos:</label>
+                        <input type="text" id="finalAliasInput" placeholder="Ej. Diego I." style="width:100%;">
+                    </div>
+                </div>
+
+                <div style="background:var(--widget-bg); padding:12px; border-radius:8px; border:1px solid var(--border-gold);">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: var(--text-sub); font-size: 0.78rem;">
+                        <input type="checkbox" id="legalCheckbox" onchange="toggleConsentButton(this)" style="margin-top: 3px;">
+                        <span>
+                            Declaro bajo protesta de decir verdad ser mayor de edad (+18) y manifiesto mi consentimiento expreso con los <span class="legal-link" onclick="openPrivacyModal()">Términos de Servicio y el Aviso de Privacidad Integral</span>. Reconozco que Lubó es una plataforma de enlace entre particulares y los acuerdos o intercambios son de exclusiva responsabilidad de las partes.
+                        </span>
+                    </label>
+                    <div id="consentTimestamp" style="display:none; font-size:0.7rem; color:var(--gold-bright); margin-top:6px;"></div>
+                </div>
+
+                <button type="button" id="btnFinishRegistration" class="btn-action" disabled style="display:none; width:100%; padding:12px;" onclick="completeRegistration()">Entrar al Radar Lubó</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AVISO DE PRIVACIDAD INTEGRAL -->
+    <div id="privacyModal" class="modal">
+        <div class="modal-content" style="max-width:540px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color:#fff; font-size:1.1rem;">Aviso de Privacidad Integral</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">lubo.com.mx • Ley Federal de Protección de Datos Personales (LFPDPPP)</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('privacyModal')">&times;</button>
+            </div>
+
+            <div style="font-size:0.8rem; color:var(--text-sub); line-height:1.6; display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow-y:auto; padding-right:6px;">
+                <p>
+                    <strong style="color:#fff;">1. Responsable del Tratamiento:</strong><br>
+                    Lubó opera como plataforma digital comunitaria accesible a través del dominio oficial <strong>lubo.com.mx</strong> para la coordinación de trueques e intercambios cívicos.
+                </p>
+                <p>
+                    <strong style="color:#fff;">2. Datos Personales Recabados:</strong><br>
+                    A través de la autenticación con Google Identity Services se recaban exclusivamente los datos públicos de tu perfil de Google (nombre, correo electrónico verificado y fotografía). Al publicar se fijan las coordenadas GPS del instante para situar el pin de la oportunidad en el mapa.
+                </p>
+                <p>
+                    <strong style="color:#fff;">3. Finalidad del Uso:</strong><br>
+                    • Conectar usuarios dentro de radios geográficos definidos.<br>
+                    • Permitir la apertura de canales de negociación efímeros.<br>
+                    • Prevenir abusos, fraudes y cuentas falsas.
+                </p>
+                <p>
+                    <strong style="color:#fff;">4. Deslinde de Responsabilidad Legal y Civil:</strong><br>
+                    Lubó no es parte contractual, intermediario financiero ni custodio de los bienes o favores intercambiados. La legalidad, calidad, seguridad física y cumplimiento de cualquier trato convenido es responsabilidad total y exclusiva de los usuarios participantes (+18).
+                </p>
+                <p>
+                    <strong style="color:#fff;">5. Ejercicio de Derechos ARCO:</strong><br>
+                    En cualquier momento el titular podrá solicitar el Acceso, Rectificación, Cancelación u Oposición del uso de sus datos contactando a <strong>privacidad@lubo.com.mx</strong>.
+                </p>
+            </div>
+
+            <button class="btn-action" style="width:100%; margin-top:15px; padding:10px;" onclick="closeModal('privacyModal')">Entendido y Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PUBLICACIÓN CON LAS 5 CATEGORÍAS -->
+    <div id="publishModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Crear Oportunidad</h3>
+                <button class="close-btn" onclick="closeModal('publishModal')">&times;</button>
+            </div>
+            <form id="publishForm" onsubmit="handlePublish(event)">
+                <label>Tipo de Publicación</label>
+                <select id="postType">
+                    <option value="TENGO">Yo Tengo (Ofrecer/Regalar/Prestar)</option>
+                    <option value="QUIERO">Yo Quiero (Pedir/Desear/Buscar)</option>
+                </select>
+
+                <label>Categoría Temática</label>
+                <select id="postCategory">
+                    <option value="OBJETOS">📦 Objetos y Cosas Curiosas</option>
+                    <option value="FAVORES">🛠️ Habilidades</option>
+                    <option value="RELAMPAGO">⚡ Oportunidad Relámpago</option>
+                    <option value="SOLIDARIDAD">🤝 Solidaridad Vecinal</option>
+                    <option value="AVENTURAS">🎲 Experiencias y Aventuras</option>
+                </select>
+
+                <label>¿Qué tienes o qué quieres? (Texto libre)</label>
+                <textarea id="postTitle" rows="3" placeholder="Ej. Tengo 2 botellas de tequila reposado para hoy mismo..." required></textarea>
+
+                <label>¿Pides u ofreces algo a cambio? (Opcional)</label>
+                <input type="text" id="postChange" placeholder="Ej. Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre">
+
+                <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold); font-size: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--gold-bright); font-weight: bold;">📍 Ubicación en Tiempo Real:</span>
+                        <span id="gpsStatusText" style="color: var(--text-sub);">Detectando satélites...</span>
+                    </div>
+                    <small style="color: var(--text-sub); display: block; margin-top: 4px;">Fijando coordenadas satelitales en vivo de tu posición actual.</small>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold);">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--gold-bright); font-size:0.85rem;">
+                        <input type="checkbox" id="anonCheck"> Publicar de forma Anónima
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #c084fc; font-size:0.85rem;">
+                        <input type="checkbox" id="discretionCheck"> 🔒 Solicitar Sello de Discreción (Chat efímero estricto)
+                    </label>
+                </div>
+
+                <label>Duración del Temporizador</label>
+                <select id="postTimer">
+                    <option value="60">60 Segundos (Ultra Rápido)</option>
+                    <option value="900">15 Minutos</option>
+                    <option value="1800">30 Minutos</option>
+                    <option value="3600">1 Hora</option>
+                    <option value="21600">6 Horas</option>
+                    <option value="432000">5 Días (Máximo)</option>
+                </select>
+
+                <button type="submit" id="btnPublishSubmit" class="btn-action" style="margin-top: 10px;">Lanzar al Muro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO -->
+    <div id="chatModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="chatUserName">Coordinando Trato</h3>
+                    <p id="chatPostTitle" style="font-size:0.75rem; color: var(--gold-bright);">Cargando...</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('chatModal')">&times;</button>
+            </div>
+            
+            <div id="dealStatusBanner" style="background: rgba(234, 179, 8, 0.1); padding: 8px; border-radius: 6px; font-size: 0.8rem; color: var(--gold-bright); text-align: center; margin-bottom: 8px;">
+                ⏱️ Oportunidad congelada en el Muro (En Negociación)
+            </div>
+
+            <div class="chat-box">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;">
+                    <button class="btn-action" onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:8px;">
+                <button type="button" class="btn-safe-point" onclick="suggestSafePoint()">
+                    🛡️ Sugerir Punto Seguro
+                </button>
+                <button type="button" class="btn-safe-point" style="color:var(--gold-bright); border-color:var(--gold-bright);" onclick="triggerChatNavigation()">
+                    🧭 Trazar Ruta al Trato
+                </button>
+            </div>
+
+            <button id="btnConfirmDeal" class="btn-action" style="width: 100%; margin-top: 10px; padding:12px;" onclick="handleDealConfirmation()">🤝 Confirmar mi Parte ("Trato Hecho")</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CLIENT ID OFICIAL DE GOOGLE CLOUD
+        // ==========================================
+        const GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
+
+        // Almacenamiento seguro
+        var safeStorage = {
+            get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
+            set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
+            remove: function(k) { try { localStorage.removeItem(k); } catch(e) {} }
+        };
+
+        var currentUser = safeStorage.get("lubo_user") || null;
+        var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
+        var currentUserPhoto = safeStorage.get("lubo_photo") || null;
+
+        // Decodificador seguro de tokens JWT de Google
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch(e) {
+                return null;
+            }
+        }
+
+        // Respuesta oficial de Google Identity Services
+        function handleGoogleCredentialResponse(response) {
+            var data = parseJwt(response.credential);
+            if (data) {
+                var email = data.email;
+                var fullName = data.name || data.given_name;
+                var picture = data.picture;
+
+                document.getElementById('googleVerifiedBox').style.display = 'block';
+                document.getElementById('verifiedEmailText').innerText = email;
+                document.getElementById('finalAliasInput').value = fullName;
+                
+                if (picture) {
+                    var img = document.getElementById('verifiedUserAvatar');
+                    img.src = picture;
+                    img.style.display = 'block';
+                    safeStorage.set("lubo_photo", picture);
+                    currentUserPhoto = picture;
+                }
+
+                document.getElementById('btnFinishRegistration').style.display = 'block';
+                showToast("✓ Cuenta de Google autenticada");
+            }
+        }
+
+        // Disparador del selector oficial de Google
+        function triggerOfficialGoogleLogin() {
+            try {
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                    showToast("Cargando servicios de Google... Reintenta en 2 segundos");
+                    return;
+                }
+
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false
+                });
+
+                // Llama al aviso oficial de Google
+                google.accounts.id.prompt(function(notification) {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        // Respaldo en caso de bloqueo de popups
+                        google.accounts.id.renderButton(
+                            document.querySelector('.btn-google-sso'),
+                            { theme: "outline", size: "large", width: "100%" }
+                        );
+                    }
+                });
+            } catch (err) {
+                console.error("Error al contactar a Google:", err);
+                alert("Verifica que lubo.com.mx esté registrado en 'Orígenes autorizados de JavaScript' dentro de Google Cloud Console.");
+            }
+        }
+
+        function goToRegister() {
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            openRegisterModal();
+        }
+
+        function openRegisterModal() {
+            var reg = document.getElementById('registerModal');
+            if (reg) reg.style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        }
+
+        function openPrivacyModal() {
+            var p = document.getElementById('privacyModal');
+            if (p) p.style.display = 'flex';
+        }
+
+        function openSponsorModal() {
+            var s = document.getElementById('sponsorModal');
+            if (s) s.style.display = 'flex';
+        }
+
+        function openPublishModal() {
+            var p = document.getElementById('publishModal');
+            if (p) p.style.display = 'flex';
+            detectCurrentLocation(true);
+        }
+
+        function showToast(text) {
+            var toast = document.getElementById("toast");
+            if (!toast) return;
+            toast.innerText = text;
+            toast.className = "show";
+            setTimeout(function() { toast.className = toast.className.replace("show", ""); }, 2500);
+        }
+
+        function toggleDrawer(open) {
+            var overlay = document.getElementById('drawerOverlay');
+            var drawer = document.getElementById('drawerContent');
+            if (open) {
+                if (overlay) overlay.style.display = 'block';
+                if (drawer) setTimeout(function() { drawer.classList.add('open'); }, 10);
+            } else {
+                if (drawer) drawer.classList.remove('open');
+                if (overlay) setTimeout(function() { overlay.style.display = 'none'; }, 300);
+            }
+        }
+
+        function toggleAccordion(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // Publicaciones iniciales
+        var SPONSOR_POSTS = [
+            {
+                id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
+                title: '☕ Café Obsidiana (Punto Seguro Oficial): 15% de descuento en barra de autor a quienes cierren tratos de Lubó aquí.',
+                change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
+                imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
+                user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0', timeLeft: 999999, location: 'Del Valle Centro, CDMX',
+                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120
+            }
+        ];
+
+        var BASE_POSTS = [
+            {
+                id: 1, type: 'TENGO', category: 'OBJETOS',
+                title: 'Tengo 2 botellas de Tequila Reposado selladas',
+                change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
+                user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9', timeLeft: 1800, location: 'Coyoacán, CDMX', 
+                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active', votes: 12
+            },
+            {
+                id: 2, type: 'QUIERO', category: 'FAVORES',
+                title: 'Yo quiero un trabajo de fin de semana por las madrugadas (tengo insomnio y quiero aprovechar el tiempo)',
+                change: 'Abierto a propuestas',
+                user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0', timeLeft: 86400, location: 'Benito Juárez, CDMX', 
+                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active', votes: 5
+            },
+            {
+                id: 3, type: 'LEYENDA', category: 'SOLIDARIDAD',
+                title: 'DEPARTAMENTO CEDIDO: Regalé la posesión de un departamento a cambio de limpiar y vaciar la propiedad en 24 horas.',
+                change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
+                user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0', timeLeft: 0, location: 'Cuauhtémoc, CDMX', 
+                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48
+            }
+        ];
+
+        var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
+
+        var currentPostInChat = null;
+        var dealConfirmations = { user1: false, user2: false };
+        var map = null;
+        var markersLayer = null;
+        var userCapturedCoords = null;
+        var userLocationLabel = "Ubicación Local";
+        var currentTab = 'TENGO';
+        var currentCategory = 'TODAS';
+
+        function checkAuthAndRun(callbackAction) {
+            if (!currentUser) {
+                showToast("Acceso restringido: primero identifícate");
+                openRegisterModal();
+            } else {
+                callbackAction();
+            }
+        }
+
+        function openNavChoice(lat, lng, destinationTitle) {
+            var isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+            var titleEl = document.getElementById('navDestinationTitle');
+            if (titleEl) titleEl.innerText = destinationTitle || "Punto de Encuentro";
+
+            var gBtn = document.getElementById('btnNavGoogle');
+            if (gBtn) gBtn.href = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng + "&travelmode=driving";
+
+            var wBtn = document.getElementById('btnNavWaze');
+            if (wBtn) wBtn.href = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
+
+            var aBtn = document.getElementById('btnNavApple');
+            if (aBtn) {
+                aBtn.href = isAppleDevice 
+                    ? "http://maps.apple.com/?daddr=" + lat + "," + lng + "&dirflg=d"
+                    : "https://maps.apple.com/?daddr=" + lat + "," + lng;
+            }
+
+            var modal = document.getElementById('navModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function triggerChatNavigation() {
+            if (currentPostInChat && currentPostInChat.lat && currentPostInChat.lng) {
+                openNavChoice(currentPostInChat.lat, currentPostInChat.lng, currentPostInChat.title);
+            } else {
+                showToast("Coordenadas no disponibles para este trato");
+            }
+        }
+
+        function initRealMap() {
+            try {
+                if (map || typeof L === 'undefined') return;
+                var mapBox = document.getElementById('mapBox');
+                if (!mapBox) return;
+
+                var cdmxCenter = [19.3900, -99.1550];
+
+                map = L.map('mapBox', {
+                    center: cdmxCenter,
+                    zoom: 12,
+                    zoomControl: true,
+                    attributionControl: false
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(map);
+
+                markersLayer = L.layerGroup().addTo(map);
+                updateMapMarkers();
+                detectCurrentLocation(false);
+            } catch(e) {}
+        }
+
+        function detectCurrentLocation(forPublishingModal, callbackCenter) {
+            var statusText = document.getElementById('gpsStatusText');
+
+            if (forPublishingModal && statusText) {
+                statusText.innerText = "📡 Contactando satélites...";
+                statusText.style.color = "var(--gold-bright)";
+            }
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        userCapturedCoords = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        userLocationLabel = "Mi Ubicación Actual";
+                        
+                        if (forPublishingModal && statusText) {
+                            statusText.innerText = "✓ Coordenadas satelitales fijadas";
+                            statusText.style.color = "#4ade80";
+                        }
+
+                        if (callbackCenter) {
+                            callbackCenter(userCapturedCoords.lat, userCapturedCoords.lng);
+                        } else if (!forPublishingModal && map) {
+                            map.setView([userCapturedCoords.lat, userCapturedCoords.lng], 14);
+                        }
+                    },
+                    function(error) {
+                        if (forPublishingModal && statusText) {
+                            statusText.innerText = "Ubicación CDMX fija";
+                        }
+                        if (!userCapturedCoords) {
+                            userCapturedCoords = { lat: 19.4326, lng: -99.1332 };
+                            userLocationLabel = "Cuauhtémoc, CDMX";
+                        }
+                        if (callbackCenter) {
+                            callbackCenter(userCapturedCoords.lat, userCapturedCoords.lng);
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                );
+            } else {
+                userCapturedCoords = { lat: 19.4326, lng: -99.1332 };
+                userLocationLabel = "CDMX";
+                if (forPublishingModal && statusText) {
+                    statusText.innerText = "Sin GPS (Ubicación fija)";
+                }
+            }
+        }
+
+        function updateMapMarkers() {
+            try {
+                if (!markersLayer || typeof L === 'undefined') return;
+                markersLayer.clearLayers();
+
+                for (var i = 0; i < posts.length; i++) {
+                    var p = posts[i];
+                    if (p.status === 'active' && p.lat && p.lng) {
+                        var iconEmoji = '📦';
+                        if (p.isSponsor) iconEmoji = '⭐';
+                        else if (p.category === 'FAVORES') iconEmoji = '🛠️';
+                        else if (p.category === 'RELAMPAGO') iconEmoji = '⚡';
+                        else if (p.category === 'SOLIDARIDAD') iconEmoji = '🤝';
+                        else if (p.category === 'AVENTURAS') iconEmoji = '🎲';
+                        else if (p.type === 'TENGO' && p.category === 'OBJETOS') iconEmoji = '🍾';
+                        
+                        var pinClass = p.isSponsor ? 'map-marker-sponsor' : 'map-marker-pin';
+
+                        var pinIcon = L.divIcon({
+                            className: 'custom-leaflet-pin',
+                            html: '<div class="' + pinClass + '" style="width:34px; height:34px;">' + iconEmoji + '</div>',
+                            iconSize: [34, 34],
+                            iconAnchor: [17, 17]
+                        });
+
+                        var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
+                        
+                        var actionButtonHTML = p.isSponsor 
+                            ? '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="openNavChoice(' + p.lat + ', ' + p.lng + ', \'' + p.user + '\')">🧭 Trazar Ruta GPS</button>'
+                            : '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
+
+                        var popupContent = 
+                            '<div style="font-family: inherit; font-size: 12px; line-height: 1.4;">' +
+                                '<strong style="color: #ffd700; text-transform: uppercase;">' + (p.isSponsor ? '⭐ Aliado Oficial (Punto Seguro)' : (p.type === 'TENGO' ? 'Yo Tengo' : 'Yo Quiero')) + '</strong><br/>' +
+                                '<p style="margin: 4px 0; color: #fff;">' + p.title + '</p>' +
+                                '<small style="color: #94a3b8;">' + p.user + ' • ' + p.location + '</small><br/>' +
+                                actionButtonHTML +
+                            '</div>';
+
+                        marker.bindPopup(popupContent);
+                        markersLayer.addLayer(marker);
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function setRadius(btn, label, zoomLevel) {
+            var btns = document.querySelectorAll('.radius-picker .radius-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+            btn.classList.add('active');
+            showToast("🎯 Radar recentrado a " + label);
+
+            detectCurrentLocation(false, function(lat, lng) {
+                if (map) map.setView([lat, lng], zoomLevel);
+            });
+        }
+
+        function filterByCategory(cat, btn) {
+            currentCategory = cat;
+            var chips = document.querySelectorAll('.cat-chip');
+            for (var i = 0; i < chips.length; i++) {
+                chips[i].classList.remove('active');
+            }
+            btn.classList.add('active');
+            showToast("Filtro: " + btn.innerText);
+            renderFeed();
+        }
+
+        function setElementsText(selector, text) {
+            var els = document.querySelectorAll(selector);
+            for (var i = 0; i < els.length; i++) {
+                els[i].innerText = text;
+            }
+        }
+
+        function updateMetricsCounters() {
+            var activeCount = 0;
+            var expiringCount = 0;
+            var inDealCount = 0;
+            var legendCount = 0;
+
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.status === 'active' && !p.isSponsor) activeCount++;
+                if (p.status === 'active' && p.timeLeft <= 1800 && !p.isSponsor) expiringCount++;
+                if (p.status === 'in_deal') inDealCount++;
+                if (p.status === 'leyenda') legendCount++;
+            }
+
+            setElementsText('.stat-count-nearby', activeCount);
+            setElementsText('.stat-count-expiring', expiringCount);
+            setElementsText('.stat-count-indeal', inDealCount);
+            setElementsText('.stat-count-legends', legendCount);
+
+            var alertCount = document.getElementById('alertExpiringCount');
+            if (alertCount) alertCount.innerText = expiringCount + " Tratos";
+        }
+
+        function handleMetricClick(type) {
+            if (type === 'NEARBY') {
+                showToast("🎯 Recentrado en tu ubicación satelital");
+                detectCurrentLocation(false, function(lat, lng) {
+                    if (map) map.setView([lat, lng], 14);
+                });
+                var mapEl = document.getElementById('mapBox');
+                if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (type === 'EXPIRING') {
+                showToast("⚡ Filtrando tratos por expirar");
+                switchTab('TENGO');
+                posts.sort(function(a,b) { return a.timeLeft - b.timeLeft; });
+                renderFeed();
+                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (type === 'INDEAL') {
+                var activeDeal = null;
+                for (var i = 0; i < posts.length; i++) {
+                    if (posts[i].status === 'in_deal') {
+                        activeDeal = posts[i];
+                        break;
+                    }
+                }
+                if (activeDeal) {
+                    showToast("⏳ Abriendo negociación en curso");
+                    checkAuthAndRun(function(){ openChat(activeDeal.id); });
+                } else {
+                    showToast("No tienes ninguna negociación activa en este momento");
+                }
+            } else if (type === 'LEGENDS') {
+                switchTab('LEYENDAS');
+                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function toggleConsentButton(checkbox) {
+            var btn = document.getElementById('btnFinishRegistration');
+            var timeLabel = document.getElementById('consentTimestamp');
+            
+            if (checkbox.checked) {
+                btn.disabled = false;
+                var now = new Date();
+                timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                timeLabel.style.display = 'block';
+            } else {
+                btn.disabled = true;
+                timeLabel.style.display = 'none';
+            }
+        }
+
+        function completeRegistration() {
+            var legalCheckbox = document.getElementById('legalCheckbox');
+            if (!legalCheckbox.checked) {
+                alert("Es indispensable que marques la casilla de aceptación expresa de términos y mayoría de edad (+18).");
+                return;
+            }
+
+            var alias = document.getElementById('finalAliasInput').value.trim();
+            if (!alias) {
+                alert("Por favor elige un alias oficial para tus tratos.");
+                return;
+            }
+
+            currentUser = alias;
+            
+            safeStorage.set("lubo_user", alias);
+            safeStorage.set("lubo_rank", currentUserRank);
+            safeStorage.set("lubo_consent_time", new Date().toISOString());
+
+            updateUIForLoggedInUser();
+            showToast("¡Bienvenido a Lubó, " + alias + "!");
+            closeModal('registerModal');
+        }
+
+        function updateUIForLoggedInUser() {
+            if (currentUser) {
+                var btnAuth = document.getElementById('btnAuthHeader');
+                if (btnAuth) btnAuth.style.display = 'none';
+
+                var nameBadge = document.getElementById('userNameHeaderDisplay');
+                if (nameBadge) {
+                    nameBadge.innerText = currentUser;
+                    nameBadge.style.display = 'inline-block';
+                }
+                
+                var drawerLabel = document.getElementById('drawerUserLabel');
+                if (drawerLabel) drawerLabel.innerText = currentUser;
+
+                var rankLabel = document.getElementById('drawerUserRankLabel');
+                if (rankLabel) {
+                    rankLabel.innerText = "Rango: " + currentUserRank;
+                    rankLabel.style.display = 'block';
+                }
+
+                var logoutBtn = document.getElementById('drawerLogoutBtn');
+                if (logoutBtn) logoutBtn.style.display = 'block';
+            }
+        }
+
+        function confirmLogout() {
+            if (confirm("¿Deseas cerrar la sesión activa de " + currentUser + "?")) {
+                currentUser = null;
+                currentUserPhoto = null;
+                safeStorage.remove("lubo_user");
+                safeStorage.remove("lubo_rank");
+                safeStorage.remove("lubo_photo");
+                safeStorage.remove("lubo_consent_time");
+                
+                document.getElementById('btnAuthHeader').style.display = 'block';
+                document.getElementById('userNameHeaderDisplay').style.display = 'none';
+                
+                document.getElementById('drawerUserLabel').innerText = 'Sin sesión iniciada';
+                document.getElementById('drawerUserRankLabel').style.display = 'none';
+                document.getElementById('drawerLogoutBtn').style.display = 'none';
+
+                document.getElementById('googleVerifiedBox').style.display = 'none';
+                document.getElementById('btnFinishRegistration').style.display = 'none';
+                document.getElementById('legalCheckbox').checked = false;
+                document.getElementById('btnFinishRegistration').disabled = true;
+
+                showToast('Sesión cerrada');
+                document.getElementById('welcomeScreen').style.display = 'flex';
+            }
+        }
+
+        function handlePushToggle(checkbox) {
+            showToast(checkbox.checked ? "🔔 Alertas en vivo activas" : "🔕 Notificaciones silenciadas");
+        }
+
+        function openLegendModal(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+            document.getElementById('legendModalTitle').innerText = post.title;
+            document.getElementById('legendModalChange').innerText = post.change;
+            document.getElementById('legendModalVotes').innerText = post.votes + " / 26";
+            document.getElementById('legendModal').style.display = 'flex';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            var btns = document.querySelectorAll('.tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active-tengo', 'active-quiero', 'active-leyendas');
+            }
+            
+            if (tab === 'TENGO') document.getElementById('btnTengo').classList.add('active-tengo');
+            if (tab === 'QUIERO') document.getElementById('btnQuiero').classList.add('active-quiero');
+            if (tab === 'LEYENDAS') document.getElementById('btnLeyendas').classList.add('active-leyendas');
+
+            var feed = document.getElementById('feed');
+            feed.classList.add('flash-update');
+
+            setTimeout(function() {
+                renderFeed();
+                feed.classList.remove('flash-update');
+            }, 100);
+
+            if (window.innerWidth < 1024) {
+                feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function getCategoryLabel(catKey) {
+            var labels = {
+                'OBJETOS': '📦 Curiosidades',
+                'FAVORES': '🛠️ Habilidades',
+                'RELAMPAGO': '⚡ Relámpago',
+                'SOLIDARIDAD': '🤝 Solidaridad',
+                'AVENTURAS': '🎲 Experiencias'
+            };
+            return labels[catKey] || 'General';
+        }
+
+        function renderFeed() {
+            var feed = document.getElementById('feed');
+            if (!feed) return;
+            feed.innerHTML = '';
+
+            var filteredPosts = [];
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.isSponsor) {
+                    if (currentTab === 'TENGO') filteredPosts.push(p);
+                    continue;
+                }
+                var matchTab = (currentTab === 'LEYENDAS') ? p.status === 'leyenda' : (p.type === currentTab && p.status !== 'leyenda');
+                var matchCat = (currentCategory === 'TODAS') ? true : p.category === currentCategory;
+                if (matchTab && matchCat) {
+                    filteredPosts.push(p);
+                }
+            }
+
+            filteredPosts.sort(function(a,b) {
+                if (a.isSponsor && !b.isSponsor) return -1;
+                if (!a.isSponsor && b.isSponsor) return 1;
+                if (a.status === 'expired' && b.status !== 'expired') return 1;
+                if (a.status !== 'expired' && b.status === 'expired') return -1;
+                return 0;
+            });
+
+            if (filteredPosts.length === 0) {
+                feed.innerHTML = '<p style="text-align:center; color: var(--text-sub); padding: 40px;">No hay publicaciones en este filtro actualmente.</p>';
+                updateMetricsCounters();
+                return;
+            }
+
+            for (var j = 0; j < filteredPosts.length; j++) {
+                var post = filteredPosts[j];
+                var card = document.createElement('div');
+                var isExpired = post.status === 'expired';
+                var isInDeal = post.status === 'in_deal';
+                var isSponsor = post.isSponsor;
+                
+                card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
+                
+                var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
+                var badgeLabel = post.type;
+                
+                if (isSponsor) {
+                    badgeClass = 'badge-sponsor';
+                    badgeLabel = '⭐ ESPACIO ALIADO';
+                } else if (post.status === 'leyenda') {
+                    badgeClass = 'badge-leyenda';
+                    badgeLabel = 'SALÓN DE LEYENDAS 🏆';
+                } else if (isInDeal) {
+                    badgeClass = 'badge-deal';
+                    badgeLabel = '⏳ EN NEGOCIACIÓN';
+                } else if (isExpired) {
+                    badgeLabel = 'EXPIRADO (EN HISTORIAL)';
+                }
+                
+                var actionBtnHTML = '';
+                if (isSponsor) {
+                    actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
+                } else if (isInDeal) {
+                    actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ En negociación...</button>';
+                } else if (post.status === 'active') {
+                    var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
+                } else if (isExpired) {
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + post.votes + '/26)</button>';
+                } else {
+                    actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
+                }
+
+                var mediaHeaderHTML = (isSponsor && post.imageUrl) 
+                    ? '<div class="sponsor-media-header" style="background-image: url(\'' + post.imageUrl + '\');"><div class="sponsor-media-overlay"></div></div>'
+                    : '';
+
+                var timerHTML = isSponsor 
+                    ? '<span class="timer" style="color:var(--gold-bright);">🌟 Destacado</span>'
+                    : (post.status === 'active' 
+                        ? '<span class="timer">⏱️ ' + formatTime(post.timeLeft) + '</span>' 
+                        : (isInDeal 
+                            ? '<span class="timer" style="color:var(--gold-bright);">⏸️ En Pausa</span>' 
+                            : (isExpired 
+                                ? '<span class="timer" style="color:var(--text-sub);">⌛ Vencido</span>' 
+                                : '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>')));
+
+                var avatarDisplay = post.user ? post.user[0] : 'U';
+
+                card.innerHTML = 
+                    mediaHeaderHTML +
+                    '<div class="card-header">' +
+                        '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
+                            '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+                            '<span class="badge-category">' + getCategoryLabel(post.category) + '</span>' +
+                            (post.discretion ? '<span class="badge-discretion">🔒 Sello de Discreción</span>' : '') +
+                        '</div>' +
+                        timerHTML +
+                    '</div>' +
+                    '<div class="card-title">' + post.title + '</div>' +
+                    '<div class="card-change">' + (post.change ? post.change : 'Sin condiciones prefijadas') + '</div>' +
+                    '<div class="card-footer">' +
+                        '<div class="user-info">' +
+                            '<div class="avatar">' + avatarDisplay + '</div>' +
+                            '<div>' +
+                                '<div style="display:flex; align-items:center; gap:6px;">' +
+                                    '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
+                                    '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
+                                '</div>' +
+                                '<div style="font-size:0.75rem; color:var(--text-sub);">${post.location}</div>' +
+                            '</div>' +
+                        '</div>' +
+                        actionBtnHTML +
+                    '</div>';
+
+                feed.appendChild(card);
+            }
+
+            updateMetricsCounters();
+        }
+
+        function voteForLegend(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+            post.votes++;
+            
+            if (post.votes >= 26) {
+                post.status = 'leyenda';
+                showToast("🎉 ¡Promovido al SALÓN DE LEYENDAS! 🏆");
+            } else {
+                showToast("👍 Voto registrado (" + post.votes + "/26)");
+            }
+
+            renderFeed();
+            updateMapMarkers();
+        }
+
+        function formatTime(seconds) {
+            if (seconds <= 0) return "Expirado";
+            var hrs = Math.floor(seconds / 3600);
+            var mins = Math.floor((seconds % 3600) / 60);
+            var secs = seconds % 60;
+            return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+        }
+
+        function openChat(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+            
+            currentPostInChat = post;
+            post.status = 'in_deal';
+
+            renderFeed();
+            updateMapMarkers();
+
+            dealConfirmations = { user1: false, user2: false };
+            document.getElementById('chatUserName').innerText = "Chat con " + post.user;
+            document.getElementById('chatPostTitle').innerText = post.title;
+            document.getElementById('dealStatusBanner').innerText = '⏱️ Oportunidad congelada en el Muro (En Negociación)';
+            document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
+            document.getElementById('chatMessages').innerHTML = '<div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>';
+            document.getElementById('chatModal').style.display = 'flex';
+        }
+
+        function suggestSafePoint() {
+            var msgContainer = document.getElementById('chatMessages');
+            var safeMsg = document.createElement('div');
+            safeMsg.className = 'msg msg-me';
+            safeMsg.style.border = '1px solid #22c55e';
+            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            msgContainer.appendChild(safeMsg);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+            showToast("Punto seguro sugerido");
+        }
+
+        function handleDealConfirmation() {
+            if (!dealConfirmations.user1) {
+                dealConfirmations.user1 = true;
+                document.getElementById('dealStatusBanner').innerText = '⏳ Esperando que la otra parte también confirme "Trato Hecho"...';
+                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Chat activo)';
+                showToast('Has marcado Trato Hecho');
+            } else if (!dealConfirmations.user2) {
+                dealConfirmations.user2 = true;
+                if (currentPostInChat) {
+                    currentPostInChat.status = 'leyenda';
+                }
+                document.getElementById('dealStatusBanner').innerText = '🎉 ¡AMBAS PARTES CONFIRMARON EL TRATO HECHO!';
+                showToast('🎉 ¡Trato cerrado con éxito!');
+                closeModal('chatModal');
+                renderFeed();
+                updateMapMarkers();
+            }
+        }
+
+        function sendMessage() {
+            var input = document.getElementById('chatInput');
+            if (!input || !input.value.trim()) return;
+            
+            var msgContainer = document.getElementById('chatMessages');
+            var newMsg = document.createElement('div');
+            newMsg.className = 'msg msg-me';
+            newMsg.innerText = input.value;
+            msgContainer.appendChild(newMsg);
+            
+            input.value = '';
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        function handlePublish(e) {
+            e.preventDefault();
+            var type = document.getElementById('postType').value;
+            var category = document.getElementById('postCategory').value;
+            var title = document.getElementById('postTitle').value;
+            var changeInput = document.getElementById('postChange').value;
+            var timer = parseInt(document.getElementById('postTimer').value);
+            var isAnon = document.getElementById('anonCheck').checked;
+            var hasDiscretion = document.getElementById('discretionCheck').checked;
+
+            var finalLat = userCapturedCoords ? userCapturedCoords.lat : 19.4326;
+            var finalLng = userCapturedCoords ? userCapturedCoords.lng : -99.1332;
+
+            var newPost = {
+                id: posts.length + 1,
+                type: type,
+                category: category,
+                title: title,
+                change: changeInput ? "A cambio de: " + changeInput : 'Abierto a propuestas',
+                user: isAnon ? 'Anónimo' : (currentUser ? currentUser : 'Diego I.'),
+                rank: currentUserRank,
+                location: userLocationLabel,
+                lat: finalLat,
+                lng: finalLng,
+                discretion: hasDiscretion,
+                isSponsor: false,
+                status: 'active',
+                votes: 0,
+                timeLeft: timer
+            };
+
+            posts.unshift(newPost);
+            renderFeed();
+            updateMapMarkers();
+
+            closeModal('publishModal');
+            document.getElementById('publishForm').reset();
+            showToast('🚀 Oportunidad viva en el radar');
+            switchTab(type);
+
+            if (map) {
+                map.setView([finalLat, finalLng], 14);
+            }
+        }
+
+        setInterval(function() {
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.status === 'active' && p.timeLeft > 0 && !p.isSponsor) {
+                    p.timeLeft--;
+                    if (p.timeLeft === 0) {
+                        p.status = 'expired';
+                        updateMapMarkers();
+                    }
+                }
+            }
+            renderFeed();
+        }, 1000);
+
+        renderFeed();
+        if (currentUser) {
+            updateUIForLoggedInUser();
+        }
+
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) splash.style.display = 'none';
+            initRealMap();
+        }, 2700);
+    </script>
+</body>
+</html>
