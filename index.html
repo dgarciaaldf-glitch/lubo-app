@@ -41,7 +41,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 2.5s forwards;
+            animation: autoHideSplash 0.5s ease-out 2.2s forwards;
         }
         @keyframes autoHideSplash {
             0% { opacity: 1; visibility: visible; }
@@ -66,11 +66,11 @@
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 2.4s linear forwards;
+            animation: fillLoading 2.1s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
-        /* PANTALLA 1: BIENVENIDA OBLIGATORIA (SÓLO SI NO HAY SESIÓN) */
+        /* PANTALLA 1: BIENVENIDA (SÓLO SI NO HAY SESIÓN) */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
@@ -503,7 +503,7 @@
 
     <!-- HEADER -->
     <header>
-        <button class="menu-hamburger-btn" onclick="toggleDrawer(true)">☰</button>
+        <button class="menu-hamburger-btn" type="button" onclick="toggleDrawer(true)">☰</button>
 
         <div class="header-brand">
             <span class="trident-header">🔱</span>
@@ -540,7 +540,7 @@
                 <span style="font-size:1.4rem;">🔱</span>
                 <span class="header-title" style="font-size:1.3rem;">Menú Lubó</span>
             </div>
-            <button class="close-btn" onclick="toggleDrawer(false)">&times;</button>
+            <button class="close-btn" type="button" onclick="toggleDrawer(false)">&times;</button>
         </div>
 
         <div id="drawerUserStatusBox" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); margin-bottom:15px;">
@@ -709,7 +709,7 @@
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <a id="btnNavGoogle" href="#" target="_blank" class="nav-app-btn">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:1.4rem;">🗺</span>
+                        <span style="font-size:1.4rem;">🗺️</span>
                         <span>Google Maps</span>
                     </div>
                     <span style="color:var(--gold-bright);">Abrir ➔</span>
@@ -993,8 +993,6 @@
 
     <script>
         const GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
-
-        // CREDENCIALES OFICIALES DE SUPABASE
         const SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
 
@@ -1115,12 +1113,13 @@
         function toggleDrawer(open) {
             var overlay = document.getElementById('drawerOverlay');
             var drawer = document.getElementById('drawerContent');
+            if (!overlay || !drawer) return;
             if (open) {
-                if (overlay) overlay.style.display = 'block';
-                if (drawer) setTimeout(function() { drawer.classList.add('open'); }, 10);
+                overlay.style.display = 'block';
+                setTimeout(function() { drawer.classList.add('open'); }, 10);
             } else {
-                if (drawer) drawer.classList.remove('open');
-                if (overlay) setTimeout(function() { overlay.style.display = 'none'; }, 300);
+                drawer.classList.remove('open');
+                setTimeout(function() { overlay.style.display = 'none'; }, 300);
             }
         }
 
@@ -1131,7 +1130,7 @@
 
         var nowTimestamp = Date.now();
 
-        // PUBLICIDAD PATROCINADA: Fecha fija de creación para que baje al publicar cosas nuevas
+        // PUBLICIDAD PATROCINADA: Fecha fija de creación para que baje conforme se publiquen cosas nuevas
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1182,101 +1181,115 @@
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // FUNCIONES DE SINCRONIZACIÓN SUPABASE
+        // FUNCIONES DE SINCRONIZACIÓN SUPABASE (BLINDADAS)
         // ==========================================
         function fetchPostsFromSupabase() {
-            fetch(SUPABASE_URL + "/posts?select=*&order=created_at.desc", {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY
-                }
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (Array.isArray(data)) {
-                    cloudPosts = data.map(function(p) {
-                        return {
-                            id: p.id,
-                            type: p.type,
-                            category: p.category,
-                            title: p.title,
-                            change: p.change,
-                            user: p.user,
-                            rank: p.rank || 'Cazador Novato',
-                            location: p.location || 'Ubicación Local',
-                            lat: p.lat,
-                            lng: p.lng,
-                            discretion: p.discretion,
-                            status: p.status,
-                            votes: p.votes || 0,
-                            created_at: Number(p.created_at),
-                            expires_at: Number(p.expires_at),
-                            isSponsor: false
-                        };
-                    });
+            try {
+                fetch(SUPABASE_URL + "/posts?select=*&order=created_at.desc", {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                })
+                .then(function(res) { 
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    return res.json(); 
+                })
+                .then(function(data) {
+                    if (Array.isArray(data)) {
+                        cloudPosts = data.map(function(p) {
+                            return {
+                                id: Number(p.id),
+                                type: p.type || 'TENGO',
+                                category: p.category || 'OBJETOS',
+                                title: p.title || '',
+                                change: p.change || '',
+                                user: p.user || 'Anónimo',
+                                rank: p.rank || 'Cazador Novato',
+                                location: p.location || 'Ubicación Local',
+                                lat: Number(p.lat) || 19.4326,
+                                lng: Number(p.lng) || -99.1332,
+                                discretion: Boolean(p.discretion),
+                                status: p.status || 'active',
+                                votes: Number(p.votes) || 0,
+                                created_at: Number(p.created_at) || Date.now(),
+                                expires_at: Number(p.expires_at) || (Date.now() + 3600000),
+                                isSponsor: false
+                            };
+                        });
+                        posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
+                        renderFeed();
+                        updateMapMarkers();
+                    }
+                })
+                .catch(function(err) {
+                    console.warn("Aviso Supabase: usando tratos base locales.", err);
                     posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                     renderFeed();
                     updateMapMarkers();
-                }
-            })
-            .catch(function(err) {
-                console.error("Error al sincronizar con Supabase:", err);
-            });
+                });
+            } catch(e) {
+                console.warn("Excepción de red protegida:", e);
+            }
         }
 
         function savePostToSupabase(newPost) {
-            fetch(SUPABASE_URL + "/posts", {
-                method: "POST",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify({
-                    id: newPost.id,
-                    type: newPost.type,
-                    category: newPost.category,
-                    title: newPost.title,
-                    change: newPost.change,
-                    user: newPost.user,
-                    rank: newPost.rank,
-                    location: newPost.location,
-                    lat: newPost.lat,
-                    lng: newPost.lng,
-                    discretion: newPost.discretion,
-                    status: newPost.status,
-                    votes: newPost.votes,
-                    created_at: newPost.created_at,
-                    expires_at: newPost.expires_at
+            try {
+                fetch(SUPABASE_URL + "/posts", {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        id: newPost.id,
+                        type: newPost.type,
+                        category: newPost.category,
+                        title: newPost.title,
+                        change: newPost.change,
+                        user: newPost.user,
+                        rank: newPost.rank,
+                        location: newPost.location,
+                        lat: newPost.lat,
+                        lng: newPost.lng,
+                        discretion: newPost.discretion,
+                        status: newPost.status,
+                        votes: newPost.votes,
+                        created_at: newPost.created_at,
+                        expires_at: newPost.expires_at
+                    })
                 })
-            })
-            .then(function() {
-                fetchPostsFromSupabase();
-            })
-            .catch(function(err) {
-                console.error("Error al guardar en Supabase:", err);
-            });
+                .then(function() {
+                    fetchPostsFromSupabase();
+                })
+                .catch(function(err) {
+                    console.error("Error al guardar en Supabase:", err);
+                });
+            } catch(e) {}
         }
 
         function updatePostInSupabase(postId, fields) {
-            fetch(SUPABASE_URL + "/posts?id=eq." + postId, {
-                method: "PATCH",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify(fields)
-            })
-            .then(function() {
-                fetchPostsFromSupabase();
-            })
-            .catch(function(err) {
-                console.error("Error al actualizar en Supabase:", err);
-            });
+            try {
+                fetch(SUPABASE_URL + "/posts?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify(fields)
+                })
+                .then(function() {
+                    fetchPostsFromSupabase();
+                })
+                .catch(function(err) {
+                    console.error("Error al actualizar en Supabase:", err);
+                });
+            } catch(e) {}
         }
 
         var currentPostInChat = null;
@@ -1337,7 +1350,7 @@
 
                 map = L.map('mapBox', {
                     center: cdmxCenter,
-                    zoom: 12,
+                    zoom: 13,
                     zoomControl: true,
                     attributionControl: false
                 });
@@ -1349,7 +1362,13 @@
                 markersLayer = L.layerGroup().addTo(map);
                 updateMapMarkers();
                 detectCurrentLocation(false);
-            } catch(e) {}
+
+                setTimeout(function() {
+                    if (map) map.invalidateSize();
+                }, 400);
+            } catch(e) {
+                console.error("Error iniciando Leaflet:", e);
+            }
         }
 
         function detectCurrentLocation(forPublishingModal, callbackCenter) {
@@ -1459,11 +1478,14 @@
             for (var i = 0; i < btns.length; i++) {
                 btns[i].classList.remove('active');
             }
-            btn.classList.add('active');
+            if (btn) btn.classList.add('active');
             showToast("🎯 Radar recentrado a " + label);
 
             detectCurrentLocation(false, function(lat, lng) {
-                if (map) map.setView([lat, lng], zoomLevel);
+                if (map) {
+                    map.setView([lat, lng], zoomLevel);
+                    map.invalidateSize();
+                }
             });
         }
 
@@ -1473,8 +1495,8 @@
             for (var i = 0; i < chips.length; i++) {
                 chips[i].classList.remove('active');
             }
-            btn.classList.add('active');
-            showToast("Filtro: " + btn.innerText);
+            if (btn) btn.classList.add('active');
+            showToast("Filtro: " + (btn ? btn.innerText : cat));
             renderFeed();
         }
 
@@ -1515,7 +1537,10 @@
             if (type === 'NEARBY') {
                 showToast("🎯 Recentrado en tu ubicación satelital");
                 detectCurrentLocation(false, function(lat, lng) {
-                    if (map) map.setView([lat, lng], 14);
+                    if (map) {
+                        map.setView([lat, lng], 14);
+                        map.invalidateSize();
+                    }
                 });
                 var mapEl = document.getElementById('mapBox');
                 if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1549,25 +1574,28 @@
             var btn = document.getElementById('btnFinishRegistration');
             var timeLabel = document.getElementById('consentTimestamp');
             
-            if (checkbox.checked) {
-                btn.disabled = false;
+            if (checkbox && checkbox.checked) {
+                if (btn) btn.disabled = false;
                 var now = new Date();
-                timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
-                timeLabel.style.display = 'block';
+                if (timeLabel) {
+                    timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                    timeLabel.style.display = 'block';
+                }
             } else {
-                btn.disabled = true;
-                timeLabel.style.display = 'none';
+                if (btn) btn.disabled = true;
+                if (timeLabel) timeLabel.style.display = 'none';
             }
         }
 
         function completeRegistration() {
             var legalCheckbox = document.getElementById('legalCheckbox');
-            if (!legalCheckbox.checked) {
+            if (!legalCheckbox || !legalCheckbox.checked) {
                 alert("Es indispensable que marques la casilla de aceptación expresa de términos y mayoría de edad (+18).");
                 return;
             }
 
-            var alias = document.getElementById('finalAliasInput').value.trim();
+            var aliasInput = document.getElementById('finalAliasInput');
+            var alias = aliasInput ? aliasInput.value.trim() : '';
             if (!alias) {
                 alert("Por favor elige un alias oficial para tus tratos.");
                 return;
@@ -1674,15 +1702,16 @@
             if (tab === 'LEYENDAS') document.getElementById('btnLeyendas').classList.add('active-leyendas');
 
             var feed = document.getElementById('feed');
-            feed.classList.add('flash-update');
+            if (feed) {
+                feed.classList.add('flash-update');
+                setTimeout(function() {
+                    renderFeed();
+                    feed.classList.remove('flash-update');
+                }, 100);
 
-            setTimeout(function() {
-                renderFeed();
-                feed.classList.remove('flash-update');
-            }, 100);
-
-            if (window.innerWidth < 1024) {
-                feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (window.innerWidth < 1024) {
+                    feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
         }
 
@@ -1848,7 +1877,6 @@
                 showToast("👍 Voto registrado (" + post.votes + "/26)");
             }
 
-            // Sincronizar voto en Supabase si es un post creado en la nube
             if (postId < 9000 || postId > 20000) {
                 updatePostInSupabase(postId, { votes: post.votes, status: newStatus });
             }
@@ -1978,12 +2006,12 @@
                 expires_at: calculatedExpiresAt
             };
 
-            // Enviar de inmediato a Supabase para que llegue a todos los dispositivos
-            savePostToSupabase(newPost);
-
+            // Publicación inmediata local y remota
             posts.unshift(newPost);
             renderFeed();
             updateMapMarkers();
+
+            savePostToSupabase(newPost);
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
@@ -1992,6 +2020,7 @@
 
             if (map) {
                 map.setView([finalLat, finalLng], 14);
+                map.invalidateSize();
             }
         }
 
@@ -2019,21 +2048,22 @@
             renderFeed();
         }, 1000);
 
-        // POLLING: Sincroniza novedades de Supabase cada 5 segundos automáticamente
+        // POLLING: Sincroniza novedades de Supabase cada 6 segundos automáticamente
         setInterval(function() {
             fetchPostsFromSupabase();
-        }, 5000);
+        }, 6000);
 
-        // Inicialización
-        fetchPostsFromSupabase();
+        // Arranque inicial inmediato
         renderFeed();
         updateUIForLoggedInUser();
 
+        // Ocultar splash y renderizar mapa
         setTimeout(function() {
             var splash = document.getElementById('splashScreen');
             if (splash) splash.style.display = 'none';
             initRealMap();
-        }, 2700);
+            fetchPostsFromSupabase();
+        }, 2300);
     </script>
 </body>
 </html>
