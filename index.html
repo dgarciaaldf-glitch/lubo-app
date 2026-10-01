@@ -44,7 +44,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 2.0s forwards;
+            animation: autoHideSplash 0.5s ease-out 1.8s forwards;
         }
         @keyframes autoHideSplash {
             0% { opacity: 1; visibility: visible; }
@@ -69,7 +69,7 @@
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 1.9s linear forwards;
+            animation: fillLoading 1.7s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
@@ -995,19 +995,18 @@
     </div>
 
     <script>
-        // CONFIGURACIONES BÁSICAS
+        // CONFIGURACIONES BÁSICAS SUPABASE
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co";
         var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
 
-        // Inicializar cliente oficial de Supabase
         var sbClient = null;
         try {
-            if (typeof supabase !== 'undefined' && supabase.createClient) {
-                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (window.supabase && window.supabase.createClient) {
+                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch(e) {
-            console.warn("Supabase init fallback:", e);
+            console.warn("Error iniciando Supabase:", e);
         }
 
         var safeStorage = {
@@ -1016,7 +1015,7 @@
             remove: function(k) { try { localStorage.removeItem(k); } catch(e) {} }
         };
 
-        // Identificador persistente del navegador del usuario
+        // Identificador persistente del dispositivo
         var myDeviceId = safeStorage.get("lubo_device_id");
         if (!myDeviceId) {
             myDeviceId = "dev_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now();
@@ -1209,31 +1208,27 @@
             }
         ];
 
-        function getLocalStoredPosts() {
-            var raw = safeStorage.get("lubo_user_posts");
-            if (raw) {
-                try { return JSON.parse(raw); } catch(e) { return []; }
-            }
-            return [];
-        }
-
-        var localUserPosts = getLocalStoredPosts();
         var cloudPosts = [];
-        var posts = [].concat(localUserPosts, SPONSOR_POSTS, BASE_POSTS);
+        var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // SINCRONIZACIÓN OFICIAL SUPABASE (CLIENTE SDK)
+        // SINCRONIZACIÓN OFICIAL EN VIVO SUPABASE
         // ==========================================
         async function syncFromCloud() {
             if (!sbClient) return;
             try {
-                var { data, error } = await sbClient
+                var resp = await sbClient
                     .from('posts')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (!error && Array.isArray(data)) {
-                    cloudPosts = data.map(function(p) {
+                if (resp.error) {
+                    console.error("Error leyendo de Supabase:", resp.error.message);
+                    return;
+                }
+
+                if (resp.data && Array.isArray(resp.data)) {
+                    cloudPosts = resp.data.map(function(p) {
                         return {
                             id: Number(p.id),
                             type: p.type || 'TENGO',
@@ -1255,50 +1250,54 @@
                         };
                     });
 
-                    // Fusión inteligente: las de la nube tienen prioridad para sincronizar entre todos
-                    var idMap = {};
-                    var merged = [];
-                    for (var i = 0; i < cloudPosts.length; i++) {
-                        idMap[cloudPosts[i].id] = true;
-                        merged.push(cloudPosts[i]);
-                    }
-                    for (var j = 0; j < localUserPosts.length; j++) {
-                        if (!idMap[localUserPosts[j].id]) {
-                            merged.push(localUserPosts[j]);
-                        }
-                    }
-
-                    posts = [].concat(merged, SPONSOR_POSTS, BASE_POSTS);
+                    // Las publicaciones de la nube van al inicio en orden cronológico
+                    posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                     renderFeed();
                     updateMapMarkers();
                 }
             } catch(e) {
-                console.warn("Sync cloud notice:", e);
+                console.error("Excepción en syncFromCloud:", e);
             }
         }
 
         async function pushToCloud(item) {
-            if (!sbClient) return;
+            if (!sbClient) {
+                alert("Error de conexión: No se cargó la librería de base de datos.");
+                return false;
+            }
             try {
-                await sbClient.from('posts').insert([{
-                    id: item.id,
-                    type: item.type,
-                    category: item.category,
-                    title: item.title,
-                    change: item.change,
-                    user: item.user,
-                    rank: item.rank,
-                    location: item.location,
-                    lat: item.lat,
-                    lng: item.lng,
-                    discretion: item.discretion,
-                    status: item.status,
-                    votes: item.votes,
-                    created_at: item.created_at,
-                    expires_at: item.expires_at
-                }]);
+                var payload = {
+                    id: Number(item.id),
+                    type: String(item.type),
+                    category: String(item.category),
+                    title: String(item.title),
+                    change: String(item.change),
+                    "user": String(item.user),
+                    rank: String(item.rank),
+                    location: String(item.location),
+                    lat: Number(item.lat),
+                    lng: Number(item.lng),
+                    discretion: Boolean(item.discretion),
+                    status: String(item.status),
+                    votes: Number(item.votes),
+                    created_at: Number(item.created_at),
+                    expires_at: Number(item.expires_at),
+                    creator_id: String(item.creator_id)
+                };
+
+                var resp = await sbClient.from('posts').insert([payload]);
+                
+                if (resp.error) {
+                    console.error("ERROR AL GUARDAR EN SUPABASE:", resp.error);
+                    alert("Supabase rechazó la publicación: " + resp.error.message + "\n\nRevisa el SQL Editor de Supabase.");
+                    return false;
+                } else {
+                    console.log("✓ Publicación guardada con éxito en Supabase");
+                    return true;
+                }
             } catch(e) {
-                console.error("Push to cloud error:", e);
+                console.error("Excepción al subir a Supabase:", e);
+                return false;
             }
         }
 
@@ -1464,7 +1463,6 @@
                         });
 
                         var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
-                        
                         var isMyPostOnMap = isCurrentUserAuthor(p);
 
                         var actionButtonHTML = '';
@@ -1736,7 +1734,7 @@
         function getCategoryLabel(catKey) {
             var labels = {
                 'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠️️ Habilidades',
+                'FAVORES': '🛠 Habilidades',
                 'RELAMPAGO': '⚡ Relámpago',
                 'SOLIDARIDAD': '🤝 Solidaridad',
                 'AVENTURAS': '🎲 Experiencias'
@@ -1744,21 +1742,19 @@
             return labels[catKey] || 'General';
         }
 
-        // FUNCIÓN CLAVE: EVALÚA SI EL USUARIO ACTUAL ES EL CREADOR DE LA PUBLICACIÓN
+        // EVALUADOR DEL CREADOR (PARA BLOQUEAR 'ME INTERESA')
         function isCurrentUserAuthor(post) {
             if (!post || post.isSponsor) return false;
             
-            // 1. Por ID del dispositivo local
+            // 1. Por el ID del dispositivo del navegador
             if (post.creator_id && post.creator_id === myDeviceId) return true;
             
-            // 2. Por alias de sesión activa
+            // 2. Por coincidencia del nombre de usuario en sesión
             if (currentUser) {
-                var cleanCurrent = currentUser.trim().toLowerCase();
-                var cleanPostUser = (post.user || "").trim().toLowerCase();
-                var cleanCreator = (post.creator_id || "").trim().toLowerCase();
-                
-                if (cleanPostUser === cleanCurrent) return true;
-                if (cleanCreator === cleanCurrent) return true;
+                var cur = currentUser.trim().toLowerCase();
+                var pUser = (post.user || "").trim().toLowerCase();
+                var pCreator = (post.creator_id || "").trim().toLowerCase();
+                if (cur === pUser || cur === pCreator) return true;
             }
             
             return false;
@@ -1964,7 +1960,7 @@
             var safeMsg = document.createElement('div');
             safeMsg.className = 'msg msg-me';
             safeMsg.style.border = '1px solid #22c55e';
-            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            safeMsg.innerText = "🛡️️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
             msgContainer.appendChild(safeMsg);
             msgContainer.scrollTop = msgContainer.scrollHeight;
             showToast("Punto seguro sugerido");
@@ -2004,7 +2000,7 @@
             msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
-        function handlePublish(e) {
+        async function handlePublish(e) {
             e.preventDefault();
             var type = document.getElementById('postType').value;
             var category = document.getElementById('postCategory').value;
@@ -2037,33 +2033,30 @@
                 votes: 0,
                 created_at: creationNow,
                 expires_at: calculatedExpiresAt,
-                creator_id: myDeviceId // Vinculado a este teléfono para bloquear "Me interesa"
+                creator_id: myDeviceId
             };
 
-            // Guarda en la memoria del teléfono
-            localUserPosts.unshift(newPost);
-            safeStorage.set("lubo_user_posts", JSON.stringify(localUserPosts));
+            // Intentar subir a Supabase
+            var saved = await pushToCloud(newPost);
 
-            // Actualiza la pantalla en 0 segundos
-            posts.unshift(newPost);
-            renderFeed();
-            updateMapMarkers();
+            if (saved) {
+                posts.unshift(newPost);
+                renderFeed();
+                updateMapMarkers();
 
-            // Sube a la base de datos de Supabase oficial
-            pushToCloud(newPost);
+                closeModal('publishModal');
+                document.getElementById('publishForm').reset();
+                showToast('🚀 Oportunidad compartida con todos los usuarios');
+                switchTab(type);
 
-            closeModal('publishModal');
-            document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad viva en el radar y compartida');
-            switchTab(type);
-
-            if (map) {
-                map.setView([finalLat, finalLng], 14);
-                map.invalidateSize();
+                if (map) {
+                    map.setView([finalLat, finalLng], 14);
+                    map.invalidateSize();
+                }
             }
         }
 
-        // CICLO DE TIEMPO REAL: Revisa el reloj local cada segundo
+        // CICLO DE TIEMPO REAL: Revisa el vencimiento cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2085,10 +2078,10 @@
             renderFeed();
         }, 1000);
 
-        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO: Consulta la nube cada 5 segundos
+        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO: Consulta la nube cada 4 segundos
         setInterval(function() {
             syncFromCloud();
-        }, 5000);
+        }, 4000);
 
         // Arranque inicial inmediato
         renderFeed();
@@ -2100,7 +2093,7 @@
             if (splash) splash.style.display = 'none';
             initRealMap();
             syncFromCloud();
-        }, 2100);
+        }, 1900);
     </script>
 </body>
 </html>
