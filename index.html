@@ -709,7 +709,7 @@
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <a id="btnNavGoogle" href="#" target="_blank" class="nav-app-btn">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:1.4rem;">🗺️️</span>
+                        <span style="font-size:1.4rem;">🗺</span>
                         <span>Google Maps</span>
                     </div>
                     <span style="color:var(--gold-bright);">Abrir ➔</span>
@@ -812,7 +812,6 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
-                <!-- Botón Oficial de Google -->
                 <button type="button" class="btn-google-sso" onclick="triggerOfficialGoogleLogin()">
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -823,7 +822,6 @@
                     <span>Continuar con Google</span>
                 </button>
 
-                <!-- Tarjeta de Identidad Verificada por Google -->
                 <div id="googleVerifiedBox" style="display:none; background:var(--widget-bg); padding:12px; border-radius:8px; border:1px solid var(--gold-bright);">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <img id="verifiedUserAvatar" src="" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--gold-bright); display:none;">
@@ -994,12 +992,8 @@
     </div>
 
     <script>
-        // ==========================================
-        // CLIENT ID OFICIAL DE GOOGLE CLOUD
-        // ==========================================
         const GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
 
-        // Almacenamiento persistente
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
             set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
@@ -1010,7 +1004,6 @@
         var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
         var currentUserPhoto = safeStorage.get("lubo_photo") || null;
 
-        // Decodificador seguro de tokens JWT de Google
         function parseJwt(token) {
             try {
                 var base64Url = token.split('.')[1];
@@ -1132,9 +1125,10 @@
             if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Publicaciones iniciales fijas
+        // TIMESTAMP BASE PARA EXPIRADOS
         var nowTimestamp = Date.now();
 
+        // PUBLICIDAD PATROCINADA: Fecha fija de creación para que baje al publicar cosas nuevas
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1142,39 +1136,45 @@
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
                 user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
+                createdAt: 1000000000000, // Antiguo para que baje conforme se publiquen cosas nuevas
                 expiresAt: nowTimestamp + (999999 * 1000), location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120
             }
         ];
 
+        // EJEMPLOS ANTERIORES: TOTALMENTE EXPIRADOS
         var BASE_POSTS = [
             {
                 id: 10001, type: 'TENGO', category: 'OBJETOS',
                 title: 'Tengo 2 botellas de Tequila Reposado selladas',
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
                 user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
-                expiresAt: nowTimestamp + (1800 * 1000), location: 'Coyoacán, CDMX', 
-                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active', votes: 12
+                createdAt: nowTimestamp - 7200000,
+                expiresAt: nowTimestamp - 3600000, // Ya expiró hace 1 hora
+                location: 'Coyoacán, CDMX', 
+                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'expired', votes: 12
             },
             {
                 id: 10002, type: 'QUIERO', category: 'FAVORES',
                 title: 'Yo quiero un trabajo de fin de semana por las madrugadas (tengo insomnio y quiero aprovechar el tiempo)',
                 change: 'Abierto a propuestas',
                 user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
-                expiresAt: nowTimestamp + (86400 * 1000), location: 'Benito Juárez, CDMX', 
-                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active', votes: 5
+                createdAt: nowTimestamp - 90000000,
+                expiresAt: nowTimestamp - 3600000, // Ya expiró
+                location: 'Benito Juárez, CDMX', 
+                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'expired', votes: 5
             },
             {
                 id: 10003, type: 'LEYENDA', category: 'SOLIDARIDAD',
                 title: 'DEPARTAMENTO CEDIDO: Regalé la posesión de un departamento a cambio de limpiar y vaciar la propiedad en 24 horas.',
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
                 user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
+                createdAt: nowTimestamp - 150000000,
                 expiresAt: nowTimestamp - 1000, location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48
             }
         ];
 
-        // CARGA PERSISTENTE: Cargar publicaciones guardadas por el usuario
         function loadStoredPosts() {
             var stored = safeStorage.get("lubo_user_posts");
             if (stored) {
@@ -1633,12 +1633,11 @@
                 }
             }
 
+            // ORDEN CRONOLÓGICO: Lo más reciente siempre arriba, sin privilegios para patrocinadores
             filteredPosts.sort(function(a,b) {
-                if (a.isSponsor && !b.isSponsor) return -1;
-                if (!a.isSponsor && b.isSponsor) return 1;
-                if (a.status === 'expired' && b.status !== 'expired') return 1;
-                if (a.status !== 'expired' && b.status === 'expired') return -1;
-                return 0;
+                var timeA = a.createdAt || (a.expiresAt ? a.expiresAt - 1800000 : 0);
+                var timeB = b.createdAt || (b.expiresAt ? b.expiresAt - 1800000 : 0);
+                return timeB - timeA;
             });
 
             if (filteredPosts.length === 0) {
@@ -1683,7 +1682,6 @@
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 } else if (isExpired) {
-                    // SI YA VENCIÓ EL TIEMPO: SE HABILITA EL VOTO PARA EL SALÓN DE LEYENDAS
                     actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + (post.votes || 0) + '/26)</button>';
                 } else if (isMyOwnPost) {
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
@@ -1798,7 +1796,7 @@
             dealConfirmations = { user1: false, user2: false };
             document.getElementById('chatUserName').innerText = "Chat con " + post.user;
             document.getElementById('chatPostTitle').innerText = post.title;
-            document.getElementById('dealStatusBanner').innerText = '⏱️️ Oportunidad congelada en el Muro (En Negociación)';
+            document.getElementById('dealStatusBanner').innerText = '⏱ Oportunidad congelada en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
             document.getElementById('chatMessages').innerHTML = '<div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>';
             document.getElementById('chatModal').style.display = 'flex';
@@ -1893,7 +1891,7 @@
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad viva en el radar con tiempo real');
+            showToast('🚀 Oportunidad viva en el radar');
             switchTab(type);
 
             if (map) {
@@ -1901,7 +1899,6 @@
             }
         }
 
-        // CICLO DE TIEMPO REAL: Revisa contra el reloj del sistema cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -1923,7 +1920,6 @@
             renderFeed();
         }, 1000);
 
-        // Inicialización y persistencia de sesión
         renderFeed();
         updateUIForLoggedInUser();
 
