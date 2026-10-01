@@ -568,7 +568,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠 Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -951,7 +951,7 @@
                 <label>Categoría Temática</label>
                 <select id="postCategory">
                     <option value="OBJETOS">📦 Objetos y Cosas Curiosas</option>
-                    <option value="FAVORES">🛠️ Habilidades</option>
+                    <option value="FAVORES">🛠 Habilidades</option>
                     <option value="RELAMPAGO">⚡ Oportunidad Relámpago</option>
                     <option value="SOLIDARIDAD">🤝 Solidaridad Vecinal</option>
                     <option value="AVENTURAS">🎲 Experiencias y Aventuras</option>
@@ -1244,11 +1244,14 @@
 
         var cloudPosts = [];
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
+        var isSyncing = false;
 
         // ==========================================
-        // SINCRONIZACIÓN NATIVA SUPABASE RESILIENTE
+        // SINCRONIZACIÓN NATIVA NO BLOQUEANTE
         // ==========================================
         function syncFromCloud() {
+            if (isSyncing) return;
+            isSyncing = true;
             try {
                 fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
                     method: "GET",
@@ -1262,6 +1265,7 @@
                     return res.json();
                 })
                 .then(function(data) {
+                    isSyncing = false;
                     if (data && Array.isArray(data)) {
                         cloudPosts = data.map(function(p) {
                             var resolvedUser = p.user_name || p.user || 'Anónimo';
@@ -1295,7 +1299,7 @@
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
 
-                        // AUTO-ACTUALIZACIÓN EN VIVO DEL CHAT ABIERTO
+                        // Sincronización en vivo del chat abierto
                         if (currentPostInChat) {
                             for (var k = 0; k < posts.length; k++) {
                                 if (posts[k].id === currentPostInChat.id) {
@@ -1311,8 +1315,12 @@
                         }
                     }
                 })
-                .catch(function(err) {});
-            } catch(e) {}
+                .catch(function(err) {
+                    isSyncing = false;
+                });
+            } catch(e) {
+                isSyncing = false;
+            }
         }
 
         function pushToCloud(item, callback) {
@@ -1534,7 +1542,7 @@
                     if (p.status === 'active' && p.lat && p.lng) {
                         var iconEmoji = '📦';
                         if (p.isSponsor) iconEmoji = '⭐';
-                        else if (p.category === 'FAVORES') iconEmoji = '🛠️';
+                        else if (p.category === 'FAVORES') iconEmoji = '🛠';
                         else if (p.category === 'RELAMPAGO') iconEmoji = '⚡';
                         else if (p.category === 'SOLIDARIDAD') iconEmoji = '🤝';
                         else if (p.category === 'AVENTURAS') iconEmoji = '🎲';
@@ -1854,7 +1862,7 @@
         function getCategoryLabel(catKey) {
             var labels = {
                 'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠️ Habilidades',
+                'FAVORES': '🛠 Habilidades',
                 'RELAMPAGO': '⚡ Relámpago',
                 'SOLIDARIDAD': '🤝 Solidaridad',
                 'AVENTURAS': '🎲 Experiencias'
@@ -2058,7 +2066,6 @@
             return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
         }
 
-        // INICIAR INTERÉS EN UN TRATO (NOTIFICA AL AUTOR Y CONGELA)
         function initiateDealInterest(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -2089,7 +2096,6 @@
             renderFeed();
         }
 
-        // ABRIR MODAL DE CHAT
         function openChat(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -2147,14 +2153,11 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // MANEJO DEL INDICADOR "ESTÁ ESCRIBIENDO"
         function handleChatTypingInput(inputEl) {
             if (!currentPostInChat) return;
 
-            // Enviar señal a Supabase de que mi dispositivo está escribiendo
             updatePostInCloud(currentPostInChat.id, { typing_device: myDeviceId });
 
-            // Cancelar la señal si el usuario deja de escribir por 2.5 segundos
             if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
             typingTimeoutTimer = setTimeout(function() {
                 if (currentPostInChat) {
@@ -2168,11 +2171,10 @@
             var txt = document.getElementById('typingIndicatorText');
             if (!bar || !txt) return;
 
-            // Si hay un dispositivo escribiendo que NO sea el mío, mostrar la leyenda
             if (postItem.typing_device && postItem.typing_device !== myDeviceId) {
                 var isAuthor = isCurrentUserAuthor(postItem);
                 var typerName = isAuthor ? (postItem.interested_user || "La contraparte") : postItem.user;
-                txt.innerText = "✍️ " + typerName + " está escribiendo";
+                txt.innerText = "✍️️ " + typerName + " está escribiendo";
                 bar.style.display = 'flex';
             } else {
                 bar.style.display = 'none';
@@ -2191,7 +2193,6 @@
             var text = input.value.trim();
             input.value = '';
 
-            // Quitar la señal de escribiendo de inmediato al enviar
             if (currentPostInChat) {
                 updatePostInCloud(currentPostInChat.id, { typing_device: null });
             }
@@ -2221,7 +2222,6 @@
             });
         }
 
-        // CANCELAR TRATO Y LIBERARLO PARA TODOS
         function handleCancelDeal() {
             if (!currentPostInChat) return;
             
@@ -2331,6 +2331,7 @@
             });
         }
 
+        // Revisión de expiración cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2352,11 +2353,20 @@
             renderFeed();
         }, 1000);
 
-        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO CADA 1.5 SEGUNDOS (CHAT EN TIEMPO REAL)
+        // Sincronización general cada 5 segundos (no bloqueante)
         setInterval(function() {
             syncFromCloud();
-        }, 1500);
+        }, 5000);
 
+        // Sincronización rápida SOLO cuando el modal de chat está abierto en pantalla
+        setInterval(function() {
+            var chatModal = document.getElementById('chatModal');
+            if (chatModal && chatModal.style.display === 'flex' && currentPostInChat) {
+                syncFromCloud();
+            }
+        }, 2000);
+
+        // Inicialización inmediata de UI
         renderFeed();
         updateUIForLoggedInUser();
 
@@ -2365,7 +2375,7 @@
             if (splash) splash.style.display = 'none';
             initRealMap();
             syncFromCloud();
-        }, 1900);
+        }, 1800);
     </script>
 </body>
 </html>
