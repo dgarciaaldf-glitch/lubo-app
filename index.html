@@ -9,9 +9,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Librería Oficial de Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <!-- Librería Oficial de Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -996,17 +993,8 @@
 
     <script>
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
-        var SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co";
-        var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
-
-        var sbClient = null;
-        try {
-            if (window.supabase && window.supabase.createClient) {
-                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch(e) {
-            console.warn("Error iniciando Supabase:", e);
-        }
+        var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
+        var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
 
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
@@ -1207,50 +1195,58 @@
         var cloudPosts = [];
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
-        async function syncFromCloud() {
-            if (!sbClient) return;
+        // ==========================================
+        // SINCRONIZACIÓN NATIVA SUPABASE RESILIENTE
+        // ==========================================
+        function syncFromCloud() {
             try {
-                var resp = await sbClient
-                    .from('posts')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (!resp.error && resp.data && Array.isArray(resp.data)) {
-                    cloudPosts = resp.data.map(function(p) {
-                        var resolvedUser = p.user_name || p.user || 'Anónimo';
-                        return {
-                            id: Number(p.id),
-                            type: p.type || 'TENGO',
-                            category: p.category || 'OBJETOS',
-                            title: p.title || '',
-                            change: p.change || '',
-                            user: resolvedUser,
-                            user_name: resolvedUser,
-                            rank: p.rank || 'Cazador Novato',
-                            location: p.location || 'Ubicación Local',
-                            lat: Number(p.lat) || 19.4326,
-                            lng: Number(p.lng) || -99.1332,
-                            discretion: Boolean(p.discretion),
-                            status: p.status || 'active',
-                            votes: Number(p.votes) || 0,
-                            created_at: Number(p.created_at) || Date.now(),
-                            expires_at: Number(p.expires_at) || (Date.now() + 3600000),
-                            isSponsor: false,
-                            creator_id: p.creator_id || resolvedUser
-                        };
-                    });
-
-                    posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
-                    renderFeed();
-                    updateMapMarkers();
-                }
+                fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                })
+                .then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (data && Array.isArray(data)) {
+                        cloudPosts = data.map(function(p) {
+                            var resolvedUser = p.user_name || p.user || 'Anónimo';
+                            return {
+                                id: Number(p.id),
+                                type: p.type || 'TENGO',
+                                category: p.category || 'OBJETOS',
+                                title: p.title || '',
+                                change: p.change || '',
+                                user: resolvedUser,
+                                user_name: resolvedUser,
+                                rank: p.rank || 'Cazador Novato',
+                                location: p.location || 'Ubicación Local',
+                                lat: Number(p.lat) || 19.4326,
+                                lng: Number(p.lng) || -99.1332,
+                                discretion: Boolean(p.discretion),
+                                status: p.status || 'active',
+                                votes: Number(p.votes) || 0,
+                                created_at: Number(p.created_at) || Date.now(),
+                                expires_at: Number(p.expires_at) || (Date.now() + 3600000),
+                                isSponsor: false,
+                                creator_id: p.creator_id || resolvedUser
+                            };
+                        });
+                        posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
+                        renderFeed();
+                        updateMapMarkers();
+                    }
+                })
+                .catch(function(err) {});
             } catch(e) {}
         }
 
-        async function pushToCloud(item) {
-            if (!sbClient) return false;
+        function pushToCloud(item, callback) {
             try {
-                // Se envía tanto "user" como "user_name" para compatibilidad total con la base de datos
                 var payload = {
                     id: Number(item.id),
                     type: String(item.type),
@@ -1271,22 +1267,48 @@
                     creator_id: String(item.creator_id)
                 };
 
-                var resp = await sbClient.from('posts').insert([payload]);
-                
-                if (resp.error) {
-                    alert("Supabase avisó: " + resp.error.message);
-                    return false;
-                }
-                return true;
+                fetch(SUPABASE_REST_URL, {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify([payload])
+                })
+                .then(function(res) {
+                    if (res.ok) {
+                        callback(true);
+                    } else {
+                        res.json().then(function(errObj) {
+                            alert("Supabase avisó: " + (errObj.message || "Error al insertar"));
+                            callback(false);
+                        }).catch(function() {
+                            callback(false);
+                        });
+                    }
+                })
+                .catch(function() {
+                    callback(false);
+                });
             } catch(e) {
-                return false;
+                callback(false);
             }
         }
 
-        async function updatePostInCloud(postId, updateFields) {
-            if (!sbClient) return;
+        function updatePostInCloud(postId, updateFields) {
             try {
-                await sbClient.from('posts').update(updateFields).eq('id', postId);
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify(updateFields)
+                }).catch(function() {});
             } catch(e) {}
         }
 
@@ -1362,7 +1384,9 @@
                 setTimeout(function() {
                     if (map) map.invalidateSize();
                 }, 300);
-            } catch(e) {}
+            } catch(e) {
+                console.error("Leaflet init error:", e);
+            }
         }
 
         function detectCurrentLocation(forPublishingModal, callbackCenter) {
@@ -1855,7 +1879,7 @@
                                 '<div style="display:flex; align-items:center; gap:6px;">' +
                                     '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
                                     '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
-                                </div>' +
+                                '</div>' +
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
@@ -1868,7 +1892,7 @@
             updateMetricsCounters();
         }
 
-        async function voteForLegend(postId) {
+        function voteForLegend(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
                 if (posts[i].id === postId) { post = posts[i]; break; }
@@ -1973,7 +1997,7 @@
             msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
-        async function handlePublish(e) {
+        function handlePublish(e) {
             e.preventDefault();
             var type = document.getElementById('postType').value;
             var category = document.getElementById('postCategory').value;
@@ -2010,9 +2034,7 @@
                 creator_id: myDeviceId
             };
 
-            var saved = await pushToCloud(newPost);
-
-            if (saved) {
+            pushToCloud(newPost, function(success) {
                 posts.unshift(newPost);
                 renderFeed();
                 updateMapMarkers();
@@ -2026,7 +2048,7 @@
                     map.setView([finalLat, finalLng], 14);
                     map.invalidateSize();
                 }
-            }
+            });
         }
 
         setInterval(function() {
@@ -2050,7 +2072,6 @@
             renderFeed();
         }, 1000);
 
-        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO CADA 4 SEGUNDOS
         setInterval(function() {
             syncFromCloud();
         }, 4000);
