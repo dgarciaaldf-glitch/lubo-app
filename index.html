@@ -425,13 +425,29 @@
         }
 
         .chat-box {
-            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
+            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px; position: relative;
         }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.3; text-align: justify; }
         .msg-them { background: #1e293b; align-self: flex-start; color: #fff; border: 1px solid var(--border-gold); }
         .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
         .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
+
+        /* INDICADOR DE ESCRITURA EN VIVO */
+        .typing-indicator-bar {
+            font-size: 0.72rem;
+            color: var(--gold-bright);
+            font-style: italic;
+            padding: 4px 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        .typing-dots-anim {
+            display: inline-block;
+            animation: blinkTyping 1.4s infinite;
+        }
+        @keyframes blinkTyping { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
 
         .btn-safe-point {
             background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);
@@ -552,7 +568,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -979,7 +995,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO Y CANCELACIÓN -->
+    <!-- MODAL CHAT EFÍMERO CON INDICADOR DE ESCRITURA Y CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -998,8 +1014,15 @@
                 <div class="chat-messages" id="chatMessages">
                     <div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>
                 </div>
+
+                <!-- LEYENDA EN VIVO DE ESTÁ ESCRIBIENDO -->
+                <div id="typingIndicatorBar" class="typing-indicator-bar">
+                    <span id="typingIndicatorText">✍️ La contraparte está escribiendo</span>
+                    <span class="typing-dots-anim">...</span>
+                </div>
+
                 <div class="chat-input-row">
-                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;">
+                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;" oninput="handleChatTypingInput(this)">
                     <button class="btn-action" onclick="sendMessage()">Enviar</button>
                 </div>
             </div>
@@ -1263,13 +1286,29 @@
                                 creator_id: p.creator_id || resolvedUser,
                                 interested_user: p.interested_user || null,
                                 interested_device: p.interested_device || null,
-                                chat_history: p.chat_history || null
+                                chat_history: p.chat_history || null,
+                                typing_device: p.typing_device || null
                             };
                         });
                         posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                         renderFeed();
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
+
+                        // AUTO-ACTUALIZACIÓN EN VIVO DEL CHAT ABIERTO
+                        if (currentPostInChat) {
+                            for (var k = 0; k < posts.length; k++) {
+                                if (posts[k].id === currentPostInChat.id) {
+                                    var updatedItem = posts[k];
+                                    if (updatedItem.chat_history !== currentPostInChat.chat_history) {
+                                        currentPostInChat.chat_history = updatedItem.chat_history;
+                                        renderChatMessagesFromHistory(currentPostInChat);
+                                    }
+                                    handleTypingDisplay(updatedItem);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 })
                 .catch(function(err) {});
@@ -1298,7 +1337,8 @@
                     creator_id: String(item.creator_id),
                     interested_user: item.interested_user || null,
                     interested_device: item.interested_device || null,
-                    chat_history: item.chat_history || null
+                    chat_history: item.chat_history || null,
+                    typing_device: null
                 };
 
                 fetch(SUPABASE_REST_URL, {
@@ -1362,6 +1402,7 @@
         var userLocationLabel = "Ubicación Local";
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
+        var typingTimeoutTimer = null;
 
         function checkAuthAndRun(callbackAction) {
             if (!currentUser) {
@@ -1909,7 +1950,6 @@
                 if (isSponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
                 } else if (isInDeal) {
-                    // SI ESTÁ EN NEGOCIACIÓN: Permite entrar al chat tanto al creador como a la contraparte
                     if (isMyOwnPost || isMyInterestedDeal) {
                         actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
                     } else {
@@ -1969,7 +2009,7 @@
                                 '<div style="display:flex; align-items:center; gap:6px;">' +
                                     '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
                                     '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
-                                '</div>' +
+                                </div>' +
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
@@ -2058,7 +2098,6 @@
             if (!post) return;
             
             currentPostInChat = post;
-
             dealConfirmations = { user1: false, user2: false };
             
             var isAuthor = isCurrentUserAuthor(post);
@@ -2069,13 +2108,13 @@
             document.getElementById('dealStatusBanner').innerText = '⏱️ Trato pausado en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
             
-            // Botón de cancelar visible solo para participantes
             var btnCancel = document.getElementById('btnCancelDeal');
             if (btnCancel) {
                 btnCancel.innerText = isAuthor ? "❌ Rechazar y Volver a Publicar" : "❌ Cancelar mi Interés en el Trato";
             }
 
             renderChatMessagesFromHistory(post);
+            handleTypingDisplay(post);
             document.getElementById('chatModal').style.display = 'flex';
         }
 
@@ -2108,6 +2147,38 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // MANEJO DEL INDICADOR "ESTÁ ESCRIBIENDO"
+        function handleChatTypingInput(inputEl) {
+            if (!currentPostInChat) return;
+
+            // Enviar señal a Supabase de que mi dispositivo está escribiendo
+            updatePostInCloud(currentPostInChat.id, { typing_device: myDeviceId });
+
+            // Cancelar la señal si el usuario deja de escribir por 2.5 segundos
+            if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+            typingTimeoutTimer = setTimeout(function() {
+                if (currentPostInChat) {
+                    updatePostInCloud(currentPostInChat.id, { typing_device: null });
+                }
+            }, 2500);
+        }
+
+        function handleTypingDisplay(postItem) {
+            var bar = document.getElementById('typingIndicatorBar');
+            var txt = document.getElementById('typingIndicatorText');
+            if (!bar || !txt) return;
+
+            // Si hay un dispositivo escribiendo que NO sea el mío, mostrar la leyenda
+            if (postItem.typing_device && postItem.typing_device !== myDeviceId) {
+                var isAuthor = isCurrentUserAuthor(postItem);
+                var typerName = isAuthor ? (postItem.interested_user || "La contraparte") : postItem.user;
+                txt.innerText = "✍️ " + typerName + " está escribiendo";
+                bar.style.display = 'flex';
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
         function suggestSafePoint() {
             var msgText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
             sendChatMessageToHistory(msgText);
@@ -2119,6 +2190,11 @@
             if (!input || !input.value.trim()) return;
             var text = input.value.trim();
             input.value = '';
+
+            // Quitar la señal de escribiendo de inmediato al enviar
+            if (currentPostInChat) {
+                updatePostInCloud(currentPostInChat.id, { typing_device: null });
+            }
             sendChatMessageToHistory(text);
         }
 
@@ -2140,7 +2216,8 @@
             renderChatMessagesFromHistory(currentPostInChat);
 
             updatePostInCloud(currentPostInChat.id, {
-                chat_history: currentPostInChat.chat_history
+                chat_history: currentPostInChat.chat_history,
+                typing_device: null
             });
         }
 
@@ -2158,12 +2235,14 @@
                 currentPostInChat.interested_user = null;
                 currentPostInChat.interested_device = null;
                 currentPostInChat.chat_history = null;
+                currentPostInChat.typing_device = null;
 
                 updatePostInCloud(currentPostInChat.id, {
                     status: 'active',
                     interested_user: null,
                     interested_device: null,
-                    chat_history: null
+                    chat_history: null,
+                    typing_device: null
                 });
 
                 closeModal('chatModal');
@@ -2231,7 +2310,8 @@
                 creator_id: myDeviceId,
                 interested_user: null,
                 interested_device: null,
-                chat_history: null
+                chat_history: null,
+                typing_device: null
             };
 
             pushToCloud(newPost, function(success) {
@@ -2272,9 +2352,10 @@
             renderFeed();
         }, 1000);
 
+        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO CADA 1.5 SEGUNDOS (CHAT EN TIEMPO REAL)
         setInterval(function() {
             syncFromCloud();
-        }, 3500);
+        }, 1500);
 
         renderFeed();
         updateUIForLoggedInUser();
