@@ -36,36 +36,6 @@
 
         p, div, label { text-align: justify; }
 
-        /* PANTALLA 0: SPLASH SCREEN EFÍMERO (SIN BLOQUEO DE TOQUES) */
-        #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #020617;
-            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            pointer-events: none; /* Imposibilita que bloquee clics */
-            transition: opacity 0.4s ease-out;
-        }
-
-        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .trident-splash { font-size: 4.5rem; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
-        
-        .lubo-splash-title { 
-            font-size: 3.2rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
-            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
-        }
-        .lubo-splash-sub { color: var(--text-sub); font-size: 0.8rem; letter-spacing: 3px; font-weight: 700; margin-top: 8px; text-transform: uppercase; }
-
-        .loader-container {
-            width: 180px; height: 3px; background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px; overflow: hidden; margin-top: 25px; position: relative;
-        }
-        .loader-bar {
-            width: 0%; height: 100%; background: var(--gold-gradient);
-            box-shadow: var(--gold-glow);
-            animation: fillLoading 0.9s linear forwards;
-        }
-        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
-
         /* HEADER */
         header {
             background: #020617; padding: 12px 20px; border-bottom: 1px solid var(--border-gold); position: sticky; top: 0; z-index: 100;
@@ -473,19 +443,6 @@
 
     <div id="toast">Notificación</div>
 
-    <!-- PANTALLA 0: SPLASH SCREEN (TOTALMENTE PASIVO Y SIN BLOQUEOS) -->
-    <div id="splashScreen">
-        <div class="splash-content">
-            <div class="trident-splash">🔱</div>
-            <div class="lubo-splash-title">Lubó</div>
-            <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
-            
-            <div class="loader-container">
-                <div class="loader-bar"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- HEADER -->
     <header>
         <button class="menu-hamburger-btn" type="button" onclick="toggleDrawer(true)">☰</button>
@@ -511,7 +468,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️️ Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -564,7 +521,7 @@
 
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion('acc2')">
-                <span>⚖️️ Marco Legal y Privacidad</span>
+                <span>⚖ Marco Legal y Privacidad</span>
                 <span>▼</span>
             </div>
             <div id="acc2" class="accordion-body">
@@ -794,7 +751,6 @@
                     <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
                     <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
                 </div>
-                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
@@ -895,7 +851,7 @@
                 <label>Categoría Temática</label>
                 <select id="postCategory">
                     <option value="OBJETOS">📦 Objetos y Cosas Curiosas</option>
-                    <option value="FAVORES">🛠️ Habilidades</option>
+                    <option value="FAVORES">🛠 Habilidades</option>
                     <option value="RELAMPAGO">⚡ Oportunidad Relámpago</option>
                     <option value="SOLIDARIDAD">🤝 Solidaridad Vecinal</option>
                     <option value="AVENTURAS">🎲 Experiencias y Aventuras</option>
@@ -939,7 +895,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO CON CANCELACIÓN -->
+    <!-- MODAL CHAT EFÍMERO -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -980,7 +936,7 @@
 
     <script>
         // ==========================================
-        // 1. CONFIGURACIÓN Y MEMORIA LOCAL
+        // 1. CONFIGURACIÓN Y BASE DE DATOS
         // ==========================================
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
@@ -1012,7 +968,6 @@
         var dealConfirmations = { user1: false, user2: false };
         var isSyncing = false;
 
-        // Tratos base garantizados (Siempre visibles)
         var nowTime = Date.now();
         var SPONSOR_POSTS = [
             {
@@ -1488,7 +1443,7 @@
         }
 
         // ==========================================
-        // 3. MAPAS Y GEOLOCALIZACIÓN LEAFLET (AUTO-REINTENTO)
+        // 3. MAPAS Y GEOLOCALIZACIÓN LEAFLET
         // ==========================================
         function initRealMap() {
             try {
@@ -1497,7 +1452,7 @@
                 if (!mapBox) return;
 
                 if (typeof L === 'undefined') {
-                    setTimeout(initRealMap, 300);
+                    setTimeout(initRealMap, 200);
                     return;
                 }
 
@@ -1508,7 +1463,6 @@
                     attributionControl: false
                 });
 
-                // Servidor oscuro nativo ultrarrápido sin filtros CSS agresivos
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     maxZoom: 19
                 }).addTo(map);
@@ -1517,7 +1471,6 @@
                 updateMapMarkers();
                 detectCurrentLocation(false);
 
-                // Auto-ajustes de tamaño para que nunca se vea gris
                 setTimeout(function() { if (map) map.invalidateSize(); }, 200);
                 setTimeout(function() { if (map) map.invalidateSize(); }, 800);
             } catch(e) {}
@@ -2086,27 +2039,16 @@
         }
 
         // ==========================================
-        // 6. ARRANQUE RESILIENTE (ORDEN DE EJECUCIÓN SEGURO)
+        // 6. ARRANQUE SEGURO
         // ==========================================
-        
-        // 1. Ocultar y destruir splash screen a 1 segundo para no dejar capas fantasma
-        setTimeout(function() {
-            var splash = document.getElementById('splashScreen');
-            if (splash) {
-                splash.style.opacity = '0';
-                setTimeout(function() { splash.remove(); }, 400);
-            }
-        }, 1000);
+        window.addEventListener('DOMContentLoaded', function() {
+            renderFeed();
+            updateUIForLoggedInUser();
+            initRealMap();
+            syncFromCloud();
+        });
 
-        // 2. Renderizar UI local de inmediato
-        renderFeed();
-        updateUIForLoggedInUser();
-
-        // 3. Inicializar mapa y sincronizar
-        initRealMap();
-        syncFromCloud();
-
-        // 4. Ciclo de temporizadores cada segundo
+        // Reloj de expiración cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2128,7 +2070,7 @@
             renderFeed();
         }, 1000);
 
-        // 5. Consulta periódica suave a Supabase cada 6 segundos
+        // Consulta en nube cada 6 segundos
         setInterval(function() {
             syncFromCloud();
         }, 6000);
