@@ -919,10 +919,10 @@
                 </select>
 
                 <label>¿Qué tienes o qué quieres? (Texto libre)</label>
-                <textarea id="postTitle" rows="3" placeholder="Ej. Comedor de 6 personas en madera sólida..." required></textarea>
+                <textarea id="postTitle" rows="3" placeholder="Ej. Unas llantas de medio uso rin 20..." required></textarea>
 
                 <label>¿Pides u ofreces algo a cambio? (Opcional)</label>
-                <input type="text" id="postChange" placeholder="Ej. Que vengan por él este fin de semana">
+                <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas">
 
                 <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold); font-size: 0.8rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1015,7 +1015,6 @@
             remove: function(k) { try { localStorage.removeItem(k); } catch(e) {} }
         };
 
-        // Identificador persistente del dispositivo
         var myDeviceId = safeStorage.get("lubo_device_id");
         if (!myDeviceId) {
             myDeviceId = "dev_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now();
@@ -1156,7 +1155,6 @@
 
         var nowTime = Date.now();
 
-        // PATROCINADOR FIJO CON FECHA ANTIGUA PARA QUE LO NUEVO SUBA
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1172,7 +1170,6 @@
             }
         ];
 
-        // EJEMPLOS BASE CON TIEMPO EXPIRADO
         var BASE_POSTS = [
             {
                 id: 10001, type: 'TENGO', category: 'OBJETOS',
@@ -1211,9 +1208,6 @@
         var cloudPosts = [];
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
-        // ==========================================
-        // SINCRONIZACIÓN OFICIAL EN VIVO SUPABASE
-        // ==========================================
         async function syncFromCloud() {
             if (!sbClient) return;
             try {
@@ -1222,12 +1216,7 @@
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (resp.error) {
-                    console.error("Error leyendo de Supabase:", resp.error.message);
-                    return;
-                }
-
-                if (resp.data && Array.isArray(resp.data)) {
+                if (!resp.error && resp.data && Array.isArray(resp.data)) {
                     cloudPosts = resp.data.map(function(p) {
                         return {
                             id: Number(p.id),
@@ -1250,21 +1239,15 @@
                         };
                     });
 
-                    // Las publicaciones de la nube van al inicio en orden cronológico
                     posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                     renderFeed();
                     updateMapMarkers();
                 }
-            } catch(e) {
-                console.error("Excepción en syncFromCloud:", e);
-            }
+            } catch(e) {}
         }
 
         async function pushToCloud(item) {
-            if (!sbClient) {
-                alert("Error de conexión: No se cargó la librería de base de datos.");
-                return false;
-            }
+            if (!sbClient) return false;
             try {
                 var payload = {
                     id: Number(item.id),
@@ -1288,15 +1271,11 @@
                 var resp = await sbClient.from('posts').insert([payload]);
                 
                 if (resp.error) {
-                    console.error("ERROR AL GUARDAR EN SUPABASE:", resp.error);
-                    alert("Supabase rechazó la publicación: " + resp.error.message + "\n\nRevisa el SQL Editor de Supabase.");
+                    alert("Supabase avisó: " + resp.error.message);
                     return false;
-                } else {
-                    console.log("✓ Publicación guardada con éxito en Supabase");
-                    return true;
                 }
+                return true;
             } catch(e) {
-                console.error("Excepción al subir a Supabase:", e);
                 return false;
             }
         }
@@ -1380,9 +1359,7 @@
                 setTimeout(function() {
                     if (map) map.invalidateSize();
                 }, 300);
-            } catch(e) {
-                console.error("Leaflet init error:", e);
-            }
+            } catch(e) {}
         }
 
         function detectCurrentLocation(forPublishingModal, callbackCenter) {
@@ -1734,7 +1711,7 @@
         function getCategoryLabel(catKey) {
             var labels = {
                 'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠 Habilidades',
+                'FAVORES': '🛠️ Habilidades',
                 'RELAMPAGO': '⚡ Relámpago',
                 'SOLIDARIDAD': '🤝 Solidaridad',
                 'AVENTURAS': '🎲 Experiencias'
@@ -1742,21 +1719,15 @@
             return labels[catKey] || 'General';
         }
 
-        // EVALUADOR DEL CREADOR (PARA BLOQUEAR 'ME INTERESA')
         function isCurrentUserAuthor(post) {
             if (!post || post.isSponsor) return false;
-            
-            // 1. Por el ID del dispositivo del navegador
             if (post.creator_id && post.creator_id === myDeviceId) return true;
-            
-            // 2. Por coincidencia del nombre de usuario en sesión
             if (currentUser) {
                 var cur = currentUser.trim().toLowerCase();
                 var pUser = (post.user || "").trim().toLowerCase();
                 var pCreator = (post.creator_id || "").trim().toLowerCase();
                 if (cur === pUser || cur === pCreator) return true;
             }
-            
             return false;
         }
 
@@ -1781,7 +1752,6 @@
                 }
             }
 
-            // Orden cronológico estricto: lo más nuevo va arriba
             filteredPosts.sort(function(a,b) {
                 var timeA = a.created_at || 0;
                 var timeB = b.created_at || 0;
@@ -1832,7 +1802,6 @@
                 } else if (isExpired) {
                     actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + (post.votes || 0) + '/26)</button>';
                 } else if (isMyOwnPost) {
-                    // BLOQUEO ABSOLUTO: EL AUTOR NUNCA SE AUTO-INTERESA
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
@@ -1960,7 +1929,7 @@
             var safeMsg = document.createElement('div');
             safeMsg.className = 'msg msg-me';
             safeMsg.style.border = '1px solid #22c55e';
-            safeMsg.innerText = "🛡️️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
             msgContainer.appendChild(safeMsg);
             msgContainer.scrollTop = msgContainer.scrollHeight;
             showToast("Punto seguro sugerido");
@@ -2036,7 +2005,6 @@
                 creator_id: myDeviceId
             };
 
-            // Intentar subir a Supabase
             var saved = await pushToCloud(newPost);
 
             if (saved) {
@@ -2056,7 +2024,6 @@
             }
         }
 
-        // CICLO DE TIEMPO REAL: Revisa el vencimiento cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2078,16 +2045,13 @@
             renderFeed();
         }, 1000);
 
-        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO: Consulta la nube cada 4 segundos
         setInterval(function() {
             syncFromCloud();
         }, 4000);
 
-        // Arranque inicial inmediato
         renderFeed();
         updateUIForLoggedInUser();
 
-        // Ocultar splash y renderizar mapa
         setTimeout(function() {
             var splash = document.getElementById('splashScreen');
             if (splash) splash.style.display = 'none';
