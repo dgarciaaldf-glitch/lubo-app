@@ -31,62 +31,40 @@
             --live-green-glow: 0 0 10px rgba(34, 197, 94, 0.85);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-dark); color: var(--text-main); padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
 
         p, div, label { text-align: justify; }
 
-        /* PANTALLA 0: SPLASH SCREEN LUBÓ */
+        /* PANTALLA 0: SPLASH SCREEN EFÍMERO (SIN BLOQUEO DE TOQUES) */
         #splashScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 1.6s forwards;
-        }
-        @keyframes autoHideSplash {
-            0% { opacity: 1; visibility: visible; }
-            90% { opacity: 0; visibility: visible; }
-            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+            pointer-events: none; /* Imposibilita que bloquee clics */
+            transition: opacity 0.4s ease-out;
         }
 
         .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        .trident-splash { font-size: 4.5rem; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
         
         .lubo-splash-title { 
-            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            font-size: 3.2rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
             background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
         }
-        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.8rem; letter-spacing: 3px; font-weight: 700; margin-top: 8px; text-transform: uppercase; }
 
         .loader-container {
-            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+            width: 180px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 25px; position: relative;
         }
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 1.5s linear forwards;
+            animation: fillLoading 0.9s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
-
-        /* PANTALLA 1: BIENVENIDA (SÓLO SI NO HAY SESIÓN) */
-        #welcomeScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
-            z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center;
-            padding: 25px; text-align: center;
-        }
-        .welcome-hero { 
-            max-width: 500px; width: 100%; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
-        .welcome-hero h1 { 
-            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
-            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
-        }
-        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
 
         /* HEADER */
         header {
@@ -98,7 +76,7 @@
             padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: var(--gold-glow);
         }
 
-        .header-brand { display: flex; align-items: center; gap: 8px; }
+        .header-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .trident-header { font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6)); }
         .header-title { 
             font-size: 1.6rem; letter-spacing: -0.5px; font-weight: 900; font-family: 'Georgia', serif; font-style: italic;
@@ -201,12 +179,8 @@
         }
 
         .mini-map {
-            width: 100%; height: 300px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
+            width: 100%; height: 300px; background: #090d16; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
-        }
-
-        .leaflet-tile-pane {
-            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
         }
 
         .map-marker-pin {
@@ -499,7 +473,7 @@
 
     <div id="toast">Notificación</div>
 
-    <!-- PANTALLA 0: SPLASH SCREEN LUBÓ -->
+    <!-- PANTALLA 0: SPLASH SCREEN (TOTALMENTE PASIVO Y SIN BLOQUEOS) -->
     <div id="splashScreen">
         <div class="splash-content">
             <div class="trident-splash">🔱</div>
@@ -512,26 +486,11 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: BIENVENIDA (SÓLO SI NO HAY SESIÓN) -->
-    <div id="welcomeScreen">
-        <div class="welcome-hero">
-            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
-            <h1>Lubó</h1>
-            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
-            <p>
-                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
-            </p>
-            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
-                Iniciar Experiencia
-            </button>
-        </div>
-    </div>
-
     <!-- HEADER -->
     <header>
         <button class="menu-hamburger-btn" type="button" onclick="toggleDrawer(true)">☰</button>
 
-        <div class="header-brand">
+        <div class="header-brand" onclick="switchTab('TENGO')">
             <span class="trident-header">🔱</span>
             <div class="header-title">Lubó</div>
         </div>
@@ -605,7 +564,7 @@
 
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion('acc2')">
-                <span>⚖️ Marco Legal y Privacidad</span>
+                <span>⚖️️ Marco Legal y Privacidad</span>
                 <span>▼</span>
             </div>
             <div id="acc2" class="accordion-body">
@@ -835,6 +794,7 @@
                     <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
                     <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
                 </div>
+                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
@@ -979,7 +939,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO -->
+    <!-- MODAL CHAT EFÍMERO CON CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1042,7 +1002,6 @@
         var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
         var currentUserPhoto = safeStorage.get("lubo_photo") || null;
 
-        // Variables de navegación y estado
         var map = null;
         var markersLayer = null;
         var userCapturedCoords = null;
@@ -1053,7 +1012,7 @@
         var dealConfirmations = { user1: false, user2: false };
         var isSyncing = false;
 
-        // Publicaciones iniciales fijas
+        // Tratos base garantizados (Siempre visibles)
         var nowTime = Date.now();
         var SPONSOR_POSTS = [
             {
@@ -1109,7 +1068,7 @@
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // 2. CONTROLADORES DE INTERFAZ Y MODALES (BLINDADOS)
+        // 2. FUNCIONES DE INTERFAZ Y MODALES
         // ==========================================
         function toggleDrawer(open) {
             var overlay = document.getElementById('drawerOverlay');
@@ -1137,12 +1096,6 @@
         function openRegisterModal() {
             var reg = document.getElementById('registerModal');
             if (reg) reg.style.display = 'flex';
-        }
-
-        function goToRegister() {
-            var welcome = document.getElementById('welcomeScreen');
-            if (welcome) welcome.style.display = 'none';
-            openRegisterModal();
         }
 
         function openPrivacyModal() {
@@ -1234,7 +1187,7 @@
 
         function checkAuthAndRun(callbackAction) {
             if (!currentUser) {
-                showToast("Acceso restringido: primero identifícate");
+                showToast("Primero identifícate para participar");
                 openRegisterModal();
             } else {
                 callbackAction();
@@ -1365,7 +1318,7 @@
                 if (btn) btn.disabled = false;
                 var now = new Date();
                 if (timeLabel) {
-                    timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                    timeLabel.innerText = "Consentimiento registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
                     timeLabel.style.display = 'block';
                 }
             } else {
@@ -1389,7 +1342,6 @@
             }
 
             currentUser = alias;
-            
             safeStorage.set("lubo_user", alias);
             safeStorage.set("lubo_rank", currentUserRank);
             safeStorage.set("lubo_consent_time", new Date().toISOString());
@@ -1397,17 +1349,11 @@
             updateUIForLoggedInUser();
             showToast("¡Bienvenido a Lubó, " + alias + "!");
             closeModal('registerModal');
-            
-            var welcome = document.getElementById('welcomeScreen');
-            if (welcome) welcome.style.display = 'none';
             renderFeed();
         }
 
         function updateUIForLoggedInUser() {
             if (currentUser) {
-                var welcome = document.getElementById('welcomeScreen');
-                if (welcome) welcome.style.display = 'none';
-
                 var btnAuth = document.getElementById('btnAuthHeader');
                 if (btnAuth) btnAuth.style.display = 'none';
 
@@ -1428,9 +1374,6 @@
 
                 var logoutBtn = document.getElementById('drawerLogoutBtn');
                 if (logoutBtn) logoutBtn.style.display = 'block';
-            } else {
-                var welcomeScreen = document.getElementById('welcomeScreen');
-                if (welcomeScreen) welcomeScreen.style.display = 'flex';
             }
         }
 
@@ -1456,9 +1399,76 @@
                 document.getElementById('btnFinishRegistration').disabled = true;
 
                 showToast('Sesión cerrada');
-                document.getElementById('welcomeScreen').style.display = 'flex';
                 renderFeed();
             }
+        }
+
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            var data = parseJwt(response.credential);
+            if (data) {
+                var email = data.email;
+                var fullName = data.name || data.given_name;
+                var picture = data.picture;
+
+                var vBox = document.getElementById('googleVerifiedBox');
+                var vEmail = document.getElementById('verifiedEmailText');
+                var vAlias = document.getElementById('finalAliasInput');
+                var vBtn = document.getElementById('btnFinishRegistration');
+                
+                if (vBox) vBox.style.display = 'block';
+                if (vEmail) vEmail.innerText = email;
+                if (vAlias) vAlias.value = fullName;
+                
+                if (picture) {
+                    var img = document.getElementById('verifiedUserAvatar');
+                    if (img) {
+                        img.src = picture;
+                        img.style.display = 'block';
+                    }
+                    safeStorage.set("lubo_photo", picture);
+                    currentUserPhoto = picture;
+                }
+
+                if (vBtn) vBtn.style.display = 'block';
+                showToast("✓ Cuenta de Google autenticada");
+            }
+        }
+
+        function triggerOfficialGoogleLogin() {
+            try {
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                    showToast("Cargando Google... Reintenta en un momento");
+                    return;
+                }
+
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false
+                });
+
+                google.accounts.id.prompt(function(notification) {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        google.accounts.id.renderButton(
+                            document.querySelector('.btn-google-sso'),
+                            { theme: "outline", size: "large", width: "100%" }
+                        );
+                    }
+                });
+            } catch (err) {}
         }
 
         function handlePushToggle(checkbox) {
@@ -1478,13 +1488,18 @@
         }
 
         // ==========================================
-        // 3. MAPAS Y GEOLOCALIZACIÓN LEAFLET
+        // 3. MAPAS Y GEOLOCALIZACIÓN LEAFLET (AUTO-REINTENTO)
         // ==========================================
         function initRealMap() {
             try {
-                if (map || typeof L === 'undefined') return;
+                if (map) return;
                 var mapBox = document.getElementById('mapBox');
                 if (!mapBox) return;
+
+                if (typeof L === 'undefined') {
+                    setTimeout(initRealMap, 300);
+                    return;
+                }
 
                 map = L.map('mapBox', {
                     center: [19.3900, -99.1550],
@@ -1493,7 +1508,8 @@
                     attributionControl: false
                 });
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                // Servidor oscuro nativo ultrarrápido sin filtros CSS agresivos
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     maxZoom: 19
                 }).addTo(map);
 
@@ -1501,12 +1517,10 @@
                 updateMapMarkers();
                 detectCurrentLocation(false);
 
-                setTimeout(function() {
-                    if (map) map.invalidateSize();
-                }, 300);
-            } catch(e) {
-                console.error("Leaflet init error:", e);
-            }
+                // Auto-ajustes de tamaño para que nunca se vea gris
+                setTimeout(function() { if (map) map.invalidateSize(); }, 200);
+                setTimeout(function() { if (map) map.invalidateSize(); }, 800);
+            } catch(e) {}
         }
 
         function detectCurrentLocation(forPublishingModal, callbackCenter) {
@@ -1614,7 +1628,7 @@
         }
 
         // ==========================================
-        // 4. RENDERIZADO DEL FEED Y CHAT
+        // 4. FEED Y MURO DE OPORTUNIDADES
         // ==========================================
         function renderFeed() {
             var feed = document.getElementById('feed');
@@ -1709,7 +1723,7 @@
                     : (post.status === 'leyenda'
                         ? '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>'
                         : (isInDeal 
-                            ? '<span class="timer" style="color:#22c55e;">⏸️ Negociando</span>' 
+                            ? '<span class="timer" style="color:#22c55e;">⏸️️ Negociando</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
                                 : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
@@ -1868,6 +1882,36 @@
                 renderFeed();
                 updateMapMarkers();
                 updateActiveChatWidgetUI();
+            }
+        }
+
+        function openNavChoice(lat, lng, destinationTitle) {
+            var isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+            var titleEl = document.getElementById('navDestinationTitle');
+            if (titleEl) titleEl.innerText = destinationTitle || "Punto de Encuentro";
+
+            var gBtn = document.getElementById('btnNavGoogle');
+            if (gBtn) gBtn.href = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng + "&travelmode=driving";
+
+            var wBtn = document.getElementById('btnNavWaze');
+            if (wBtn) wBtn.href = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
+
+            var aBtn = document.getElementById('btnNavApple');
+            if (aBtn) {
+                aBtn.href = isAppleDevice 
+                    ? "http://maps.apple.com/?daddr=" + lat + "," + lng + "&dirflg=d"
+                    : "https://maps.apple.com/?daddr=" + lat + "," + lng;
+            }
+
+            var modal = document.getElementById('navModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function triggerChatNavigation() {
+            if (currentPostInChat && currentPostInChat.lat && currentPostInChat.lng) {
+                openNavChoice(currentPostInChat.lat, currentPostInChat.lng, currentPostInChat.title);
+            } else {
+                showToast("Coordenadas no disponibles para este trato");
             }
         }
 
@@ -2042,8 +2086,27 @@
         }
 
         // ==========================================
-        // 6. CICLOS DE TIEMPO Y ARRANQUE SEGURO
+        // 6. ARRANQUE RESILIENTE (ORDEN DE EJECUCIÓN SEGURO)
         // ==========================================
+        
+        // 1. Ocultar y destruir splash screen a 1 segundo para no dejar capas fantasma
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(function() { splash.remove(); }, 400);
+            }
+        }, 1000);
+
+        // 2. Renderizar UI local de inmediato
+        renderFeed();
+        updateUIForLoggedInUser();
+
+        // 3. Inicializar mapa y sincronizar
+        initRealMap();
+        syncFromCloud();
+
+        // 4. Ciclo de temporizadores cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2065,20 +2128,10 @@
             renderFeed();
         }, 1000);
 
+        // 5. Consulta periódica suave a Supabase cada 6 segundos
         setInterval(function() {
             syncFromCloud();
         }, 6000);
-
-        // Arranque inicial inmediato
-        renderFeed();
-        updateUIForLoggedInUser();
-
-        setTimeout(function() {
-            var splash = document.getElementById('splashScreen');
-            if (splash) splash.style.display = 'none';
-            initRealMap();
-            syncFromCloud();
-        }, 1600);
     </script>
 </body>
 </html>
