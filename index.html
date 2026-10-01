@@ -350,6 +350,32 @@
             opacity: 1 !important;
         }
 
+        .btn-in-deal-open {
+            background: #22c55e !important;
+            color: #000 !important;
+            font-weight: 900 !important;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.6) !important;
+            cursor: pointer !important;
+        }
+
+        .btn-cancel-deal {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid #ef4444;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
+        .btn-cancel-deal:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fff;
+        }
+
         .floating-actions-row {
             position: fixed; bottom: 20px; right: 20px; z-index: 90;
             display: flex; gap: 12px; align-items: center;
@@ -526,7 +552,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️️ Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -680,8 +706,8 @@
                 </div>
                 <div id="activeChatWidget" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); font-size:0.85rem; color:var(--text-sub);">
                     <p style="color:#fff; font-weight:bold; margin-bottom:4px;">Negociación Comunitaria</p>
-                    <p style="font-size:0.8rem; color:var(--gold-bright); margin-bottom:10px;">⏳ Estado: En Espera</p>
-                    <button class="btn-action" style="font-size:0.8rem; width:100%; padding:10px;" onclick="checkAuthAndRun(function(){ showToast('Selecciona un trato activo del muro'); })">Abrir Negociación</button>
+                    <p id="chatWidgetSubtitle" style="font-size:0.8rem; color:var(--gold-bright); margin-bottom:10px;">⏳ Estado: En Espera</p>
+                    <button class="btn-action" id="btnSideOpenChat" style="font-size:0.8rem; width:100%; padding:10px;" onclick="openActiveOrFirstDeal()">Abrir Negociación</button>
                 </div>
             </div>
         </aside>
@@ -689,7 +715,7 @@
 
     <!-- BOTONES FLOTANTES INFERIORES (+ Y CHAT) -->
     <div class="floating-actions-row">
-        <button class="fab-chat" onclick="checkAuthAndRun(function(){ showToast('Selecciona un trato en el muro para abrir conversación'); })" title="Conversaciones">💬</button>
+        <button class="fab-chat" onclick="openActiveOrFirstDeal()" title="Conversaciones">💬</button>
         <button class="fab" onclick="checkAuthAndRun(openPublishModal)" title="Crear Publicación">+</button>
     </div>
 
@@ -953,7 +979,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO -->
+    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO Y CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -988,6 +1014,7 @@
             </div>
 
             <button id="btnConfirmDeal" class="btn-action" style="width: 100%; margin-top: 10px; padding:12px;" onclick="handleDealConfirmation()">🤝 Confirmar mi Parte ("Trato Hecho")</button>
+            <button id="btnCancelDeal" class="btn-cancel-deal" onclick="handleCancelDeal()">❌ Cancelar Trato / Rechazar y Liberar</button>
         </div>
     </div>
 
@@ -1233,12 +1260,16 @@
                                 created_at: Number(p.created_at) || Date.now(),
                                 expires_at: Number(p.expires_at) || (Date.now() + 3600000),
                                 isSponsor: false,
-                                creator_id: p.creator_id || resolvedUser
+                                creator_id: p.creator_id || resolvedUser,
+                                interested_user: p.interested_user || null,
+                                interested_device: p.interested_device || null,
+                                chat_history: p.chat_history || null
                             };
                         });
                         posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                         renderFeed();
                         updateMapMarkers();
+                        updateActiveChatWidgetUI();
                     }
                 })
                 .catch(function(err) {});
@@ -1264,7 +1295,10 @@
                     votes: Number(item.votes),
                     created_at: Number(item.created_at),
                     expires_at: Number(item.expires_at),
-                    creator_id: String(item.creator_id)
+                    creator_id: String(item.creator_id),
+                    interested_user: item.interested_user || null,
+                    interested_device: item.interested_device || null,
+                    chat_history: item.chat_history || null
                 };
 
                 fetch(SUPABASE_REST_URL, {
@@ -1297,7 +1331,7 @@
             }
         }
 
-        function updatePostInCloud(postId, updateFields) {
+        function updatePostInCloud(postId, updateFields, callback) {
             try {
                 fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
                     method: "PATCH",
@@ -1308,8 +1342,16 @@
                         "Prefer": "return=minimal"
                     },
                     body: JSON.stringify(updateFields)
-                }).catch(function() {});
-            } catch(e) {}
+                })
+                .then(function(res) {
+                    if (callback) callback(res.ok);
+                })
+                .catch(function() {
+                    if (callback) callback(false);
+                });
+            } catch(e) {
+                if (callback) callback(false);
+            }
         }
 
         var currentPostInChat = null;
@@ -1475,7 +1517,7 @@
                         } else if (isMyPostOnMap) {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
                         } else {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + p.id + '); })">Coordinar Trato</button>';
                         }
 
                         var popupContent = 
@@ -1553,6 +1595,51 @@
             if (alertCount) alertCount.innerText = expiringCount + " Tratos";
         }
 
+        function updateActiveChatWidgetUI() {
+            var activeDeal = getMyActiveDeal();
+            var widgetSub = document.getElementById('chatWidgetSubtitle');
+            var btnOpen = document.getElementById('btnSideOpenChat');
+            
+            if (activeDeal) {
+                if (widgetSub) widgetSub.innerText = "⚡ Trato en Curso: " + (activeDeal.title.substring(0, 22) + "...");
+                if (btnOpen) {
+                    btnOpen.innerText = "Entrar al Chat Activo";
+                    btnOpen.style.background = "#22c55e";
+                    btnOpen.style.color = "#000";
+                }
+            } else {
+                if (widgetSub) widgetSub.innerText = "⏳ Estado: En Espera";
+                if (btnOpen) {
+                    btnOpen.innerText = "Abrir Negociación";
+                    btnOpen.style.background = "var(--gold-gradient)";
+                    btnOpen.style.color = "#000";
+                }
+            }
+        }
+
+        function getMyActiveDeal() {
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.status === 'in_deal') {
+                    if (isCurrentUserAuthor(p) || isCurrentUserInterested(p)) {
+                        return p;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function openActiveOrFirstDeal() {
+            checkAuthAndRun(function() {
+                var myDeal = getMyActiveDeal();
+                if (myDeal) {
+                    openChat(myDeal.id);
+                } else {
+                    showToast("No tienes ninguna conversación activa. Elige un trato del muro.");
+                }
+            });
+        }
+
         function handleMetricClick(type) {
             if (type === 'NEARBY') {
                 showToast("🎯 Recentrado en tu ubicación satelital");
@@ -1571,19 +1658,7 @@
                 renderFeed();
                 document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else if (type === 'INDEAL') {
-                var activeDeal = null;
-                for (var i = 0; i < posts.length; i++) {
-                    if (posts[i].status === 'in_deal') {
-                        activeDeal = posts[i];
-                        break;
-                    }
-                }
-                if (activeDeal) {
-                    showToast("⏳ Abriendo negociación en curso");
-                    checkAuthAndRun(function(){ openChat(activeDeal.id); });
-                } else {
-                    showToast("No tienes ninguna negociación activa en este momento");
-                }
+                openActiveOrFirstDeal();
             } else if (type === 'LEGENDS') {
                 switchTab('LEYENDAS');
                 document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1759,6 +1834,15 @@
             return false;
         }
 
+        function isCurrentUserInterested(post) {
+            if (!post || post.isSponsor) return false;
+            if (post.interested_device && post.interested_device === myDeviceId) return true;
+            if (currentUser && post.interested_user) {
+                if (currentUser.trim().toLowerCase() === post.interested_user.trim().toLowerCase()) return true;
+            }
+            return false;
+        }
+
         function renderFeed() {
             var feed = document.getElementById('feed');
             if (!feed) return;
@@ -1801,6 +1885,7 @@
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
                 var isMyOwnPost = isCurrentUserAuthor(post);
+                var isMyInterestedDeal = isCurrentUserInterested(post);
                 
                 card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
                 
@@ -1824,7 +1909,12 @@
                 if (isSponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
                 } else if (isInDeal) {
-                    actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ En negociación...</button>';
+                    // SI ESTÁ EN NEGOCIACIÓN: Permite entrar al chat tanto al creador como a la contraparte
+                    if (isMyOwnPost || isMyInterestedDeal) {
+                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
+                    } else {
+                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ Trato en proceso...</button>';
+                    }
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 } else if (isExpired) {
@@ -1833,7 +1923,7 @@
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + post.id + '); })">' + actionText + '</button>';
                 }
 
                 var sponsorDisclaimerHTML = isSponsor
@@ -1852,10 +1942,10 @@
                     : (post.status === 'leyenda'
                         ? '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>'
                         : (isInDeal 
-                            ? '<span class="timer" style="color:var(--gold-bright);">⏸ En Pausa</span>' 
+                            ? '<span class="timer" style="color:#22c55e;">⏸️ Negociando</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
-                                : '<span class="timer">⏱ ' + formatTime(secondsLeft) + '</span>')));
+                                : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
@@ -1928,6 +2018,38 @@
             return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
         }
 
+        // INICIAR INTERÉS EN UN TRATO (NOTIFICA AL AUTOR Y CONGELA)
+        function initiateDealInterest(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+
+            post.status = 'in_deal';
+            post.interested_user = currentUser || 'Cazador Interesado';
+            post.interested_device = myDeviceId;
+
+            var defaultMsg = JSON.stringify([{
+                sender: currentUser || 'Interesado',
+                text: '¡Hola! Me interesa tu publicación y quiero coordinar contigo.',
+                isMeDevice: myDeviceId
+            }]);
+            post.chat_history = defaultMsg;
+
+            updatePostInCloud(postId, { 
+                status: 'in_deal',
+                interested_user: post.interested_user,
+                interested_device: post.interested_device,
+                chat_history: defaultMsg
+            });
+
+            showToast("🤝 Solicitud enviada al creador. Abriendo canal...");
+            openChat(postId);
+            renderFeed();
+        }
+
+        // ABRIR MODAL DE CHAT
         function openChat(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -1936,38 +2058,126 @@
             if (!post) return;
             
             currentPostInChat = post;
-            post.status = 'in_deal';
-
-            updatePostInCloud(postId, { status: 'in_deal' });
-
-            renderFeed();
-            updateMapMarkers();
 
             dealConfirmations = { user1: false, user2: false };
-            document.getElementById('chatUserName').innerText = "Chat con " + post.user;
+            
+            var isAuthor = isCurrentUserAuthor(post);
+            var counterpartName = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
+            
+            document.getElementById('chatUserName').innerText = "Chat con " + counterpartName;
             document.getElementById('chatPostTitle').innerText = post.title;
-            document.getElementById('dealStatusBanner').innerText = '⏱ Oportunidad congelada en el Muro (En Negociación)';
+            document.getElementById('dealStatusBanner').innerText = '⏱️ Trato pausado en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
-            document.getElementById('chatMessages').innerHTML = '<div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>';
+            
+            // Botón de cancelar visible solo para participantes
+            var btnCancel = document.getElementById('btnCancelDeal');
+            if (btnCancel) {
+                btnCancel.innerText = isAuthor ? "❌ Rechazar y Volver a Publicar" : "❌ Cancelar mi Interés en el Trato";
+            }
+
+            renderChatMessagesFromHistory(post);
             document.getElementById('chatModal').style.display = 'flex';
         }
 
+        function renderChatMessagesFromHistory(post) {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+            container.innerHTML = '';
+
+            var history = [];
+            if (post.chat_history) {
+                try { history = JSON.parse(post.chat_history); } catch(e) {}
+            }
+
+            if (!history || history.length === 0) {
+                history = [{
+                    sender: post.interested_user || 'Interesado',
+                    text: '¡Hola! Vi tu publicación y me interesa coordinar contigo.',
+                    isMeDevice: post.interested_device
+                }];
+            }
+
+            for (var i = 0; i < history.length; i++) {
+                var m = history[i];
+                var msgDiv = document.createElement('div');
+                var isMine = (m.isMeDevice === myDeviceId) || (currentUser && m.sender === currentUser);
+                msgDiv.className = 'msg ' + (isMine ? 'msg-me' : 'msg-them');
+                msgDiv.innerText = m.text;
+                container.appendChild(msgDiv);
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
         function suggestSafePoint() {
-            var msgContainer = document.getElementById('chatMessages');
-            var safeMsg = document.createElement('div');
-            safeMsg.className = 'msg msg-me';
-            safeMsg.style.border = '1px solid #22c55e';
-            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
-            msgContainer.appendChild(safeMsg);
-            msgContainer.scrollTop = msgContainer.scrollHeight;
+            var msgText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            sendChatMessageToHistory(msgText);
             showToast("Punto seguro sugerido");
+        }
+
+        function sendMessage() {
+            var input = document.getElementById('chatInput');
+            if (!input || !input.value.trim()) return;
+            var text = input.value.trim();
+            input.value = '';
+            sendChatMessageToHistory(text);
+        }
+
+        function sendChatMessageToHistory(text) {
+            if (!currentPostInChat) return;
+
+            var history = [];
+            if (currentPostInChat.chat_history) {
+                try { history = JSON.parse(currentPostInChat.chat_history); } catch(e) {}
+            }
+
+            history.push({
+                sender: currentUser || 'Participante',
+                text: text,
+                isMeDevice: myDeviceId
+            });
+
+            currentPostInChat.chat_history = JSON.stringify(history);
+            renderChatMessagesFromHistory(currentPostInChat);
+
+            updatePostInCloud(currentPostInChat.id, {
+                chat_history: currentPostInChat.chat_history
+            });
+        }
+
+        // CANCELAR TRATO Y LIBERARLO PARA TODOS
+        function handleCancelDeal() {
+            if (!currentPostInChat) return;
+            
+            var isAuthor = isCurrentUserAuthor(currentPostInChat);
+            var confirmMsg = isAuthor 
+                ? "¿Deseas rechazar esta negociación y dejar tu oportunidad activa en el muro para otros usuarios?"
+                : "¿Deseas cancelar tu postulación y liberar el trato?";
+
+            if (confirm(confirmMsg)) {
+                currentPostInChat.status = 'active';
+                currentPostInChat.interested_user = null;
+                currentPostInChat.interested_device = null;
+                currentPostInChat.chat_history = null;
+
+                updatePostInCloud(currentPostInChat.id, {
+                    status: 'active',
+                    interested_user: null,
+                    interested_device: null,
+                    chat_history: null
+                });
+
+                closeModal('chatModal');
+                showToast("🔓 Trato liberado nuevamente en el radar");
+                renderFeed();
+                updateActiveChatWidgetUI();
+            }
         }
 
         function handleDealConfirmation() {
             if (!dealConfirmations.user1) {
                 dealConfirmations.user1 = true;
                 document.getElementById('dealStatusBanner').innerText = '⏳ Esperando que la otra parte también confirme "Trato Hecho"...';
-                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Chat activo)';
+                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Esperando al otro)';
                 showToast('Has marcado Trato Hecho');
             } else if (!dealConfirmations.user2) {
                 dealConfirmations.user2 = true;
@@ -1980,21 +2190,8 @@
                 closeModal('chatModal');
                 renderFeed();
                 updateMapMarkers();
+                updateActiveChatWidgetUI();
             }
-        }
-
-        function sendMessage() {
-            var input = document.getElementById('chatInput');
-            if (!input || !input.value.trim()) return;
-            
-            var msgContainer = document.getElementById('chatMessages');
-            var newMsg = document.createElement('div');
-            newMsg.className = 'msg msg-me';
-            newMsg.innerText = input.value;
-            msgContainer.appendChild(newMsg);
-            
-            input.value = '';
-            msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
         function handlePublish(e) {
@@ -2031,7 +2228,10 @@
                 votes: 0,
                 created_at: creationNow,
                 expires_at: calculatedExpiresAt,
-                creator_id: myDeviceId
+                creator_id: myDeviceId,
+                interested_user: null,
+                interested_device: null,
+                chat_history: null
             };
 
             pushToCloud(newPost, function(success) {
@@ -2074,7 +2274,7 @@
 
         setInterval(function() {
             syncFromCloud();
-        }, 4000);
+        }, 3500);
 
         renderFeed();
         updateUIForLoggedInUser();
