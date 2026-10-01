@@ -919,7 +919,7 @@
                 </select>
 
                 <label>¿Qué tienes o qué quieres? (Texto libre)</label>
-                <textarea id="postTitle" rows="3" placeholder="Ej. Unas llantas de medio uso rin 20..." required></textarea>
+                <textarea id="postTitle" rows="3" placeholder="Ej. Una chamarra de piel en buen estado..." required></textarea>
 
                 <label>¿Pides u ofreces algo a cambio? (Opcional)</label>
                 <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas">
@@ -995,7 +995,6 @@
     </div>
 
     <script>
-        // CONFIGURACIONES BÁSICAS SUPABASE
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co";
         var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
@@ -1161,7 +1160,7 @@
                 title: '☕ Café Obsidiana (Punto Seguro Oficial): 15% de descuento en barra de autor a quienes cierren tratos de Lubó aquí.',
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
-                user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
+                user: 'Café Obsidiana', user_name: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
                 created_at: 1000000000000,
                 expires_at: nowTime + 999999000,
                 location: 'Del Valle Centro, CDMX',
@@ -1175,7 +1174,7 @@
                 id: 10001, type: 'TENGO', category: 'OBJETOS',
                 title: 'Tengo 2 botellas de Tequila Reposado selladas',
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
-                user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
+                user: 'Diego I.', user_name: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
                 created_at: nowTime - 7200000,
                 expires_at: nowTime - 3600000,
                 location: 'Coyoacán, CDMX', 
@@ -1186,7 +1185,7 @@
                 id: 10002, type: 'QUIERO', category: 'FAVORES',
                 title: 'Yo quiero un trabajo de fin de semana por las madrugadas (tengo insomnio y quiero aprovechar el tiempo)',
                 change: 'Abierto a propuestas',
-                user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
+                user: 'Anónimo', user_name: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
                 created_at: nowTime - 90000000,
                 expires_at: nowTime - 3600000,
                 location: 'Benito Juárez, CDMX', 
@@ -1197,7 +1196,7 @@
                 id: 10003, type: 'LEYENDA', category: 'SOLIDARIDAD',
                 title: 'DEPARTAMENTO CEDIDO: Regalé la posesión de un departamento a cambio de limpiar y vaciar la propiedad en 24 horas.',
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
-                user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
+                user: 'Anónimo', user_name: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
                 created_at: nowTime - 150000000,
                 expires_at: nowTime - 1000, location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48,
@@ -1218,13 +1217,15 @@
 
                 if (!resp.error && resp.data && Array.isArray(resp.data)) {
                     cloudPosts = resp.data.map(function(p) {
+                        var resolvedUser = p.user_name || p.user || 'Anónimo';
                         return {
                             id: Number(p.id),
                             type: p.type || 'TENGO',
                             category: p.category || 'OBJETOS',
                             title: p.title || '',
                             change: p.change || '',
-                            user: p.user || 'Anónimo',
+                            user: resolvedUser,
+                            user_name: resolvedUser,
                             rank: p.rank || 'Cazador Novato',
                             location: p.location || 'Ubicación Local',
                             lat: Number(p.lat) || 19.4326,
@@ -1235,7 +1236,7 @@
                             created_at: Number(p.created_at) || Date.now(),
                             expires_at: Number(p.expires_at) || (Date.now() + 3600000),
                             isSponsor: false,
-                            creator_id: p.creator_id || p.user
+                            creator_id: p.creator_id || resolvedUser
                         };
                     });
 
@@ -1249,6 +1250,7 @@
         async function pushToCloud(item) {
             if (!sbClient) return false;
             try {
+                // Se envía tanto "user" como "user_name" para compatibilidad total con la base de datos
                 var payload = {
                     id: Number(item.id),
                     type: String(item.type),
@@ -1256,6 +1258,7 @@
                     title: String(item.title),
                     change: String(item.change),
                     "user": String(item.user),
+                    user_name: String(item.user),
                     rank: String(item.rank),
                     location: String(item.location),
                     lat: Number(item.lat),
@@ -1725,8 +1728,9 @@
             if (currentUser) {
                 var cur = currentUser.trim().toLowerCase();
                 var pUser = (post.user || "").trim().toLowerCase();
+                var pUserName = (post.user_name || "").trim().toLowerCase();
                 var pCreator = (post.creator_id || "").trim().toLowerCase();
-                if (cur === pUser || cur === pCreator) return true;
+                if (cur === pUser || cur === pUserName || cur === pCreator) return true;
             }
             return false;
         }
@@ -1851,7 +1855,7 @@
                                 '<div style="display:flex; align-items:center; gap:6px;">' +
                                     '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
                                     '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
-                                '</div>' +
+                                </div>' +
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
@@ -1992,6 +1996,7 @@
                 title: title,
                 change: changeInput ? "A cambio de: " + changeInput : 'Abierto a propuestas',
                 user: isAnon ? 'Anónimo' : (currentUser ? currentUser : 'Diego I.'),
+                user_name: isAnon ? 'Anónimo' : (currentUser ? currentUser : 'Diego I.'),
                 rank: currentUserRank,
                 location: userLocationLabel,
                 lat: finalLat,
@@ -2045,6 +2050,7 @@
             renderFeed();
         }, 1000);
 
+        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO CADA 4 SEGUNDOS
         setInterval(function() {
             syncFromCloud();
         }, 4000);
