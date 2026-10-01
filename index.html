@@ -41,7 +41,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 1.8s forwards;
+            animation: autoHideSplash 0.5s ease-out 1.6s forwards;
         }
         @keyframes autoHideSplash {
             0% { opacity: 1; visibility: visible; }
@@ -66,7 +66,7 @@
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 1.7s linear forwards;
+            animation: fillLoading 1.5s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
@@ -433,22 +433,6 @@
         .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
         .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
 
-        /* INDICADOR DE ESCRITURA EN VIVO */
-        .typing-indicator-bar {
-            font-size: 0.72rem;
-            color: var(--gold-bright);
-            font-style: italic;
-            padding: 4px 6px;
-            display: none;
-            align-items: center;
-            gap: 6px;
-        }
-        .typing-dots-anim {
-            display: inline-block;
-            animation: blinkTyping 1.4s infinite;
-        }
-        @keyframes blinkTyping { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
-
         .btn-safe-point {
             background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);
             padding: 8px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: bold; cursor: pointer;
@@ -568,7 +552,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠 Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -951,7 +935,7 @@
                 <label>Categoría Temática</label>
                 <select id="postCategory">
                     <option value="OBJETOS">📦 Objetos y Cosas Curiosas</option>
-                    <option value="FAVORES">🛠 Habilidades</option>
+                    <option value="FAVORES">🛠️ Habilidades</option>
                     <option value="RELAMPAGO">⚡ Oportunidad Relámpago</option>
                     <option value="SOLIDARIDAD">🤝 Solidaridad Vecinal</option>
                     <option value="AVENTURAS">🎲 Experiencias y Aventuras</option>
@@ -995,7 +979,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO CON INDICADOR DE ESCRITURA Y CANCELACIÓN -->
+    <!-- MODAL CHAT EFÍMERO CON CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1014,15 +998,8 @@
                 <div class="chat-messages" id="chatMessages">
                     <div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>
                 </div>
-
-                <!-- LEYENDA EN VIVO DE ESTÁ ESCRIBIENDO -->
-                <div id="typingIndicatorBar" class="typing-indicator-bar">
-                    <span id="typingIndicatorText">✍️ La contraparte está escribiendo</span>
-                    <span class="typing-dots-anim">...</span>
-                </div>
-
                 <div class="chat-input-row">
-                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;" oninput="handleChatTypingInput(this)">
+                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;">
                     <button class="btn-action" onclick="sendMessage()">Enviar</button>
                 </div>
             </div>
@@ -1261,7 +1238,7 @@
                     }
                 })
                 .then(function(res) {
-                    if (!res.ok) return null;
+                    if (!res.ok) throw new Error("HTTP " + res.status);
                     return res.json();
                 })
                 .then(function(data) {
@@ -1287,35 +1264,16 @@
                                 created_at: Number(p.created_at) || Date.now(),
                                 expires_at: Number(p.expires_at) || (Date.now() + 3600000),
                                 isSponsor: false,
-                                creator_id: p.creator_id || resolvedUser,
-                                interested_user: p.interested_user || null,
-                                interested_device: p.interested_device || null,
-                                chat_history: p.chat_history || null,
-                                typing_device: p.typing_device || null
+                                creator_id: p.creator_id || resolvedUser
                             };
                         });
                         posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
                         renderFeed();
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
-
-                        // Sincronización en vivo del chat abierto
-                        if (currentPostInChat) {
-                            for (var k = 0; k < posts.length; k++) {
-                                if (posts[k].id === currentPostInChat.id) {
-                                    var updatedItem = posts[k];
-                                    if (updatedItem.chat_history !== currentPostInChat.chat_history) {
-                                        currentPostInChat.chat_history = updatedItem.chat_history;
-                                        renderChatMessagesFromHistory(currentPostInChat);
-                                    }
-                                    handleTypingDisplay(updatedItem);
-                                    break;
-                                }
-                            }
-                        }
                     }
                 })
-                .catch(function(err) {
+                .catch(function() {
                     isSyncing = false;
                 });
             } catch(e) {
@@ -1342,11 +1300,7 @@
                     votes: Number(item.votes),
                     created_at: Number(item.created_at),
                     expires_at: Number(item.expires_at),
-                    creator_id: String(item.creator_id),
-                    interested_user: item.interested_user || null,
-                    interested_device: item.interested_device || null,
-                    chat_history: item.chat_history || null,
-                    typing_device: null
+                    creator_id: String(item.creator_id)
                 };
 
                 fetch(SUPABASE_REST_URL, {
@@ -1360,16 +1314,7 @@
                     body: JSON.stringify([payload])
                 })
                 .then(function(res) {
-                    if (res.ok) {
-                        callback(true);
-                    } else {
-                        res.json().then(function(errObj) {
-                            alert("Supabase avisó: " + (errObj.message || "Error al insertar"));
-                            callback(false);
-                        }).catch(function() {
-                            callback(false);
-                        });
-                    }
+                    callback(res.ok);
                 })
                 .catch(function() {
                     callback(false);
@@ -1379,7 +1324,7 @@
             }
         }
 
-        function updatePostInCloud(postId, updateFields, callback) {
+        function updatePostInCloud(postId, updateFields) {
             try {
                 fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
                     method: "PATCH",
@@ -1390,16 +1335,8 @@
                         "Prefer": "return=minimal"
                     },
                     body: JSON.stringify(updateFields)
-                })
-                .then(function(res) {
-                    if (callback) callback(res.ok);
-                })
-                .catch(function() {
-                    if (callback) callback(false);
-                });
-            } catch(e) {
-                if (callback) callback(false);
-            }
+                }).catch(function() {});
+            } catch(e) {}
         }
 
         var currentPostInChat = null;
@@ -1410,7 +1347,6 @@
         var userLocationLabel = "Ubicación Local";
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
-        var typingTimeoutTimer = null;
 
         function checkAuthAndRun(callbackAction) {
             if (!currentUser) {
@@ -1542,7 +1478,7 @@
                     if (p.status === 'active' && p.lat && p.lng) {
                         var iconEmoji = '📦';
                         if (p.isSponsor) iconEmoji = '⭐';
-                        else if (p.category === 'FAVORES') iconEmoji = '🛠';
+                        else if (p.category === 'FAVORES') iconEmoji = '🛠️';
                         else if (p.category === 'RELAMPAGO') iconEmoji = '⚡';
                         else if (p.category === 'SOLIDARIDAD') iconEmoji = '🤝';
                         else if (p.category === 'AVENTURAS') iconEmoji = '🎲';
@@ -1566,7 +1502,7 @@
                         } else if (isMyPostOnMap) {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
                         } else {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + p.id + '); })">Coordinar Trato</button>';
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
                         }
 
                         var popupContent = 
@@ -1645,7 +1581,13 @@
         }
 
         function updateActiveChatWidgetUI() {
-            var activeDeal = getMyActiveDeal();
+            var activeDeal = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].status === 'in_deal') {
+                    activeDeal = posts[i];
+                    break;
+                }
+            }
             var widgetSub = document.getElementById('chatWidgetSubtitle');
             var btnOpen = document.getElementById('btnSideOpenChat');
             
@@ -1666,23 +1608,17 @@
             }
         }
 
-        function getMyActiveDeal() {
-            for (var i = 0; i < posts.length; i++) {
-                var p = posts[i];
-                if (p.status === 'in_deal') {
-                    if (isCurrentUserAuthor(p) || isCurrentUserInterested(p)) {
-                        return p;
-                    }
-                }
-            }
-            return null;
-        }
-
         function openActiveOrFirstDeal() {
             checkAuthAndRun(function() {
-                var myDeal = getMyActiveDeal();
-                if (myDeal) {
-                    openChat(myDeal.id);
+                var dealFound = null;
+                for (var i = 0; i < posts.length; i++) {
+                    if (posts[i].status === 'in_deal') {
+                        dealFound = posts[i];
+                        break;
+                    }
+                }
+                if (dealFound) {
+                    openChat(dealFound.id);
                 } else {
                     showToast("No tienes ninguna conversación activa. Elige un trato del muro.");
                 }
@@ -1862,7 +1798,7 @@
         function getCategoryLabel(catKey) {
             var labels = {
                 'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠 Habilidades',
+                'FAVORES': '🛠️ Habilidades',
                 'RELAMPAGO': '⚡ Relámpago',
                 'SOLIDARIDAD': '🤝 Solidaridad',
                 'AVENTURAS': '🎲 Experiencias'
@@ -1879,15 +1815,6 @@
                 var pUserName = (post.user_name || "").trim().toLowerCase();
                 var pCreator = (post.creator_id || "").trim().toLowerCase();
                 if (cur === pUser || cur === pUserName || cur === pCreator) return true;
-            }
-            return false;
-        }
-
-        function isCurrentUserInterested(post) {
-            if (!post || post.isSponsor) return false;
-            if (post.interested_device && post.interested_device === myDeviceId) return true;
-            if (currentUser && post.interested_user) {
-                if (currentUser.trim().toLowerCase() === post.interested_user.trim().toLowerCase()) return true;
             }
             return false;
         }
@@ -1934,7 +1861,6 @@
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
                 var isMyOwnPost = isCurrentUserAuthor(post);
-                var isMyInterestedDeal = isCurrentUserInterested(post);
                 
                 card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
                 
@@ -1958,11 +1884,7 @@
                 if (isSponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
                 } else if (isInDeal) {
-                    if (isMyOwnPost || isMyInterestedDeal) {
-                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
-                    } else {
-                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ Trato en proceso...</button>';
-                    }
+                    actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 } else if (isExpired) {
@@ -1971,7 +1893,7 @@
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + post.id + '); })">' + actionText + '</button>';
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
                 }
 
                 var sponsorDisclaimerHTML = isSponsor
@@ -2066,36 +1988,6 @@
             return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
         }
 
-        function initiateDealInterest(postId) {
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-            if (!post) return;
-
-            post.status = 'in_deal';
-            post.interested_user = currentUser || 'Cazador Interesado';
-            post.interested_device = myDeviceId;
-
-            var defaultMsg = JSON.stringify([{
-                sender: currentUser || 'Interesado',
-                text: '¡Hola! Me interesa tu publicación y quiero coordinar contigo.',
-                isMeDevice: myDeviceId
-            }]);
-            post.chat_history = defaultMsg;
-
-            updatePostInCloud(postId, { 
-                status: 'in_deal',
-                interested_user: post.interested_user,
-                interested_device: post.interested_device,
-                chat_history: defaultMsg
-            });
-
-            showToast("🤝 Solicitud enviada al creador. Abriendo canal...");
-            openChat(postId);
-            renderFeed();
-        }
-
         function openChat(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -2105,85 +1997,31 @@
             
             currentPostInChat = post;
             dealConfirmations = { user1: false, user2: false };
-            
-            var isAuthor = isCurrentUserAuthor(post);
-            var counterpartName = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
-            
-            document.getElementById('chatUserName').innerText = "Chat con " + counterpartName;
+
+            post.status = 'in_deal';
+            updatePostInCloud(postId, { status: 'in_deal' });
+
+            document.getElementById('chatUserName').innerText = "Chat con " + post.user;
             document.getElementById('chatPostTitle').innerText = post.title;
             document.getElementById('dealStatusBanner').innerText = '⏱️ Trato pausado en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
             
-            var btnCancel = document.getElementById('btnCancelDeal');
-            if (btnCancel) {
-                btnCancel.innerText = isAuthor ? "❌ Rechazar y Volver a Publicar" : "❌ Cancelar mi Interés en el Trato";
-            }
+            document.getElementById('chatMessages').innerHTML = 
+                '<div class="msg msg-them">¡Hola! Me interesa coordinar sobre: ' + post.title + '</div>';
 
-            renderChatMessagesFromHistory(post);
-            handleTypingDisplay(post);
             document.getElementById('chatModal').style.display = 'flex';
-        }
-
-        function renderChatMessagesFromHistory(post) {
-            var container = document.getElementById('chatMessages');
-            if (!container) return;
-            container.innerHTML = '';
-
-            var history = [];
-            if (post.chat_history) {
-                try { history = JSON.parse(post.chat_history); } catch(e) {}
-            }
-
-            if (!history || history.length === 0) {
-                history = [{
-                    sender: post.interested_user || 'Interesado',
-                    text: '¡Hola! Vi tu publicación y me interesa coordinar contigo.',
-                    isMeDevice: post.interested_device
-                }];
-            }
-
-            for (var i = 0; i < history.length; i++) {
-                var m = history[i];
-                var msgDiv = document.createElement('div');
-                var isMine = (m.isMeDevice === myDeviceId) || (currentUser && m.sender === currentUser);
-                msgDiv.className = 'msg ' + (isMine ? 'msg-me' : 'msg-them');
-                msgDiv.innerText = m.text;
-                container.appendChild(msgDiv);
-            }
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function handleChatTypingInput(inputEl) {
-            if (!currentPostInChat) return;
-
-            updatePostInCloud(currentPostInChat.id, { typing_device: myDeviceId });
-
-            if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
-            typingTimeoutTimer = setTimeout(function() {
-                if (currentPostInChat) {
-                    updatePostInCloud(currentPostInChat.id, { typing_device: null });
-                }
-            }, 2500);
-        }
-
-        function handleTypingDisplay(postItem) {
-            var bar = document.getElementById('typingIndicatorBar');
-            var txt = document.getElementById('typingIndicatorText');
-            if (!bar || !txt) return;
-
-            if (postItem.typing_device && postItem.typing_device !== myDeviceId) {
-                var isAuthor = isCurrentUserAuthor(postItem);
-                var typerName = isAuthor ? (postItem.interested_user || "La contraparte") : postItem.user;
-                txt.innerText = "✍️️ " + typerName + " está escribiendo";
-                bar.style.display = 'flex';
-            } else {
-                bar.style.display = 'none';
-            }
+            renderFeed();
         }
 
         function suggestSafePoint() {
-            var msgText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
-            sendChatMessageToHistory(msgText);
+            var msgContainer = document.getElementById('chatMessages');
+            if (!msgContainer) return;
+            var safeMsg = document.createElement('div');
+            safeMsg.className = 'msg msg-me';
+            safeMsg.style.border = '1px solid #22c55e';
+            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            msgContainer.appendChild(safeMsg);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
             showToast("Punto seguro sugerido");
         }
 
@@ -2193,58 +2031,20 @@
             var text = input.value.trim();
             input.value = '';
 
-            if (currentPostInChat) {
-                updatePostInCloud(currentPostInChat.id, { typing_device: null });
-            }
-            sendChatMessageToHistory(text);
-        }
-
-        function sendChatMessageToHistory(text) {
-            if (!currentPostInChat) return;
-
-            var history = [];
-            if (currentPostInChat.chat_history) {
-                try { history = JSON.parse(currentPostInChat.chat_history); } catch(e) {}
-            }
-
-            history.push({
-                sender: currentUser || 'Participante',
-                text: text,
-                isMeDevice: myDeviceId
-            });
-
-            currentPostInChat.chat_history = JSON.stringify(history);
-            renderChatMessagesFromHistory(currentPostInChat);
-
-            updatePostInCloud(currentPostInChat.id, {
-                chat_history: currentPostInChat.chat_history,
-                typing_device: null
-            });
+            var msgContainer = document.getElementById('chatMessages');
+            if (!msgContainer) return;
+            var newMsg = document.createElement('div');
+            newMsg.className = 'msg msg-me';
+            newMsg.innerText = text;
+            msgContainer.appendChild(newMsg);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
         function handleCancelDeal() {
             if (!currentPostInChat) return;
-            
-            var isAuthor = isCurrentUserAuthor(currentPostInChat);
-            var confirmMsg = isAuthor 
-                ? "¿Deseas rechazar esta negociación y dejar tu oportunidad activa en el muro para otros usuarios?"
-                : "¿Deseas cancelar tu postulación y liberar el trato?";
-
-            if (confirm(confirmMsg)) {
+            if (confirm("¿Deseas cancelar esta negociación y liberar el trato al muro?")) {
                 currentPostInChat.status = 'active';
-                currentPostInChat.interested_user = null;
-                currentPostInChat.interested_device = null;
-                currentPostInChat.chat_history = null;
-                currentPostInChat.typing_device = null;
-
-                updatePostInCloud(currentPostInChat.id, {
-                    status: 'active',
-                    interested_user: null,
-                    interested_device: null,
-                    chat_history: null,
-                    typing_device: null
-                });
-
+                updatePostInCloud(currentPostInChat.id, { status: 'active' });
                 closeModal('chatModal');
                 showToast("🔓 Trato liberado nuevamente en el radar");
                 renderFeed();
@@ -2256,7 +2056,7 @@
             if (!dealConfirmations.user1) {
                 dealConfirmations.user1 = true;
                 document.getElementById('dealStatusBanner').innerText = '⏳ Esperando que la otra parte también confirme "Trato Hecho"...';
-                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Esperando al otro)';
+                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada';
                 showToast('Has marcado Trato Hecho');
             } else if (!dealConfirmations.user2) {
                 dealConfirmations.user2 = true;
@@ -2307,21 +2107,17 @@
                 votes: 0,
                 created_at: creationNow,
                 expires_at: calculatedExpiresAt,
-                creator_id: myDeviceId,
-                interested_user: null,
-                interested_device: null,
-                chat_history: null,
-                typing_device: null
+                creator_id: myDeviceId
             };
 
-            pushToCloud(newPost, function(success) {
+            pushToCloud(newPost, function() {
                 posts.unshift(newPost);
                 renderFeed();
                 updateMapMarkers();
 
                 closeModal('publishModal');
                 document.getElementById('publishForm').reset();
-                showToast('🚀 Oportunidad compartida con todos los usuarios');
+                showToast('🚀 Oportunidad compartida en el radar');
                 switchTab(type);
 
                 if (map) {
@@ -2331,7 +2127,7 @@
             });
         }
 
-        // Revisión de expiración cada segundo
+        // Temporizadores cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2353,20 +2149,12 @@
             renderFeed();
         }, 1000);
 
-        // Sincronización general cada 5 segundos (no bloqueante)
+        // Sincronización con la nube cada 6 segundos
         setInterval(function() {
             syncFromCloud();
-        }, 5000);
+        }, 6000);
 
-        // Sincronización rápida SOLO cuando el modal de chat está abierto en pantalla
-        setInterval(function() {
-            var chatModal = document.getElementById('chatModal');
-            if (chatModal && chatModal.style.display === 'flex' && currentPostInChat) {
-                syncFromCloud();
-            }
-        }, 2000);
-
-        // Inicialización inmediata de UI
+        // Arranque inicial seguro
         renderFeed();
         updateUIForLoggedInUser();
 
@@ -2375,7 +2163,7 @@
             if (splash) splash.style.display = 'none';
             initRealMap();
             syncFromCloud();
-        }, 1800);
+        }, 1700);
     </script>
 </body>
 </html>
