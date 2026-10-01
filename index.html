@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- Librería Oficial de Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Librería Oficial de Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -347,6 +350,7 @@
             font-size: 0.75rem !important;
             padding: 8px 10px !important;
             box-shadow: none !important;
+            opacity: 1 !important;
         }
 
         .floating-actions-row {
@@ -993,14 +997,31 @@
     <script>
         // CONFIGURACIONES BÁSICAS
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
-        var SUPABASE_ENDPOINT = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
-        var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
+        var SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co";
+        var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
+
+        // Inicializar cliente oficial de Supabase
+        var sbClient = null;
+        try {
+            if (typeof supabase !== 'undefined' && supabase.createClient) {
+                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch(e) {
+            console.warn("Supabase init fallback:", e);
+        }
 
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
             set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
             remove: function(k) { try { localStorage.removeItem(k); } catch(e) {} }
         };
+
+        // Identificador persistente del navegador del usuario
+        var myDeviceId = safeStorage.get("lubo_device_id");
+        if (!myDeviceId) {
+            myDeviceId = "dev_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now();
+            safeStorage.set("lubo_device_id", myDeviceId);
+        }
 
         var currentUser = safeStorage.get("lubo_user") || null;
         var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
@@ -1147,7 +1168,8 @@
                 created_at: 1000000000000,
                 expires_at: nowTime + 999999000,
                 location: 'Del Valle Centro, CDMX',
-                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120
+                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120,
+                creator_id: 'sponsor_obsidiana'
             }
         ];
 
@@ -1161,7 +1183,8 @@
                 created_at: nowTime - 7200000,
                 expires_at: nowTime - 3600000,
                 location: 'Coyoacán, CDMX', 
-                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'expired', votes: 12
+                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'expired', votes: 12,
+                creator_id: 'example_diego'
             },
             {
                 id: 10002, type: 'QUIERO', category: 'FAVORES',
@@ -1171,7 +1194,8 @@
                 created_at: nowTime - 90000000,
                 expires_at: nowTime - 3600000,
                 location: 'Benito Juárez, CDMX', 
-                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'expired', votes: 5
+                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'expired', votes: 5,
+                creator_id: 'example_anon'
             },
             {
                 id: 10003, type: 'LEYENDA', category: 'SOLIDARIDAD',
@@ -1180,11 +1204,11 @@
                 user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
                 created_at: nowTime - 150000000,
                 expires_at: nowTime - 1000, location: 'Cuauhtémoc, CDMX', 
-                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48
+                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48,
+                creator_id: 'example_legend'
             }
         ];
 
-        // Memoria local garantizada
         function getLocalStoredPosts() {
             var raw = safeStorage.get("lubo_user_posts");
             if (raw) {
@@ -1198,94 +1222,90 @@
         var posts = [].concat(localUserPosts, SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // SINCRONIZACIÓN EN NUBE 100% AISLADA
+        // SINCRONIZACIÓN OFICIAL SUPABASE (CLIENTE SDK)
         // ==========================================
-        function syncFromCloud() {
+        async function syncFromCloud() {
+            if (!sbClient) return;
             try {
-                fetch(SUPABASE_ENDPOINT + "?select=*&order=created_at.desc", {
-                    method: "GET",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
+                var { data, error } = await sbClient
+                    .from('posts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!error && Array.isArray(data)) {
+                    cloudPosts = data.map(function(p) {
+                        return {
+                            id: Number(p.id),
+                            type: p.type || 'TENGO',
+                            category: p.category || 'OBJETOS',
+                            title: p.title || '',
+                            change: p.change || '',
+                            user: p.user || 'Anónimo',
+                            rank: p.rank || 'Cazador Novato',
+                            location: p.location || 'Ubicación Local',
+                            lat: Number(p.lat) || 19.4326,
+                            lng: Number(p.lng) || -99.1332,
+                            discretion: Boolean(p.discretion),
+                            status: p.status || 'active',
+                            votes: Number(p.votes) || 0,
+                            created_at: Number(p.created_at) || Date.now(),
+                            expires_at: Number(p.expires_at) || (Date.now() + 3600000),
+                            isSponsor: false,
+                            creator_id: p.creator_id || p.user
+                        };
+                    });
+
+                    // Fusión inteligente: las de la nube tienen prioridad para sincronizar entre todos
+                    var idMap = {};
+                    var merged = [];
+                    for (var i = 0; i < cloudPosts.length; i++) {
+                        idMap[cloudPosts[i].id] = true;
+                        merged.push(cloudPosts[i]);
                     }
-                })
-                .then(function(res) {
-                    if (!res.ok) return null;
-                    return res.json();
-                })
-                .then(function(data) {
-                    if (data && Array.isArray(data)) {
-                        cloudPosts = data.map(function(p) {
-                            return {
-                                id: Number(p.id),
-                                type: p.type || 'TENGO',
-                                category: p.category || 'OBJETOS',
-                                title: p.title || '',
-                                change: p.change || '',
-                                user: p.user || 'Anónimo',
-                                rank: p.rank || 'Cazador Novato',
-                                location: p.location || 'Ubicación Local',
-                                lat: Number(p.lat) || 19.4326,
-                                lng: Number(p.lng) || -99.1332,
-                                discretion: Boolean(p.discretion),
-                                status: p.status || 'active',
-                                votes: Number(p.votes) || 0,
-                                created_at: Number(p.created_at) || Date.now(),
-                                expires_at: Number(p.expires_at) || (Date.now() + 3600000),
-                                isSponsor: false
-                            };
-                        });
-                        // Fusión sin duplicados
-                        var idMap = {};
-                        var merged = [];
-                        for (var i = 0; i < cloudPosts.length; i++) {
-                            idMap[cloudPosts[i].id] = true;
-                            merged.push(cloudPosts[i]);
+                    for (var j = 0; j < localUserPosts.length; j++) {
+                        if (!idMap[localUserPosts[j].id]) {
+                            merged.push(localUserPosts[j]);
                         }
-                        for (var j = 0; j < localUserPosts.length; j++) {
-                            if (!idMap[localUserPosts[j].id]) {
-                                merged.push(localUserPosts[j]);
-                            }
-                        }
-                        posts = [].concat(merged, SPONSOR_POSTS, BASE_POSTS);
-                        renderFeed();
-                        updateMapMarkers();
                     }
-                })
-                .catch(function(err) {
-                    // Si falla la red no hace nada, la app sigue normal
-                });
-            } catch(e) {}
+
+                    posts = [].concat(merged, SPONSOR_POSTS, BASE_POSTS);
+                    renderFeed();
+                    updateMapMarkers();
+                }
+            } catch(e) {
+                console.warn("Sync cloud notice:", e);
+            }
         }
 
-        function pushToCloud(item) {
+        async function pushToCloud(item) {
+            if (!sbClient) return;
             try {
-                fetch(SUPABASE_ENDPOINT, {
-                    method: "POST",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
-                    },
-                    body: JSON.stringify({
-                        id: item.id,
-                        type: item.type,
-                        category: item.category,
-                        title: item.title,
-                        change: item.change,
-                        user: item.user,
-                        rank: item.rank,
-                        location: item.location,
-                        lat: item.lat,
-                        lng: item.lng,
-                        discretion: item.discretion,
-                        status: item.status,
-                        votes: item.votes,
-                        created_at: item.created_at,
-                        expires_at: item.expires_at
-                    })
-                }).catch(function() {});
+                await sbClient.from('posts').insert([{
+                    id: item.id,
+                    type: item.type,
+                    category: item.category,
+                    title: item.title,
+                    change: item.change,
+                    user: item.user,
+                    rank: item.rank,
+                    location: item.location,
+                    lat: item.lat,
+                    lng: item.lng,
+                    discretion: item.discretion,
+                    status: item.status,
+                    votes: item.votes,
+                    created_at: item.created_at,
+                    expires_at: item.expires_at
+                }]);
+            } catch(e) {
+                console.error("Push to cloud error:", e);
+            }
+        }
+
+        async function updatePostInCloud(postId, updateFields) {
+            if (!sbClient) return;
+            try {
+                await sbClient.from('posts').update(updateFields).eq('id', postId);
             } catch(e) {}
         }
 
@@ -1445,10 +1465,12 @@
 
                         var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
                         
+                        var isMyPostOnMap = isCurrentUserAuthor(p);
+
                         var actionButtonHTML = '';
                         if (p.isSponsor) {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="openNavChoice(' + p.lat + ', ' + p.lng + ', \'' + p.user + '\')">🧭 Trazar Ruta GPS</button>';
-                        } else if (currentUser && p.user === currentUser) {
+                        } else if (isMyPostOnMap) {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
                         } else {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
@@ -1714,12 +1736,32 @@
         function getCategoryLabel(catKey) {
             var labels = {
                 'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠️ Habilidades',
+                'FAVORES': '🛠️️ Habilidades',
                 'RELAMPAGO': '⚡ Relámpago',
                 'SOLIDARIDAD': '🤝 Solidaridad',
                 'AVENTURAS': '🎲 Experiencias'
             };
             return labels[catKey] || 'General';
+        }
+
+        // FUNCIÓN CLAVE: EVALÚA SI EL USUARIO ACTUAL ES EL CREADOR DE LA PUBLICACIÓN
+        function isCurrentUserAuthor(post) {
+            if (!post || post.isSponsor) return false;
+            
+            // 1. Por ID del dispositivo local
+            if (post.creator_id && post.creator_id === myDeviceId) return true;
+            
+            // 2. Por alias de sesión activa
+            if (currentUser) {
+                var cleanCurrent = currentUser.trim().toLowerCase();
+                var cleanPostUser = (post.user || "").trim().toLowerCase();
+                var cleanCreator = (post.creator_id || "").trim().toLowerCase();
+                
+                if (cleanPostUser === cleanCurrent) return true;
+                if (cleanCreator === cleanCurrent) return true;
+            }
+            
+            return false;
         }
 
         function renderFeed() {
@@ -1764,7 +1806,7 @@
                 var isExpired = (post.status === 'expired') || (secondsLeft === 0 && post.status !== 'leyenda' && !post.isSponsor);
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
-                var isMyOwnPost = (currentUser && post.user === currentUser && !isSponsor);
+                var isMyOwnPost = isCurrentUserAuthor(post);
                 
                 card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
                 
@@ -1794,6 +1836,7 @@
                 } else if (isExpired) {
                     actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + (post.votes || 0) + '/26)</button>';
                 } else if (isMyOwnPost) {
+                    // BLOQUEO ABSOLUTO: EL AUTOR NUNCA SE AUTO-INTERESA
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
@@ -1819,7 +1862,7 @@
                             ? '<span class="timer" style="color:var(--gold-bright);">⏸ En Pausa</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
-                                : '<span class="timer">⏱️️ ' + formatTime(secondsLeft) + '</span>')));
+                                : '<span class="timer">⏱ ' + formatTime(secondsLeft) + '</span>')));
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
@@ -1856,7 +1899,7 @@
             updateMetricsCounters();
         }
 
-        function voteForLegend(postId) {
+        async function voteForLegend(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
                 if (posts[i].id === postId) { post = posts[i]; break; }
@@ -1864,12 +1907,16 @@
             if (!post) return;
             post.votes = (post.votes || 0) + 1;
             
+            var newStatus = post.status;
             if (post.votes >= 26) {
+                newStatus = 'leyenda';
                 post.status = 'leyenda';
                 showToast("🎉 ¡Promovido al SALÓN DE LEYENDAS! 🏆");
             } else {
                 showToast("👍 Voto registrado (" + post.votes + "/26)");
             }
+
+            updatePostInCloud(postId, { votes: post.votes, status: newStatus });
 
             renderFeed();
             updateMapMarkers();
@@ -1897,6 +1944,8 @@
             
             currentPostInChat = post;
             post.status = 'in_deal';
+
+            updatePostInCloud(postId, { status: 'in_deal' });
 
             renderFeed();
             updateMapMarkers();
@@ -1931,6 +1980,7 @@
                 dealConfirmations.user2 = true;
                 if (currentPostInChat) {
                     currentPostInChat.status = 'leyenda';
+                    updatePostInCloud(currentPostInChat.id, { status: 'leyenda' });
                 }
                 document.getElementById('dealStatusBanner').innerText = '🎉 ¡AMBAS PARTES CONFIRMARON EL TRATO HECHO!';
                 showToast('🎉 ¡Trato cerrado con éxito!');
@@ -1986,24 +2036,25 @@
                 status: 'active',
                 votes: 0,
                 created_at: creationNow,
-                expires_at: calculatedExpiresAt
+                expires_at: calculatedExpiresAt,
+                creator_id: myDeviceId // Vinculado a este teléfono para bloquear "Me interesa"
             };
 
-            // Guarda inmediatamente en el dispositivo
+            // Guarda en la memoria del teléfono
             localUserPosts.unshift(newPost);
             safeStorage.set("lubo_user_posts", JSON.stringify(localUserPosts));
 
-            // Actualiza la vista de inmediato
+            // Actualiza la pantalla en 0 segundos
             posts.unshift(newPost);
             renderFeed();
             updateMapMarkers();
 
-            // Envía a la nube en segundo plano
+            // Sube a la base de datos de Supabase oficial
             pushToCloud(newPost);
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad viva en el radar');
+            showToast('🚀 Oportunidad viva en el radar y compartida');
             switchTab(type);
 
             if (map) {
@@ -2023,6 +2074,7 @@
                     if (currentTime >= p.expires_at) {
                         p.status = 'expired';
                         statusChanged = true;
+                        updatePostInCloud(p.id, { status: 'expired' });
                     }
                 }
             }
@@ -2033,10 +2085,10 @@
             renderFeed();
         }, 1000);
 
-        // SINCRONIZACIÓN SUAVE: Pide datos cada 8 segundos sin tocar el hilo principal
+        // SINCRONIZACIÓN AUTOMÁTICA EN VIVO: Consulta la nube cada 5 segundos
         setInterval(function() {
             syncFromCloud();
-        }, 8000);
+        }, 5000);
 
         // Arranque inicial inmediato
         renderFeed();
