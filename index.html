@@ -70,11 +70,11 @@
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
-        /* PANTALLA 1: BIENVENIDA OBLIGATORIA */
+        /* PANTALLA 1: BIENVENIDA OBLIGATORIA (SÓLO SI NO HAY SESIÓN) */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
-            z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center;
             padding: 25px; text-align: center;
         }
         .welcome-hero { 
@@ -381,8 +381,7 @@
         .btn-safe-point {
             background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);
             padding: 8px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: bold; cursor: pointer;
-            width: 100%; margin-top: 6px; text-align: center; transition: 0.2s;
-        }
+            width: 100%; margin-top: 6px; text-align: center; transition: 0.2s; }
         .btn-safe-point:hover { background: rgba(34, 197, 94, 0.25); color: #fff; }
 
         .btn-google-sso {
@@ -458,7 +457,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA -->
+    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA (SÓLO SI NO HAY SESIÓN) -->
     <div id="welcomeScreen">
         <div class="welcome-hero">
             <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
@@ -971,7 +970,7 @@
         // ==========================================
         const GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
 
-        // Almacenamiento seguro
+        // Almacenamiento persistente
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
             set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
@@ -1021,7 +1020,6 @@
             }
         }
 
-        // Disparador del selector oficial de Google
         function triggerOfficialGoogleLogin() {
             try {
                 if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
@@ -1035,10 +1033,8 @@
                     auto_select: false
                 });
 
-                // Llama al aviso oficial de Google
                 google.accounts.id.prompt(function(notification) {
                     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // Respaldo en caso de bloqueo de popups
                         google.accounts.id.renderButton(
                             document.querySelector('.btn-google-sso'),
                             { theme: "outline", size: "large", width: "100%" }
@@ -1441,10 +1437,16 @@
             updateUIForLoggedInUser();
             showToast("¡Bienvenido a Lubó, " + alias + "!");
             closeModal('registerModal');
+            
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
         }
 
         function updateUIForLoggedInUser() {
             if (currentUser) {
+                var welcome = document.getElementById('welcomeScreen');
+                if (welcome) welcome.style.display = 'none';
+
                 var btnAuth = document.getElementById('btnAuthHeader');
                 if (btnAuth) btnAuth.style.display = 'none';
 
@@ -1465,6 +1467,9 @@
 
                 var logoutBtn = document.getElementById('drawerLogoutBtn');
                 if (logoutBtn) logoutBtn.style.display = 'block';
+            } else {
+                var welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen) welcomeScreen.style.display = 'flex';
             }
         }
 
@@ -1633,6 +1638,7 @@
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
+                // Generación limpia de HTML con concatenación estricta de post.location
                 card.innerHTML = 
                     mediaHeaderHTML +
                     '<div class="card-header">' +
@@ -1653,7 +1659,7 @@
                                     '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
                                     '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
                                 '</div>' +
-                                '<div style="font-size:0.75rem; color:var(--text-sub);">${post.location}</div>' +
+                                '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
                         actionBtnHTML +
@@ -1803,6 +1809,7 @@
             }
         }
 
+        // Manejador del ciclo de temporizadores
         setInterval(function() {
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
@@ -1817,10 +1824,9 @@
             renderFeed();
         }, 1000);
 
+        // Inicialización y persistencia de sesión
         renderFeed();
-        if (currentUser) {
-            updateUIForLoggedInUser();
-        }
+        updateUIForLoggedInUser();
 
         setTimeout(function() {
             var splash = document.getElementById('splashScreen');
