@@ -258,7 +258,7 @@
         .feed.flash-update { opacity: 0.2; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border-gold); position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .card.expired { opacity: 0.7; border-color: #1e293b; }
+        .card.expired { opacity: 0.85; border-color: #334155; }
         .card.in-deal { border: 2px solid var(--gold-bright); background: #182030; box-shadow: 0 0 20px rgba(251, 191, 36, 0.25); }
 
         /* TARJETA DE PUBLICIDAD PATROCINADA */
@@ -783,7 +783,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                 <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-gold);">
-                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);" id="legendModalVotes">48 / 26</div>
+                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);" id="legendModalVotes">0 / 26</div>
                     <div style="font-size: 0.7rem; color: var(--text-sub);">Votos Comunitarios</div>
                 </div>
                 <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-gold);">
@@ -1133,37 +1133,43 @@
         }
 
         // Publicaciones iniciales fijas
+        var nowTimestamp = Date.now();
+
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
                 title: '☕ Café Obsidiana (Punto Seguro Oficial): 15% de descuento en barra de autor a quienes cierren tratos de Lubó aquí.',
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
-                user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0', timeLeft: 999999, location: 'Del Valle Centro, CDMX',
+                user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
+                expiresAt: nowTimestamp + (999999 * 1000), location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120
             }
         ];
 
         var BASE_POSTS = [
             {
-                id: 1, type: 'TENGO', category: 'OBJETOS',
+                id: 10001, type: 'TENGO', category: 'OBJETOS',
                 title: 'Tengo 2 botellas de Tequila Reposado selladas',
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
-                user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9', timeLeft: 1800, location: 'Coyoacán, CDMX', 
+                user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
+                expiresAt: nowTimestamp + (1800 * 1000), location: 'Coyoacán, CDMX', 
                 lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active', votes: 12
             },
             {
-                id: 2, type: 'QUIERO', category: 'FAVORES',
+                id: 10002, type: 'QUIERO', category: 'FAVORES',
                 title: 'Yo quiero un trabajo de fin de semana por las madrugadas (tengo insomnio y quiero aprovechar el tiempo)',
                 change: 'Abierto a propuestas',
-                user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0', timeLeft: 86400, location: 'Benito Juárez, CDMX', 
+                user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
+                expiresAt: nowTimestamp + (86400 * 1000), location: 'Benito Juárez, CDMX', 
                 lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active', votes: 5
             },
             {
-                id: 3, type: 'LEYENDA', category: 'SOLIDARIDAD',
+                id: 10003, type: 'LEYENDA', category: 'SOLIDARIDAD',
                 title: 'DEPARTAMENTO CEDIDO: Regalé la posesión de un departamento a cambio de limpiar y vaciar la propiedad en 24 horas.',
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
-                user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0', timeLeft: 0, location: 'Cuauhtémoc, CDMX', 
+                user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
+                expiresAt: nowTimestamp - 1000, location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48
             }
         ];
@@ -1179,6 +1185,10 @@
                 }
             }
             return [];
+        }
+
+        function saveStoredPosts() {
+            safeStorage.set("lubo_user_posts", JSON.stringify(userCreatedPosts));
         }
 
         var userCreatedPosts = loadStoredPosts();
@@ -1395,11 +1405,14 @@
             var expiringCount = 0;
             var inDealCount = 0;
             var legendCount = 0;
+            var currentTime = Date.now();
 
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
+                var secondsLeft = Math.max(0, Math.floor((p.expiresAt - currentTime) / 1000));
+                
                 if (p.status === 'active' && !p.isSponsor) activeCount++;
-                if (p.status === 'active' && p.timeLeft <= 1800 && !p.isSponsor) expiringCount++;
+                if (p.status === 'active' && secondsLeft <= 1800 && secondsLeft > 0 && !p.isSponsor) expiringCount++;
                 if (p.status === 'in_deal') inDealCount++;
                 if (p.status === 'leyenda') legendCount++;
             }
@@ -1424,7 +1437,7 @@
             } else if (type === 'EXPIRING') {
                 showToast("⚡ Filtrando tratos por expirar");
                 switchTab('TENGO');
-                posts.sort(function(a,b) { return a.timeLeft - b.timeLeft; });
+                posts.sort(function(a,b) { return (a.expiresAt || 0) - (b.expiresAt || 0); });
                 renderFeed();
                 document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else if (type === 'INDEAL') {
@@ -1560,7 +1573,7 @@
             if (!post) return;
             document.getElementById('legendModalTitle').innerText = post.title;
             document.getElementById('legendModalChange').innerText = post.change;
-            document.getElementById('legendModalVotes').innerText = post.votes + " / 26";
+            document.getElementById('legendModalVotes').innerText = (post.votes || 0) + " / 26";
             document.getElementById('legendModal').style.display = 'flex';
         }
 
@@ -1604,6 +1617,8 @@
             if (!feed) return;
             feed.innerHTML = '';
 
+            var currentTime = Date.now();
+
             var filteredPosts = [];
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
@@ -1635,7 +1650,9 @@
             for (var j = 0; j < filteredPosts.length; j++) {
                 var post = filteredPosts[j];
                 var card = document.createElement('div');
-                var isExpired = post.status === 'expired';
+                
+                var secondsLeft = Math.max(0, Math.floor(((post.expiresAt || 0) - currentTime) / 1000));
+                var isExpired = (post.status === 'expired') || (secondsLeft === 0 && post.status !== 'leyenda' && !post.isSponsor);
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
                 var isMyOwnPost = (currentUser && post.user === currentUser && !isSponsor);
@@ -1655,7 +1672,7 @@
                     badgeClass = 'badge-deal';
                     badgeLabel = '⏳ EN NEGOCIACIÓN';
                 } else if (isExpired) {
-                    badgeLabel = 'EXPIRADO (EN HISTORIAL)';
+                    badgeLabel = 'VENCIDO (EN VOTACIÓN)';
                 }
                 
                 var actionBtnHTML = '';
@@ -1663,19 +1680,18 @@
                     actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
                 } else if (isInDeal) {
                     actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ En negociación...</button>';
+                } else if (post.status === 'leyenda') {
+                    actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
+                } else if (isExpired) {
+                    // SI YA VENCIÓ EL TIEMPO: SE HABILITA EL VOTO PARA EL SALÓN DE LEYENDAS
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + (post.votes || 0) + '/26)</button>';
                 } else if (isMyOwnPost) {
-                    // BLOQUEO DE AUTOR: El autor ve su estado sin auto-interesarse
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
                     actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
-                } else if (isExpired) {
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + post.votes + '/26)</button>';
-                } else {
-                    actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 }
 
-                // ETIQUETA CLARA DE PUBLICIDAD PAGADA PARA ALIADOS
                 var sponsorDisclaimerHTML = isSponsor
                     ? '<div class="sponsor-disclaimer-bar">' +
                           '<span class="sponsor-disclaimer-text">📢 Publicidad Pagada • Aliado Comercial Oficial</span>' +
@@ -1689,13 +1705,13 @@
 
                 var timerHTML = isSponsor 
                     ? '<span class="timer" style="color:var(--gold-bright);">🌟 Destacado</span>'
-                    : (post.status === 'active' 
-                        ? '<span class="timer">⏱️ ' + formatTime(post.timeLeft) + '</span>' 
+                    : (post.status === 'leyenda'
+                        ? '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>'
                         : (isInDeal 
-                            ? '<span class="timer" style="color:var(--gold-bright);">⏸️️ En Pausa</span>' 
+                            ? '<span class="timer" style="color:var(--gold-bright);">⏸ En Pausa</span>' 
                             : (isExpired 
-                                ? '<span class="timer" style="color:var(--text-sub);">⌛ Vencido</span>' 
-                                : '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>')));
+                                ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
+                                : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
@@ -1738,7 +1754,7 @@
                 if (posts[i].id === postId) { post = posts[i]; break; }
             }
             if (!post) return;
-            post.votes++;
+            post.votes = (post.votes || 0) + 1;
             
             if (post.votes >= 26) {
                 post.status = 'leyenda';
@@ -1747,15 +1763,21 @@
                 showToast("👍 Voto registrado (" + post.votes + "/26)");
             }
 
+            saveStoredPosts();
             renderFeed();
             updateMapMarkers();
         }
 
         function formatTime(seconds) {
-            if (seconds <= 0) return "Expirado";
-            var hrs = Math.floor(seconds / 3600);
+            if (seconds <= 0) return "00:00:00";
+            var days = Math.floor(seconds / 86400);
+            var hrs = Math.floor((seconds % 86400) / 3600);
             var mins = Math.floor((seconds % 3600) / 60);
             var secs = seconds % 60;
+            
+            if (days > 0) {
+                return days + "d " + (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+            }
             return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
         }
 
@@ -1768,6 +1790,7 @@
             
             currentPostInChat = post;
             post.status = 'in_deal';
+            saveStoredPosts();
 
             renderFeed();
             updateMapMarkers();
@@ -1775,7 +1798,7 @@
             dealConfirmations = { user1: false, user2: false };
             document.getElementById('chatUserName').innerText = "Chat con " + post.user;
             document.getElementById('chatPostTitle').innerText = post.title;
-            document.getElementById('dealStatusBanner').innerText = '⏱️ Oportunidad congelada en el Muro (En Negociación)';
+            document.getElementById('dealStatusBanner').innerText = '⏱️️ Oportunidad congelada en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
             document.getElementById('chatMessages').innerHTML = '<div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>';
             document.getElementById('chatModal').style.display = 'flex';
@@ -1802,6 +1825,7 @@
                 dealConfirmations.user2 = true;
                 if (currentPostInChat) {
                     currentPostInChat.status = 'leyenda';
+                    saveStoredPosts();
                 }
                 document.getElementById('dealStatusBanner').innerText = '🎉 ¡AMBAS PARTES CONFIRMARON EL TRATO HECHO!';
                 showToast('🎉 ¡Trato cerrado con éxito!');
@@ -1831,15 +1855,18 @@
             var category = document.getElementById('postCategory').value;
             var title = document.getElementById('postTitle').value;
             var changeInput = document.getElementById('postChange').value;
-            var timer = parseInt(document.getElementById('postTimer').value);
+            var timerSeconds = parseInt(document.getElementById('postTimer').value);
             var isAnon = document.getElementById('anonCheck').checked;
             var hasDiscretion = document.getElementById('discretionCheck').checked;
 
             var finalLat = userCapturedCoords ? userCapturedCoords.lat : 19.4326;
             var finalLng = userCapturedCoords ? userCapturedCoords.lng : -99.1332;
 
+            var creationNow = Date.now();
+            var calculatedExpiresAt = creationNow + (timerSeconds * 1000);
+
             var newPost = {
-                id: Date.now(), // ID único basado en tiempo
+                id: creationNow,
                 type: type,
                 category: category,
                 title: title,
@@ -1853,12 +1880,12 @@
                 isSponsor: false,
                 status: 'active',
                 votes: 0,
-                timeLeft: timer
+                createdAt: creationNow,
+                expiresAt: calculatedExpiresAt
             };
 
-            // Guardado en memoria y persistencia local inmediata
             userCreatedPosts.unshift(newPost);
-            safeStorage.set("lubo_user_posts", JSON.stringify(userCreatedPosts));
+            saveStoredPosts();
 
             posts.unshift(newPost);
             renderFeed();
@@ -1866,7 +1893,7 @@
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad guardada y viva en el radar');
+            showToast('🚀 Oportunidad viva en el radar con tiempo real');
             switchTab(type);
 
             if (map) {
@@ -1874,20 +1901,23 @@
             }
         }
 
-        // Manejador del ciclo de temporizadores
+        // CICLO DE TIEMPO REAL: Revisa contra el reloj del sistema cada segundo
         setInterval(function() {
-            var changed = false;
+            var currentTime = Date.now();
+            var statusChanged = false;
+
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
-                if (p.status === 'active' && p.timeLeft > 0 && !p.isSponsor) {
-                    p.timeLeft--;
-                    if (p.timeLeft === 0) {
+                if (p.status === 'active' && !p.isSponsor && p.expiresAt) {
+                    if (currentTime >= p.expiresAt) {
                         p.status = 'expired';
-                        changed = true;
+                        statusChanged = true;
                     }
                 }
             }
-            if (changed) {
+
+            if (statusChanged) {
+                saveStoredPosts();
                 updateMapMarkers();
             }
             renderFeed();
