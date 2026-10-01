@@ -36,6 +36,59 @@
 
         p, div, label { text-align: justify; }
 
+        /* PANTALLA 0: SPLASH SCREEN LUBÓ */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020617;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            animation: autoHideSplash 0.5s ease-out 1.5s forwards;
+            pointer-events: none; /* Evita que bloquee clics */
+        }
+        @keyframes autoHideSplash {
+            0% { opacity: 1; visibility: visible; }
+            90% { opacity: 0; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        
+        .lubo-splash-title { 
+            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+        }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+
+        .loader-container {
+            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: var(--gold-gradient);
+            box-shadow: var(--gold-glow);
+            animation: fillLoading 1.4s linear forwards;
+        }
+        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* PANTALLA 1: BIENVENIDA */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
+            z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .welcome-hero { 
+            max-width: 500px; width: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-hero h1 { 
+            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
+        }
+        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+
         /* HEADER */
         header {
             background: #020617; padding: 12px 20px; border-bottom: 1px solid var(--border-gold); position: sticky; top: 0; z-index: 100;
@@ -149,8 +202,12 @@
         }
 
         .mini-map {
-            width: 100%; height: 300px; background: #090d16; border-radius: 10px; border: 1px solid var(--border-gold);
+            width: 100%; height: 300px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
+        }
+
+        .leaflet-tile-pane {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
         }
 
         .map-marker-pin {
@@ -369,7 +426,7 @@
         }
 
         .chat-box {
-            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px; position: relative;
+            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
         }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.3; text-align: justify; }
@@ -443,6 +500,34 @@
 
     <div id="toast">Notificación</div>
 
+    <!-- PANTALLA 0: SPLASH SCREEN LUBÓ -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <div class="trident-splash">🔱</div>
+            <div class="lubo-splash-title">Lubó</div>
+            <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
+            
+            <div class="loader-container">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: BIENVENIDA -->
+    <div id="welcomeScreen">
+        <div class="welcome-hero">
+            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
+            <h1>Lubó</h1>
+            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
+            <p>
+                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
+            </p>
+            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
+                Iniciar Experiencia
+            </button>
+        </div>
+    </div>
+
     <!-- HEADER -->
     <header>
         <button class="menu-hamburger-btn" type="button" onclick="toggleDrawer(true)">☰</button>
@@ -468,7 +553,7 @@
     <div class="category-filter-bar" id="categoryFilterBar">
         <button class="cat-chip active" onclick="filterByCategory('TODAS', this)">✨ Todas</button>
         <button class="cat-chip" onclick="filterByCategory('OBJETOS', this)">📦 Curiosidades</button>
-        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️️ Habilidades</button>
+        <button class="cat-chip" onclick="filterByCategory('FAVORES', this)">🛠️ Habilidades</button>
         <button class="cat-chip" onclick="filterByCategory('RELAMPAGO', this)">⚡ Relámpago</button>
         <button class="cat-chip" onclick="filterByCategory('SOLIDARIDAD', this)">🤝 Solidaridad</button>
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
@@ -521,7 +606,7 @@
 
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion('acc2')">
-                <span>⚖ Marco Legal y Privacidad</span>
+                <span>⚖️ Marco Legal y Privacidad</span>
                 <span>▼</span>
             </div>
             <div id="acc2" class="accordion-body">
@@ -851,7 +936,7 @@
                 <label>Categoría Temática</label>
                 <select id="postCategory">
                     <option value="OBJETOS">📦 Objetos y Cosas Curiosas</option>
-                    <option value="FAVORES">🛠 Habilidades</option>
+                    <option value="FAVORES">🛠️ Habilidades</option>
                     <option value="RELAMPAGO">⚡ Oportunidad Relámpago</option>
                     <option value="SOLIDARIDAD">🤝 Solidaridad Vecinal</option>
                     <option value="AVENTURAS">🎲 Experiencias y Aventuras</option>
@@ -895,7 +980,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO -->
+    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO Y CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -907,7 +992,7 @@
             </div>
             
             <div id="dealStatusBanner" style="background: rgba(234, 179, 8, 0.1); padding: 8px; border-radius: 6px; font-size: 0.8rem; color: var(--gold-bright); text-align: center; margin-bottom: 8px;">
-                ⏱️ Oportunidad congelada en el Muro (En Negociación)
+                ⏱️️ Oportunidad congelada en el Muro (En Negociación)
             </div>
 
             <div class="chat-box">
@@ -935,9 +1020,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURACIÓN Y BASE DE DATOS
-        // ==========================================
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
         var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
@@ -958,17 +1040,136 @@
         var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
         var currentUserPhoto = safeStorage.get("lubo_photo") || null;
 
-        var map = null;
-        var markersLayer = null;
-        var userCapturedCoords = null;
-        var userLocationLabel = "Ubicación Local";
-        var currentTab = 'TENGO';
-        var currentCategory = 'TODAS';
-        var currentPostInChat = null;
-        var dealConfirmations = { user1: false, user2: false };
-        var isSyncing = false;
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            var data = parseJwt(response.credential);
+            if (data) {
+                var email = data.email;
+                var fullName = data.name || data.given_name;
+                var picture = data.picture;
+
+                var vBox = document.getElementById('googleVerifiedBox');
+                var vEmail = document.getElementById('verifiedEmailText');
+                var vAlias = document.getElementById('finalAliasInput');
+                var vBtn = document.getElementById('btnFinishRegistration');
+                
+                if (vBox) vBox.style.display = 'block';
+                if (vEmail) vEmail.innerText = email;
+                if (vAlias) vAlias.value = fullName;
+                
+                if (picture) {
+                    var img = document.getElementById('verifiedUserAvatar');
+                    if (img) {
+                        img.src = picture;
+                        img.style.display = 'block';
+                    }
+                    safeStorage.set("lubo_photo", picture);
+                    currentUserPhoto = picture;
+                }
+
+                if (vBtn) vBtn.style.display = 'block';
+                showToast("✓ Cuenta de Google autenticada");
+            }
+        }
+
+        function triggerOfficialGoogleLogin() {
+            try {
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                    showToast("Cargando servicios de Google... Reintenta en 2 segundos");
+                    return;
+                }
+
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false
+                });
+
+                google.accounts.id.prompt(function(notification) {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        google.accounts.id.renderButton(
+                            document.querySelector('.btn-google-sso'),
+                            { theme: "outline", size: "large", width: "100%" }
+                        );
+                    }
+                });
+            } catch (err) {
+                console.error("Error al contactar a Google:", err);
+            }
+        }
+
+        function goToRegister() {
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            openRegisterModal();
+        }
+
+        function openRegisterModal() {
+            var reg = document.getElementById('registerModal');
+            if (reg) reg.style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        }
+
+        function openPrivacyModal() {
+            var p = document.getElementById('privacyModal');
+            if (p) p.style.display = 'flex';
+        }
+
+        function openSponsorModal() {
+            var s = document.getElementById('sponsorModal');
+            if (s) s.style.display = 'flex';
+        }
+
+        function openPublishModal() {
+            var p = document.getElementById('publishModal');
+            if (p) p.style.display = 'flex';
+            detectCurrentLocation(true);
+        }
+
+        function showToast(text) {
+            var toast = document.getElementById("toast");
+            if (!toast) return;
+            toast.innerText = text;
+            toast.className = "show";
+            setTimeout(function() { toast.className = toast.className.replace("show", ""); }, 2500);
+        }
+
+        function toggleDrawer(open) {
+            var overlay = document.getElementById('drawerOverlay');
+            var drawer = document.getElementById('drawerContent');
+            if (!overlay || !drawer) return;
+            if (open) {
+                overlay.style.display = 'block';
+                setTimeout(function() { drawer.classList.add('open'); }, 10);
+            } else {
+                drawer.classList.remove('open');
+                setTimeout(function() { overlay.style.display = 'none'; }, 300);
+            }
+        }
+
+        function toggleAccordion(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
 
         var nowTime = Date.now();
+
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1023,438 +1224,203 @@
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // 2. FUNCIONES DE INTERFAZ Y MODALES
+        // SINCRONIZACIÓN NATIVA SUPABASE
         // ==========================================
-        function toggleDrawer(open) {
-            var overlay = document.getElementById('drawerOverlay');
-            var drawer = document.getElementById('drawerContent');
-            if (!overlay || !drawer) return;
-            if (open) {
-                overlay.style.display = 'block';
-                setTimeout(function() { drawer.classList.add('open'); }, 10);
-            } else {
-                drawer.classList.remove('open');
-                setTimeout(function() { overlay.style.display = 'none'; }, 300);
+        function syncFromCloud() {
+            try {
+                fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                })
+                .then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (data && Array.isArray(data)) {
+                        cloudPosts = data.map(function(p) {
+                            var resolvedUser = p.user_name || p.user || 'Anónimo';
+                            return {
+                                id: Number(p.id),
+                                type: p.type || 'TENGO',
+                                category: p.category || 'OBJETOS',
+                                title: p.title || '',
+                                change: p.change || '',
+                                user: resolvedUser,
+                                user_name: resolvedUser,
+                                rank: p.rank || 'Cazador Novato',
+                                location: p.location || 'Ubicación Local',
+                                lat: Number(p.lat) || 19.4326,
+                                lng: Number(p.lng) || -99.1332,
+                                discretion: Boolean(p.discretion),
+                                status: p.status || 'active',
+                                votes: Number(p.votes) || 0,
+                                created_at: Number(p.created_at) || Date.now(),
+                                expires_at: Number(p.expires_at) || (Date.now() + 3600000),
+                                isSponsor: false,
+                                creator_id: p.creator_id || resolvedUser,
+                                interested_user: p.interested_user || null,
+                                interested_device: p.interested_device || null,
+                                chat_history: p.chat_history || null
+                            };
+                        });
+                        posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
+                        renderFeed();
+                        updateMapMarkers();
+                        updateActiveChatWidgetUI();
+
+                        // ACTUALIZACIÓN EN VIVO DEL CHAT ABIERTO (Sin cerrar el modal)
+                        if (currentPostInChat) {
+                            for (var k = 0; k < posts.length; k++) {
+                                if (posts[k].id === currentPostInChat.id) {
+                                    if (posts[k].chat_history !== currentPostInChat.chat_history) {
+                                        currentPostInChat.chat_history = posts[k].chat_history;
+                                        renderChatMessagesFromHistory(currentPostInChat);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                })
+                .catch(function(err) {});
+            } catch(e) {}
+        }
+
+        function pushToCloud(item, callback) {
+            try {
+                var payload = {
+                    id: Number(item.id),
+                    type: String(item.type),
+                    category: String(item.category),
+                    title: String(item.title),
+                    change: String(item.change),
+                    "user": String(item.user),
+                    user_name: String(item.user),
+                    rank: String(item.rank),
+                    location: String(item.location),
+                    lat: Number(item.lat),
+                    lng: Number(item.lng),
+                    discretion: Boolean(item.discretion),
+                    status: String(item.status),
+                    votes: Number(item.votes),
+                    created_at: Number(item.created_at),
+                    expires_at: Number(item.expires_at),
+                    creator_id: String(item.creator_id),
+                    interested_user: item.interested_user || null,
+                    interested_device: item.interested_device || null,
+                    chat_history: item.chat_history || null
+                };
+
+                fetch(SUPABASE_REST_URL, {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify([payload])
+                })
+                .then(function(res) {
+                    if (res.ok) {
+                        callback(true);
+                    } else {
+                        res.json().then(function(errObj) {
+                            alert("Supabase avisó: " + (errObj.message || "Error al insertar"));
+                            callback(false);
+                        }).catch(function() {
+                            callback(false);
+                        });
+                    }
+                })
+                .catch(function() {
+                    callback(false);
+                });
+            } catch(e) {
+                callback(false);
             }
         }
 
-        function toggleAccordion(id) {
-            var el = document.getElementById(id);
-            if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-        }
-
-        function closeModal(id) {
-            var el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        }
-
-        function openRegisterModal() {
-            var reg = document.getElementById('registerModal');
-            if (reg) reg.style.display = 'flex';
-        }
-
-        function openPrivacyModal() {
-            var p = document.getElementById('privacyModal');
-            if (p) p.style.display = 'flex';
-        }
-
-        function openSponsorModal() {
-            var s = document.getElementById('sponsorModal');
-            if (s) s.style.display = 'flex';
-        }
-
-        function openPublishModal() {
-            var p = document.getElementById('publishModal');
-            if (p) p.style.display = 'flex';
-            detectCurrentLocation(true);
-        }
-
-        function showToast(text) {
-            var toast = document.getElementById("toast");
-            if (!toast) return;
-            toast.innerText = text;
-            toast.className = "show";
-            setTimeout(function() { toast.className = toast.className.replace("show", ""); }, 2500);
-        }
-
-        function setRadius(btn, label, zoomLevel) {
-            var btns = document.querySelectorAll('.radius-picker .radius-btn');
-            for (var i = 0; i < btns.length; i++) {
-                btns[i].classList.remove('active');
-            }
-            if (btn) btn.classList.add('active');
-            showToast("🎯 Radar recentrado a " + label);
-
-            detectCurrentLocation(false, function(lat, lng) {
-                if (map) {
-                    map.setView([lat, lng], zoomLevel);
-                    map.invalidateSize();
-                }
-            });
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            var btns = document.querySelectorAll('.tab-btn');
-            for (var i = 0; i < btns.length; i++) {
-                btns[i].classList.remove('active-tengo', 'active-quiero', 'active-leyendas');
-            }
-            
-            if (tab === 'TENGO') document.getElementById('btnTengo').classList.add('active-tengo');
-            if (tab === 'QUIERO') document.getElementById('btnQuiero').classList.add('active-quiero');
-            if (tab === 'LEYENDAS') document.getElementById('btnLeyendas').classList.add('active-leyendas');
-
-            var feed = document.getElementById('feed');
-            if (feed) {
-                feed.classList.add('flash-update');
-                setTimeout(function() {
-                    renderFeed();
-                    feed.classList.remove('flash-update');
-                }, 80);
-
-                if (window.innerWidth < 1024) {
-                    feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+        function updatePostInCloud(postId, updateFields, callback) {
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify(updateFields)
+                })
+                .then(function(res) {
+                    if (callback) callback(res.ok);
+                })
+                .catch(function() {
+                    if (callback) callback(false);
+                });
+            } catch(e) {
+                if (callback) callback(false);
             }
         }
 
-        function filterByCategory(cat, btn) {
-            currentCategory = cat;
-            var chips = document.querySelectorAll('.cat-chip');
-            for (var i = 0; i < chips.length; i++) {
-                chips[i].classList.remove('active');
-            }
-            if (btn) btn.classList.add('active');
-            showToast("Filtro: " + (btn ? btn.innerText : cat));
-            renderFeed();
-        }
-
-        function getCategoryLabel(catKey) {
-            var labels = {
-                'OBJETOS': '📦 Curiosidades',
-                'FAVORES': '🛠️ Habilidades',
-                'RELAMPAGO': '⚡ Relámpago',
-                'SOLIDARIDAD': '🤝 Solidaridad',
-                'AVENTURAS': '🎲 Experiencias'
-            };
-            return labels[catKey] || 'General';
-        }
+        var currentPostInChat = null;
+        var dealConfirmations = { user1: false, user2: false };
+        var map = null;
+        var markersLayer = null;
+        var userCapturedCoords = null;
+        var userLocationLabel = "Ubicación Local";
+        var currentTab = 'TENGO';
+        var currentCategory = 'TODAS';
 
         function checkAuthAndRun(callbackAction) {
             if (!currentUser) {
-                showToast("Primero identifícate para participar");
+                showToast("Acceso restringido: primero identifícate");
                 openRegisterModal();
             } else {
                 callbackAction();
             }
         }
 
-        function isCurrentUserAuthor(post) {
-            if (!post || post.isSponsor) return false;
-            if (post.creator_id && post.creator_id === myDeviceId) return true;
-            if (currentUser) {
-                var cur = currentUser.trim().toLowerCase();
-                var pUser = (post.user || "").trim().toLowerCase();
-                var pUserName = (post.user_name || "").trim().toLowerCase();
-                var pCreator = (post.creator_id || "").trim().toLowerCase();
-                if (cur === pUser || cur === pUserName || cur === pCreator) return true;
+        function openNavChoice(lat, lng, destinationTitle) {
+            var isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+            var titleEl = document.getElementById('navDestinationTitle');
+            if (titleEl) titleEl.innerText = destinationTitle || "Punto de Encuentro";
+
+            var gBtn = document.getElementById('btnNavGoogle');
+            if (gBtn) gBtn.href = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng + "&travelmode=driving";
+
+            var wBtn = document.getElementById('btnNavWaze');
+            if (wBtn) wBtn.href = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
+
+            var aBtn = document.getElementById('btnNavApple');
+            if (aBtn) {
+                aBtn.href = isAppleDevice 
+                    ? "http://maps.apple.com/?daddr=" + lat + "," + lng + "&dirflg=d"
+                    : "https://maps.apple.com/?daddr=" + lat + "," + lng;
             }
-            return false;
+
+            var modal = document.getElementById('navModal');
+            if (modal) modal.style.display = 'flex';
         }
 
-        function setElementsText(selector, text) {
-            var els = document.querySelectorAll(selector);
-            for (var i = 0; i < els.length; i++) {
-                els[i].innerText = text;
-            }
-        }
-
-        function updateMetricsCounters() {
-            var activeCount = 0;
-            var expiringCount = 0;
-            var inDealCount = 0;
-            var legendCount = 0;
-            var currentTime = Date.now();
-
-            for (var i = 0; i < posts.length; i++) {
-                var p = posts[i];
-                var secondsLeft = Math.max(0, Math.floor(((p.expires_at || 0) - currentTime) / 1000));
-                
-                if (p.status === 'active' && !p.isSponsor) activeCount++;
-                if (p.status === 'active' && secondsLeft <= 1800 && secondsLeft > 0 && !p.isSponsor) expiringCount++;
-                if (p.status === 'in_deal') inDealCount++;
-                if (p.status === 'leyenda') legendCount++;
-            }
-
-            setElementsText('.stat-count-nearby', activeCount);
-            setElementsText('.stat-count-expiring', expiringCount);
-            setElementsText('.stat-count-indeal', inDealCount);
-            setElementsText('.stat-count-legends', legendCount);
-
-            var alertCount = document.getElementById('alertExpiringCount');
-            if (alertCount) alertCount.innerText = expiringCount + " Tratos";
-        }
-
-        function updateActiveChatWidgetUI() {
-            var activeDeal = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].status === 'in_deal') {
-                    activeDeal = posts[i];
-                    break;
-                }
-            }
-            var widgetSub = document.getElementById('chatWidgetSubtitle');
-            var btnOpen = document.getElementById('btnSideOpenChat');
-            
-            if (activeDeal) {
-                if (widgetSub) widgetSub.innerText = "⚡ Trato en Curso: " + (activeDeal.title.substring(0, 22) + "...");
-                if (btnOpen) {
-                    btnOpen.innerText = "Entrar al Chat Activo";
-                    btnOpen.style.background = "#22c55e";
-                    btnOpen.style.color = "#000";
-                }
+        function triggerChatNavigation() {
+            if (currentPostInChat && currentPostInChat.lat && currentPostInChat.lng) {
+                openNavChoice(currentPostInChat.lat, currentPostInChat.lng, currentPostInChat.title);
             } else {
-                if (widgetSub) widgetSub.innerText = "⏳ Estado: En Espera";
-                if (btnOpen) {
-                    btnOpen.innerText = "Abrir Negociación";
-                    btnOpen.style.background = "var(--gold-gradient)";
-                    btnOpen.style.color = "#000";
-                }
+                showToast("Coordenadas no disponibles para este trato");
             }
         }
 
-        function openActiveOrFirstDeal() {
-            checkAuthAndRun(function() {
-                var dealFound = null;
-                for (var i = 0; i < posts.length; i++) {
-                    if (posts[i].status === 'in_deal') {
-                        dealFound = posts[i];
-                        break;
-                    }
-                }
-                if (dealFound) {
-                    openChat(dealFound.id);
-                } else {
-                    showToast("No tienes ninguna conversación activa. Elige un trato del muro.");
-                }
-            });
-        }
-
-        function handleMetricClick(type) {
-            if (type === 'NEARBY') {
-                showToast("🎯 Recentrado en tu ubicación satelital");
-                detectCurrentLocation(false, function(lat, lng) {
-                    if (map) {
-                        map.setView([lat, lng], 14);
-                        map.invalidateSize();
-                    }
-                });
-                var mapEl = document.getElementById('mapBox');
-                if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else if (type === 'EXPIRING') {
-                showToast("⚡ Filtrando tratos por expirar");
-                switchTab('TENGO');
-                posts.sort(function(a,b) { return (a.expires_at || 0) - (b.expires_at || 0); });
-                renderFeed();
-                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else if (type === 'INDEAL') {
-                openActiveOrFirstDeal();
-            } else if (type === 'LEGENDS') {
-                switchTab('LEYENDAS');
-                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        function toggleConsentButton(checkbox) {
-            var btn = document.getElementById('btnFinishRegistration');
-            var timeLabel = document.getElementById('consentTimestamp');
-            
-            if (checkbox && checkbox.checked) {
-                if (btn) btn.disabled = false;
-                var now = new Date();
-                if (timeLabel) {
-                    timeLabel.innerText = "Consentimiento registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
-                    timeLabel.style.display = 'block';
-                }
-            } else {
-                if (btn) btn.disabled = true;
-                if (timeLabel) timeLabel.style.display = 'none';
-            }
-        }
-
-        function completeRegistration() {
-            var legalCheckbox = document.getElementById('legalCheckbox');
-            if (!legalCheckbox || !legalCheckbox.checked) {
-                alert("Es indispensable que marques la casilla de aceptación expresa de términos y mayoría de edad (+18).");
-                return;
-            }
-
-            var aliasInput = document.getElementById('finalAliasInput');
-            var alias = aliasInput ? aliasInput.value.trim() : '';
-            if (!alias) {
-                alert("Por favor elige un alias oficial para tus tratos.");
-                return;
-            }
-
-            currentUser = alias;
-            safeStorage.set("lubo_user", alias);
-            safeStorage.set("lubo_rank", currentUserRank);
-            safeStorage.set("lubo_consent_time", new Date().toISOString());
-
-            updateUIForLoggedInUser();
-            showToast("¡Bienvenido a Lubó, " + alias + "!");
-            closeModal('registerModal');
-            renderFeed();
-        }
-
-        function updateUIForLoggedInUser() {
-            if (currentUser) {
-                var btnAuth = document.getElementById('btnAuthHeader');
-                if (btnAuth) btnAuth.style.display = 'none';
-
-                var nameBadge = document.getElementById('userNameHeaderDisplay');
-                if (nameBadge) {
-                    nameBadge.innerText = currentUser;
-                    nameBadge.style.display = 'inline-block';
-                }
-                
-                var drawerLabel = document.getElementById('drawerUserLabel');
-                if (drawerLabel) drawerLabel.innerText = currentUser;
-
-                var rankLabel = document.getElementById('drawerUserRankLabel');
-                if (rankLabel) {
-                    rankLabel.innerText = "Rango: " + currentUserRank;
-                    rankLabel.style.display = 'block';
-                }
-
-                var logoutBtn = document.getElementById('drawerLogoutBtn');
-                if (logoutBtn) logoutBtn.style.display = 'block';
-            }
-        }
-
-        function confirmLogout() {
-            if (confirm("¿Deseas cerrar la sesión activa de " + currentUser + "?")) {
-                currentUser = null;
-                currentUserPhoto = null;
-                safeStorage.remove("lubo_user");
-                safeStorage.remove("lubo_rank");
-                safeStorage.remove("lubo_photo");
-                safeStorage.remove("lubo_consent_time");
-                
-                document.getElementById('btnAuthHeader').style.display = 'block';
-                document.getElementById('userNameHeaderDisplay').style.display = 'none';
-                
-                document.getElementById('drawerUserLabel').innerText = 'Sin sesión iniciada';
-                document.getElementById('drawerUserRankLabel').style.display = 'none';
-                document.getElementById('drawerLogoutBtn').style.display = 'none';
-
-                document.getElementById('googleVerifiedBox').style.display = 'none';
-                document.getElementById('btnFinishRegistration').style.display = 'none';
-                document.getElementById('legalCheckbox').checked = false;
-                document.getElementById('btnFinishRegistration').disabled = true;
-
-                showToast('Sesión cerrada');
-                renderFeed();
-            }
-        }
-
-        function parseJwt(token) {
-            try {
-                var base64Url = token.split('.')[1];
-                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch(e) {
-                return null;
-            }
-        }
-
-        function handleGoogleCredentialResponse(response) {
-            var data = parseJwt(response.credential);
-            if (data) {
-                var email = data.email;
-                var fullName = data.name || data.given_name;
-                var picture = data.picture;
-
-                var vBox = document.getElementById('googleVerifiedBox');
-                var vEmail = document.getElementById('verifiedEmailText');
-                var vAlias = document.getElementById('finalAliasInput');
-                var vBtn = document.getElementById('btnFinishRegistration');
-                
-                if (vBox) vBox.style.display = 'block';
-                if (vEmail) vEmail.innerText = email;
-                if (vAlias) vAlias.value = fullName;
-                
-                if (picture) {
-                    var img = document.getElementById('verifiedUserAvatar');
-                    if (img) {
-                        img.src = picture;
-                        img.style.display = 'block';
-                    }
-                    safeStorage.set("lubo_photo", picture);
-                    currentUserPhoto = picture;
-                }
-
-                if (vBtn) vBtn.style.display = 'block';
-                showToast("✓ Cuenta de Google autenticada");
-            }
-        }
-
-        function triggerOfficialGoogleLogin() {
-            try {
-                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-                    showToast("Cargando Google... Reintenta en un momento");
-                    return;
-                }
-
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false
-                });
-
-                google.accounts.id.prompt(function(notification) {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        google.accounts.id.renderButton(
-                            document.querySelector('.btn-google-sso'),
-                            { theme: "outline", size: "large", width: "100%" }
-                        );
-                    }
-                });
-            } catch (err) {}
-        }
-
-        function handlePushToggle(checkbox) {
-            showToast(checkbox.checked ? "🔔 Alertas en vivo activas" : "🔕 Notificaciones silenciadas");
-        }
-
-        function openLegendModal(postId) {
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-            if (!post) return;
-            document.getElementById('legendModalTitle').innerText = post.title;
-            document.getElementById('legendModalChange').innerText = post.change;
-            document.getElementById('legendModalVotes').innerText = (post.votes || 0) + " / 26";
-            document.getElementById('legendModal').style.display = 'flex';
-        }
-
-        // ==========================================
-        // 3. MAPAS Y GEOLOCALIZACIÓN LEAFLET
-        // ==========================================
         function initRealMap() {
             try {
-                if (map) return;
+                if (map || typeof L === 'undefined') return;
                 var mapBox = document.getElementById('mapBox');
                 if (!mapBox) return;
-
-                if (typeof L === 'undefined') {
-                    setTimeout(initRealMap, 200);
-                    return;
-                }
 
                 map = L.map('mapBox', {
                     center: [19.3900, -99.1550],
@@ -1463,7 +1429,7 @@
                     attributionControl: false
                 });
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19
                 }).addTo(map);
 
@@ -1471,9 +1437,12 @@
                 updateMapMarkers();
                 detectCurrentLocation(false);
 
-                setTimeout(function() { if (map) map.invalidateSize(); }, 200);
-                setTimeout(function() { if (map) map.invalidateSize(); }, 800);
-            } catch(e) {}
+                setTimeout(function() {
+                    if (map) map.invalidateSize();
+                }, 300);
+            } catch(e) {
+                console.error("Leaflet init error:", e);
+            }
         }
 
         function detectCurrentLocation(forPublishingModal, callbackCenter) {
@@ -1562,7 +1531,7 @@
                         } else if (isMyPostOnMap) {
                             actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
                         } else {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + p.id + '); })">Coordinar Trato</button>';
                         }
 
                         var popupContent = 
@@ -1580,9 +1549,313 @@
             } catch(e) {}
         }
 
-        // ==========================================
-        // 4. FEED Y MURO DE OPORTUNIDADES
-        // ==========================================
+        function setRadius(btn, label, zoomLevel) {
+            var btns = document.querySelectorAll('.radius-picker .radius-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+            }
+            if (btn) btn.classList.add('active');
+            showToast("🎯 Radar recentrado a " + label);
+
+            detectCurrentLocation(false, function(lat, lng) {
+                if (map) {
+                    map.setView([lat, lng], zoomLevel);
+                    map.invalidateSize();
+                }
+            });
+        }
+
+        function filterByCategory(cat, btn) {
+            currentCategory = cat;
+            var chips = document.querySelectorAll('.cat-chip');
+            for (var i = 0; i < chips.length; i++) {
+                chips[i].classList.remove('active');
+            }
+            if (btn) btn.classList.add('active');
+            showToast("Filtro: " + (btn ? btn.innerText : cat));
+            renderFeed();
+        }
+
+        function setElementsText(selector, text) {
+            var els = document.querySelectorAll(selector);
+            for (var i = 0; i < els.length; i++) {
+                els[i].innerText = text;
+            }
+        }
+
+        function updateMetricsCounters() {
+            var activeCount = 0;
+            var expiringCount = 0;
+            var inDealCount = 0;
+            var legendCount = 0;
+            var currentTime = Date.now();
+
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                var secondsLeft = Math.max(0, Math.floor(((p.expires_at || 0) - currentTime) / 1000));
+                
+                if (p.status === 'active' && !p.isSponsor) activeCount++;
+                if (p.status === 'active' && secondsLeft <= 1800 && secondsLeft > 0 && !p.isSponsor) expiringCount++;
+                if (p.status === 'in_deal') inDealCount++;
+                if (p.status === 'leyenda') legendCount++;
+            }
+
+            setElementsText('.stat-count-nearby', activeCount);
+            setElementsText('.stat-count-expiring', expiringCount);
+            setElementsText('.stat-count-indeal', inDealCount);
+            setElementsText('.stat-count-legends', legendCount);
+
+            var alertCount = document.getElementById('alertExpiringCount');
+            if (alertCount) alertCount.innerText = expiringCount + " Tratos";
+        }
+
+        function updateActiveChatWidgetUI() {
+            var activeDeal = getMyActiveDeal();
+            var widgetSub = document.getElementById('chatWidgetSubtitle');
+            var btnOpen = document.getElementById('btnSideOpenChat');
+            
+            if (activeDeal) {
+                if (widgetSub) widgetSub.innerText = "⚡ Trato en Curso: " + (activeDeal.title.substring(0, 22) + "...");
+                if (btnOpen) {
+                    btnOpen.innerText = "Entrar al Chat Activo";
+                    btnOpen.style.background = "#22c55e";
+                    btnOpen.style.color = "#000";
+                }
+            } else {
+                if (widgetSub) widgetSub.innerText = "⏳ Estado: En Espera";
+                if (btnOpen) {
+                    btnOpen.innerText = "Abrir Negociación";
+                    btnOpen.style.background = "var(--gold-gradient)";
+                    btnOpen.style.color = "#000";
+                }
+            }
+        }
+
+        function getMyActiveDeal() {
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.status === 'in_deal') {
+                    if (isCurrentUserAuthor(p) || isCurrentUserInterested(p)) {
+                        return p;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function openActiveOrFirstDeal() {
+            checkAuthAndRun(function() {
+                var myDeal = getMyActiveDeal();
+                if (myDeal) {
+                    openChat(myDeal.id);
+                } else {
+                    showToast("No tienes ninguna conversación activa. Elige un trato del muro.");
+                }
+            });
+        }
+
+        function handleMetricClick(type) {
+            if (type === 'NEARBY') {
+                showToast("🎯 Recentrado en tu ubicación satelital");
+                detectCurrentLocation(false, function(lat, lng) {
+                    if (map) {
+                        map.setView([lat, lng], 14);
+                        map.invalidateSize();
+                    }
+                });
+                var mapEl = document.getElementById('mapBox');
+                if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (type === 'EXPIRING') {
+                showToast("⚡ Filtrando tratos por expirar");
+                switchTab('TENGO');
+                posts.sort(function(a,b) { return (a.expires_at || 0) - (b.expires_at || 0); });
+                renderFeed();
+                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (type === 'INDEAL') {
+                openActiveOrFirstDeal();
+            } else if (type === 'LEGENDS') {
+                switchTab('LEYENDAS');
+                document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function toggleConsentButton(checkbox) {
+            var btn = document.getElementById('btnFinishRegistration');
+            var timeLabel = document.getElementById('consentTimestamp');
+            
+            if (checkbox && checkbox.checked) {
+                if (btn) btn.disabled = false;
+                var now = new Date();
+                if (timeLabel) {
+                    timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                    timeLabel.style.display = 'block';
+                }
+            } else {
+                if (btn) btn.disabled = true;
+                if (timeLabel) timeLabel.style.display = 'none';
+            }
+        }
+
+        function completeRegistration() {
+            var legalCheckbox = document.getElementById('legalCheckbox');
+            if (!legalCheckbox || !legalCheckbox.checked) {
+                alert("Es indispensable que marques la casilla de aceptación expresa de términos y mayoría de edad (+18).");
+                return;
+            }
+
+            var aliasInput = document.getElementById('finalAliasInput');
+            var alias = aliasInput ? aliasInput.value.trim() : '';
+            if (!alias) {
+                alert("Por favor elige un alias oficial para tus tratos.");
+                return;
+            }
+
+            currentUser = alias;
+            
+            safeStorage.set("lubo_user", alias);
+            safeStorage.set("lubo_rank", currentUserRank);
+            safeStorage.set("lubo_consent_time", new Date().toISOString());
+
+            updateUIForLoggedInUser();
+            showToast("¡Bienvenido a Lubó, " + alias + "!");
+            closeModal('registerModal');
+            
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            renderFeed();
+        }
+
+        function updateUIForLoggedInUser() {
+            if (currentUser) {
+                var welcome = document.getElementById('welcomeScreen');
+                if (welcome) welcome.style.display = 'none';
+
+                var btnAuth = document.getElementById('btnAuthHeader');
+                if (btnAuth) btnAuth.style.display = 'none';
+
+                var nameBadge = document.getElementById('userNameHeaderDisplay');
+                if (nameBadge) {
+                    nameBadge.innerText = currentUser;
+                    nameBadge.style.display = 'inline-block';
+                }
+                
+                var drawerLabel = document.getElementById('drawerUserLabel');
+                if (drawerLabel) drawerLabel.innerText = currentUser;
+
+                var rankLabel = document.getElementById('drawerUserRankLabel');
+                if (rankLabel) {
+                    rankLabel.innerText = "Rango: " + currentUserRank;
+                    rankLabel.style.display = 'block';
+                }
+
+                var logoutBtn = document.getElementById('drawerLogoutBtn');
+                if (logoutBtn) logoutBtn.style.display = 'block';
+            } else {
+                var welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen) welcomeScreen.style.display = 'none';
+            }
+        }
+
+        function confirmLogout() {
+            if (confirm("¿Deseas cerrar la sesión activa de " + currentUser + "?")) {
+                currentUser = null;
+                currentUserPhoto = null;
+                safeStorage.remove("lubo_user");
+                safeStorage.remove("lubo_rank");
+                safeStorage.remove("lubo_photo");
+                safeStorage.remove("lubo_consent_time");
+                
+                document.getElementById('btnAuthHeader').style.display = 'block';
+                document.getElementById('userNameHeaderDisplay').style.display = 'none';
+                
+                document.getElementById('drawerUserLabel').innerText = 'Sin sesión iniciada';
+                document.getElementById('drawerUserRankLabel').style.display = 'none';
+                document.getElementById('drawerLogoutBtn').style.display = 'none';
+
+                document.getElementById('googleVerifiedBox').style.display = 'none';
+                document.getElementById('btnFinishRegistration').style.display = 'none';
+                document.getElementById('legalCheckbox').checked = false;
+                document.getElementById('btnFinishRegistration').disabled = true;
+
+                showToast('Sesión cerrada');
+                renderFeed();
+            }
+        }
+
+        function handlePushToggle(checkbox) {
+            showToast(checkbox.checked ? "🔔 Alertas en vivo activas" : "🔕 Notificaciones silenciadas");
+        }
+
+        function openLegendModal(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+            document.getElementById('legendModalTitle').innerText = post.title;
+            document.getElementById('legendModalChange').innerText = post.change;
+            document.getElementById('legendModalVotes').innerText = (post.votes || 0) + " / 26";
+            document.getElementById('legendModal').style.display = 'flex';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            var btns = document.querySelectorAll('.tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active-tengo', 'active-quiero', 'active-leyendas');
+            }
+            
+            if (tab === 'TENGO') document.getElementById('btnTengo').classList.add('active-tengo');
+            if (tab === 'QUIERO') document.getElementById('btnQuiero').classList.add('active-quiero');
+            if (tab === 'LEYENDAS') document.getElementById('btnLeyendas').classList.add('active-leyendas');
+
+            var feed = document.getElementById('feed');
+            if (feed) {
+                feed.classList.add('flash-update');
+                setTimeout(function() {
+                    renderFeed();
+                    feed.classList.remove('flash-update');
+                }, 80);
+
+                if (window.innerWidth < 1024) {
+                    feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function getCategoryLabel(catKey) {
+            var labels = {
+                'OBJETOS': '📦 Curiosidades',
+                'FAVORES': '🛠️ Habilidades',
+                'RELAMPAGO': '⚡ Relámpago',
+                'SOLIDARIDAD': '🤝 Solidaridad',
+                'AVENTURAS': '🎲 Experiencias'
+            };
+            return labels[catKey] || 'General';
+        }
+
+        function isCurrentUserAuthor(post) {
+            if (!post || post.isSponsor) return false;
+            if (post.creator_id && post.creator_id === myDeviceId) return true;
+            if (currentUser) {
+                var cur = currentUser.trim().toLowerCase();
+                var pUser = (post.user || "").trim().toLowerCase();
+                var pUserName = (post.user_name || "").trim().toLowerCase();
+                var pCreator = (post.creator_id || "").trim().toLowerCase();
+                if (cur === pUser || cur === pUserName || cur === pCreator) return true;
+            }
+            return false;
+        }
+
+        function isCurrentUserInterested(post) {
+            if (!post || post.isSponsor) return false;
+            if (post.interested_device && post.interested_device === myDeviceId) return true;
+            if (currentUser && post.interested_user) {
+                if (currentUser.trim().toLowerCase() === post.interested_user.trim().toLowerCase()) return true;
+            }
+            return false;
+        }
+
         function renderFeed() {
             var feed = document.getElementById('feed');
             if (!feed) return;
@@ -1625,6 +1898,7 @@
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
                 var isMyOwnPost = isCurrentUserAuthor(post);
+                var isMyInterestedDeal = isCurrentUserInterested(post);
                 
                 card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
                 
@@ -1638,17 +1912,11 @@
                     badgeClass = 'badge-leyenda';
                     badgeLabel = 'SALÓN DE LEYENDAS 🏆';
                 } else if (isInDeal) {
-                    badgeClass = 'badge-deal';
-                    badgeLabel = '⏳ EN NEGOCIACIÓN';
-                } else if (isExpired) {
-                    badgeLabel = 'VENCIDO (EN VOTACIÓN)';
-                }
-                
-                var actionBtnHTML = '';
-                if (isSponsor) {
-                    actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
-                } else if (isInDeal) {
-                    actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
+                    if (isMyOwnPost || isMyInterestedDeal) {
+                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
+                    } else {
+                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ Trato en proceso...</button>';
+                    }
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 } else if (isExpired) {
@@ -1657,7 +1925,7 @@
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
+                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + post.id + '); })">' + actionText + '</button>';
                 }
 
                 var sponsorDisclaimerHTML = isSponsor
@@ -1676,7 +1944,7 @@
                     : (post.status === 'leyenda'
                         ? '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>'
                         : (isInDeal 
-                            ? '<span class="timer" style="color:#22c55e;">⏸️️ Negociando</span>' 
+                            ? '<span class="timer" style="color:#22c55e;">⏸️ Negociando</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
                                 : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
@@ -1716,19 +1984,6 @@
             updateMetricsCounters();
         }
 
-        function formatTime(seconds) {
-            if (seconds <= 0) return "00:00:00";
-            var days = Math.floor(seconds / 86400);
-            var hrs = Math.floor((seconds % 86400) / 3600);
-            var mins = Math.floor((seconds % 3600) / 60);
-            var secs = seconds % 60;
-            
-            if (days > 0) {
-                return days + "d " + (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-            }
-            return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-        }
-
         function voteForLegend(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -1751,6 +2006,36 @@
             updateMapMarkers();
         }
 
+        function initiateDealInterest(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+
+            post.status = 'in_deal';
+            post.interested_user = currentUser || 'Cazador Interesado';
+            post.interested_device = myDeviceId;
+
+            var defaultMsg = JSON.stringify([{
+                sender: currentUser || 'Interesado',
+                text: '¡Hola! Me interesa tu publicación y quiero coordinar contigo.',
+                isMeDevice: myDeviceId
+            }]);
+            post.chat_history = defaultMsg;
+
+            updatePostInCloud(postId, { 
+                status: 'in_deal',
+                interested_user: post.interested_user,
+                interested_device: post.interested_device,
+                chat_history: defaultMsg
+            });
+
+            showToast("🤝 Solicitud enviada al creador. Abriendo canal...");
+            openChat(postId);
+            renderFeed();
+        }
+
         function openChat(postId) {
             var post = null;
             for (var i = 0; i < posts.length; i++) {
@@ -1760,33 +2045,56 @@
             
             currentPostInChat = post;
             dealConfirmations = { user1: false, user2: false };
-
-            if (post.status === 'active') {
-                post.status = 'in_deal';
-                updatePostInCloud(postId, { status: 'in_deal' });
-            }
-
-            document.getElementById('chatUserName').innerText = "Chat con " + post.user;
+            
+            var isAuthor = isCurrentUserAuthor(post);
+            var counterpartName = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
+            
+            document.getElementById('chatUserName').innerText = "Chat con " + counterpartName;
             document.getElementById('chatPostTitle').innerText = post.title;
             document.getElementById('dealStatusBanner').innerText = '⏱️ Trato pausado en el Muro (En Negociación)';
             document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
             
-            document.getElementById('chatMessages').innerHTML = 
-                '<div class="msg msg-them">¡Hola! Me interesa coordinar sobre: ' + post.title + '</div>';
+            var btnCancel = document.getElementById('btnCancelDeal');
+            if (btnCancel) {
+                btnCancel.innerText = isAuthor ? "❌ Rechazar y Volver a Publicar" : "❌ Cancelar mi Interés en el Trato";
+            }
 
+            renderChatMessagesFromHistory(post);
             document.getElementById('chatModal').style.display = 'flex';
-            renderFeed();
+        }
+
+        function renderChatMessagesFromHistory(post) {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+            container.innerHTML = '';
+
+            var history = [];
+            if (post.chat_history) {
+                try { history = JSON.parse(post.chat_history); } catch(e) {}
+            }
+
+            if (!history || history.length === 0) {
+                history = [{
+                    sender: post.interested_user || 'Interesado',
+                    text: '¡Hola! Vi tu publicación y me interesa coordinar contigo.',
+                    isMeDevice: post.interested_device
+                }];
+            }
+
+            for (var i = 0; i < history.length; i++) {
+                var m = history[i];
+                var msgDiv = document.createElement('div');
+                var isMine = (m.isMeDevice === myDeviceId) || (currentUser && m.sender === currentUser);
+                msgDiv.className = 'msg ' + (isMine ? 'msg-me' : 'msg-them');
+                msgDiv.innerText = m.text;
+                container.appendChild(msgDiv);
+            }
+            container.scrollTop = container.scrollHeight;
         }
 
         function suggestSafePoint() {
-            var msgContainer = document.getElementById('chatMessages');
-            if (!msgContainer) return;
-            var safeMsg = document.createElement('div');
-            safeMsg.className = 'msg msg-me';
-            safeMsg.style.border = '1px solid #22c55e';
-            safeMsg.innerText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
-            msgContainer.appendChild(safeMsg);
-            msgContainer.scrollTop = msgContainer.scrollHeight;
+            var msgText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
+            sendChatMessageToHistory(msgText);
             showToast("Punto seguro sugerido");
         }
 
@@ -1795,21 +2103,52 @@
             if (!input || !input.value.trim()) return;
             var text = input.value.trim();
             input.value = '';
+            sendChatMessageToHistory(text);
+        }
 
-            var msgContainer = document.getElementById('chatMessages');
-            if (!msgContainer) return;
-            var newMsg = document.createElement('div');
-            newMsg.className = 'msg msg-me';
-            newMsg.innerText = text;
-            msgContainer.appendChild(newMsg);
-            msgContainer.scrollTop = msgContainer.scrollHeight;
+        function sendChatMessageToHistory(text) {
+            if (!currentPostInChat) return;
+
+            var history = [];
+            if (currentPostInChat.chat_history) {
+                try { history = JSON.parse(currentPostInChat.chat_history); } catch(e) {}
+            }
+
+            history.push({
+                sender: currentUser || 'Participante',
+                text: text,
+                isMeDevice: myDeviceId
+            });
+
+            currentPostInChat.chat_history = JSON.stringify(history);
+            renderChatMessagesFromHistory(currentPostInChat);
+
+            updatePostInCloud(currentPostInChat.id, {
+                chat_history: currentPostInChat.chat_history
+            });
         }
 
         function handleCancelDeal() {
             if (!currentPostInChat) return;
-            if (confirm("¿Deseas cancelar esta negociación y liberar el trato al muro?")) {
+            
+            var isAuthor = isCurrentUserAuthor(currentPostInChat);
+            var confirmMsg = isAuthor 
+                ? "¿Deseas rechazar esta negociación y dejar tu oportunidad activa en el muro para otros usuarios?"
+                : "¿Deseas cancelar tu postulación y liberar el trato?";
+
+            if (confirm(confirmMsg)) {
                 currentPostInChat.status = 'active';
-                updatePostInCloud(currentPostInChat.id, { status: 'active' });
+                currentPostInChat.interested_user = null;
+                currentPostInChat.interested_device = null;
+                currentPostInChat.chat_history = null;
+
+                updatePostInCloud(currentPostInChat.id, {
+                    status: 'active',
+                    interested_user: null,
+                    interested_device: null,
+                    chat_history: null
+                });
+
                 closeModal('chatModal');
                 showToast("🔓 Trato liberado nuevamente en el radar");
                 renderFeed();
@@ -1821,7 +2160,7 @@
             if (!dealConfirmations.user1) {
                 dealConfirmations.user1 = true;
                 document.getElementById('dealStatusBanner').innerText = '⏳ Esperando que la otra parte también confirme "Trato Hecho"...';
-                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada';
+                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Esperando al otro)';
                 showToast('Has marcado Trato Hecho');
             } else if (!dealConfirmations.user2) {
                 dealConfirmations.user2 = true;
@@ -1836,152 +2175,6 @@
                 updateMapMarkers();
                 updateActiveChatWidgetUI();
             }
-        }
-
-        function openNavChoice(lat, lng, destinationTitle) {
-            var isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-            var titleEl = document.getElementById('navDestinationTitle');
-            if (titleEl) titleEl.innerText = destinationTitle || "Punto de Encuentro";
-
-            var gBtn = document.getElementById('btnNavGoogle');
-            if (gBtn) gBtn.href = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng + "&travelmode=driving";
-
-            var wBtn = document.getElementById('btnNavWaze');
-            if (wBtn) wBtn.href = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
-
-            var aBtn = document.getElementById('btnNavApple');
-            if (aBtn) {
-                aBtn.href = isAppleDevice 
-                    ? "http://maps.apple.com/?daddr=" + lat + "," + lng + "&dirflg=d"
-                    : "https://maps.apple.com/?daddr=" + lat + "," + lng;
-            }
-
-            var modal = document.getElementById('navModal');
-            if (modal) modal.style.display = 'flex';
-        }
-
-        function triggerChatNavigation() {
-            if (currentPostInChat && currentPostInChat.lat && currentPostInChat.lng) {
-                openNavChoice(currentPostInChat.lat, currentPostInChat.lng, currentPostInChat.title);
-            } else {
-                showToast("Coordenadas no disponibles para este trato");
-            }
-        }
-
-        // ==========================================
-        // 5. SINCRONIZACIÓN Y SUBIDA SUPABASE
-        // ==========================================
-        function syncFromCloud() {
-            if (isSyncing) return;
-            isSyncing = true;
-            try {
-                fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
-                    method: "GET",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
-                    }
-                })
-                .then(function(res) {
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    return res.json();
-                })
-                .then(function(data) {
-                    isSyncing = false;
-                    if (data && Array.isArray(data)) {
-                        cloudPosts = data.map(function(p) {
-                            var resolvedUser = p.user_name || p.user || 'Anónimo';
-                            return {
-                                id: Number(p.id),
-                                type: p.type || 'TENGO',
-                                category: p.category || 'OBJETOS',
-                                title: p.title || '',
-                                change: p.change || '',
-                                user: resolvedUser,
-                                user_name: resolvedUser,
-                                rank: p.rank || 'Cazador Novato',
-                                location: p.location || 'Ubicación Local',
-                                lat: Number(p.lat) || 19.4326,
-                                lng: Number(p.lng) || -99.1332,
-                                discretion: Boolean(p.discretion),
-                                status: p.status || 'active',
-                                votes: Number(p.votes) || 0,
-                                created_at: Number(p.created_at) || Date.now(),
-                                expires_at: Number(p.expires_at) || (Date.now() + 3600000),
-                                isSponsor: false,
-                                creator_id: p.creator_id || resolvedUser
-                            };
-                        });
-                        posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
-                        renderFeed();
-                        updateMapMarkers();
-                        updateActiveChatWidgetUI();
-                    }
-                })
-                .catch(function() {
-                    isSyncing = false;
-                });
-            } catch(e) {
-                isSyncing = false;
-            }
-        }
-
-        function pushToCloud(item, callback) {
-            try {
-                var payload = {
-                    id: Number(item.id),
-                    type: String(item.type),
-                    category: String(item.category),
-                    title: String(item.title),
-                    change: String(item.change),
-                    "user": String(item.user),
-                    user_name: String(item.user),
-                    rank: String(item.rank),
-                    location: String(item.location),
-                    lat: Number(item.lat),
-                    lng: Number(item.lng),
-                    discretion: Boolean(item.discretion),
-                    status: String(item.status),
-                    votes: Number(item.votes),
-                    created_at: Number(item.created_at),
-                    expires_at: Number(item.expires_at),
-                    creator_id: String(item.creator_id)
-                };
-
-                fetch(SUPABASE_REST_URL, {
-                    method: "POST",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
-                    },
-                    body: JSON.stringify([payload])
-                })
-                .then(function(res) {
-                    callback(res.ok);
-                })
-                .catch(function() {
-                    callback(false);
-                });
-            } catch(e) {
-                callback(false);
-            }
-        }
-
-        function updatePostInCloud(postId, updateFields) {
-            try {
-                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
-                    method: "PATCH",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
-                    },
-                    body: JSON.stringify(updateFields)
-                }).catch(function() {});
-            } catch(e) {}
         }
 
         function handlePublish(e) {
@@ -2018,17 +2211,20 @@
                 votes: 0,
                 created_at: creationNow,
                 expires_at: calculatedExpiresAt,
-                creator_id: myDeviceId
+                creator_id: myDeviceId,
+                interested_user: null,
+                interested_device: null,
+                chat_history: null
             };
 
-            pushToCloud(newPost, function() {
+            pushToCloud(newPost, function(success) {
                 posts.unshift(newPost);
                 renderFeed();
                 updateMapMarkers();
 
                 closeModal('publishModal');
                 document.getElementById('publishForm').reset();
-                showToast('🚀 Oportunidad compartida en el radar');
+                showToast('🚀 Oportunidad compartida con todos los usuarios');
                 switchTab(type);
 
                 if (map) {
@@ -2037,16 +2233,6 @@
                 }
             });
         }
-
-        // ==========================================
-        // 6. ARRANQUE SEGURO
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', function() {
-            renderFeed();
-            updateUIForLoggedInUser();
-            initRealMap();
-            syncFromCloud();
-        });
 
         // Reloj de expiración cada segundo
         setInterval(function() {
@@ -2070,10 +2256,24 @@
             renderFeed();
         }, 1000);
 
-        // Consulta en nube cada 6 segundos
+        // Consulta en la nube cada 2.5 segundos (Refresca el chat y el muro en vivo)
         setInterval(function() {
             syncFromCloud();
-        }, 6000);
+        }, 2500);
+
+        // Arranque inicial inmediato
+        renderFeed();
+        updateUIForLoggedInUser();
+
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.display = 'none';
+                try { splash.remove(); } catch(e) {}
+            }
+            initRealMap();
+            syncFromCloud();
+        }, 1600);
     </script>
 </body>
 </html>
