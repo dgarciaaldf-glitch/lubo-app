@@ -261,15 +261,34 @@
         .card.expired { opacity: 0.7; border-color: #1e293b; }
         .card.in-deal { border: 2px solid var(--gold-bright); background: #182030; box-shadow: 0 0 20px rgba(251, 191, 36, 0.25); }
 
+        /* TARJETA DE PUBLICIDAD PATROCINADA */
         .card.sponsor-card {
             border: 2px solid #eab308;
             background: linear-gradient(145deg, #141a29 0%, #0d121f 100%);
             box-shadow: 0 4px 22px rgba(234, 179, 8, 0.25);
             overflow: hidden;
         }
+
+        .sponsor-disclaimer-bar {
+            background: rgba(234, 179, 8, 0.15);
+            border-bottom: 1px solid rgba(234, 179, 8, 0.4);
+            margin: -18px -18px 12px -18px;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sponsor-disclaimer-text {
+            font-size: 0.7rem;
+            color: var(--gold-bright);
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .sponsor-media-header {
             width: calc(100% + 36px);
-            margin: -18px -18px 14px -18px;
+            margin: -12px -18px 14px -18px;
             height: 150px;
             background-size: cover;
             background-position: center;
@@ -320,6 +339,16 @@
         }
         .btn-action:disabled { background: #1e293b; color: var(--text-sub); cursor: not-allowed; opacity: 0.6; box-shadow: none; filter: grayscale(1); }
         .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
+
+        .btn-own-post {
+            background: rgba(234, 179, 8, 0.1) !important;
+            color: var(--gold-bright) !important;
+            border: 1px solid var(--gold-bright) !important;
+            cursor: default !important;
+            font-size: 0.75rem !important;
+            padding: 8px 10px !important;
+            box-shadow: none !important;
+        }
 
         .floating-actions-row {
             position: fixed; bottom: 20px; right: 20px; z-index: 90;
@@ -680,7 +709,7 @@
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <a id="btnNavGoogle" href="#" target="_blank" class="nav-app-btn">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:1.4rem;">🗺️</span>
+                        <span style="font-size:1.4rem;">🗺️️</span>
                         <span>Google Maps</span>
                     </div>
                     <span style="color:var(--gold-bright);">Abrir ➔</span>
@@ -889,10 +918,10 @@
                 </select>
 
                 <label>¿Qué tienes o qué quieres? (Texto libre)</label>
-                <textarea id="postTitle" rows="3" placeholder="Ej. Tengo 2 botellas de tequila reposado para hoy mismo..." required></textarea>
+                <textarea id="postTitle" rows="3" placeholder="Ej. Comedor de 6 personas en madera sólida..." required></textarea>
 
                 <label>¿Pides u ofreces algo a cambio? (Opcional)</label>
-                <input type="text" id="postChange" placeholder="Ej. Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre">
+                <input type="text" id="postChange" placeholder="Ej. Que vengan por él este fin de semana">
 
                 <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold); font-size: 0.8rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -995,7 +1024,6 @@
             }
         }
 
-        // Respuesta oficial de Google Identity Services
         function handleGoogleCredentialResponse(response) {
             var data = parseJwt(response.credential);
             if (data) {
@@ -1104,7 +1132,7 @@
             if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Publicaciones iniciales
+        // Publicaciones iniciales fijas
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1140,7 +1168,21 @@
             }
         ];
 
-        var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
+        // CARGA PERSISTENTE: Cargar publicaciones guardadas por el usuario
+        function loadStoredPosts() {
+            var stored = safeStorage.get("lubo_user_posts");
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch(e) {
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        var userCreatedPosts = loadStoredPosts();
+        var posts = [].concat(userCreatedPosts, SPONSOR_POSTS, BASE_POSTS);
 
         var currentPostInChat = null;
         var dealConfirmations = { user1: false, user2: false };
@@ -1293,9 +1335,14 @@
 
                         var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
                         
-                        var actionButtonHTML = p.isSponsor 
-                            ? '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="openNavChoice(' + p.lat + ', ' + p.lng + ', \'' + p.user + '\')">🧭 Trazar Ruta GPS</button>'
-                            : '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
+                        var actionButtonHTML = '';
+                        if (p.isSponsor) {
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="openNavChoice(' + p.lat + ', ' + p.lng + ', \'' + p.user + '\')">🧭 Trazar Ruta GPS</button>';
+                        } else if (currentUser && p.user === currentUser) {
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
+                        } else {
+                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ openChat(' + p.id + '); })">Coordinar Trato</button>';
+                        }
 
                         var popupContent = 
                             '<div style="font-family: inherit; font-size: 12px; line-height: 1.4;">' +
@@ -1440,6 +1487,7 @@
             
             var welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.style.display = 'none';
+            renderFeed();
         }
 
         function updateUIForLoggedInUser() {
@@ -1496,6 +1544,7 @@
 
                 showToast('Sesión cerrada');
                 document.getElementById('welcomeScreen').style.display = 'flex';
+                renderFeed();
             }
         }
 
@@ -1589,6 +1638,7 @@
                 var isExpired = post.status === 'expired';
                 var isInDeal = post.status === 'in_deal';
                 var isSponsor = post.isSponsor;
+                var isMyOwnPost = (currentUser && post.user === currentUser && !isSponsor);
                 
                 card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
                 
@@ -1597,7 +1647,7 @@
                 
                 if (isSponsor) {
                     badgeClass = 'badge-sponsor';
-                    badgeLabel = '⭐ ESPACIO ALIADO';
+                    badgeLabel = 'ESPACIO ALIADO';
                 } else if (post.status === 'leyenda') {
                     badgeClass = 'badge-leyenda';
                     badgeLabel = 'SALÓN DE LEYENDAS 🏆';
@@ -1613,6 +1663,9 @@
                     actionBtnHTML = '<button class="btn-action" onclick="openNavChoice(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">🧭 Cómo llegar</button>';
                 } else if (isInDeal) {
                     actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ En negociación...</button>';
+                } else if (isMyOwnPost) {
+                    // BLOQUEO DE AUTOR: El autor ve su estado sin auto-interesarse
+                    actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
                 } else if (post.status === 'active') {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
                     actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ openChat(' + post.id + '); })">' + actionText + '</button>';
@@ -1621,6 +1674,14 @@
                 } else {
                     actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
                 }
+
+                // ETIQUETA CLARA DE PUBLICIDAD PAGADA PARA ALIADOS
+                var sponsorDisclaimerHTML = isSponsor
+                    ? '<div class="sponsor-disclaimer-bar">' +
+                          '<span class="sponsor-disclaimer-text">📢 Publicidad Pagada • Aliado Comercial Oficial</span>' +
+                          '<span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span>' +
+                      '</div>'
+                    : '';
 
                 var mediaHeaderHTML = (isSponsor && post.imageUrl) 
                     ? '<div class="sponsor-media-header" style="background-image: url(\'' + post.imageUrl + '\');"><div class="sponsor-media-overlay"></div></div>'
@@ -1631,15 +1692,15 @@
                     : (post.status === 'active' 
                         ? '<span class="timer">⏱️ ' + formatTime(post.timeLeft) + '</span>' 
                         : (isInDeal 
-                            ? '<span class="timer" style="color:var(--gold-bright);">⏸️ En Pausa</span>' 
+                            ? '<span class="timer" style="color:var(--gold-bright);">⏸️️ En Pausa</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:var(--text-sub);">⌛ Vencido</span>' 
                                 : '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>')));
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
-                // Generación limpia de HTML con concatenación estricta de post.location
                 card.innerHTML = 
+                    sponsorDisclaimerHTML +
                     mediaHeaderHTML +
                     '<div class="card-header">' +
                         '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
@@ -1778,7 +1839,7 @@
             var finalLng = userCapturedCoords ? userCapturedCoords.lng : -99.1332;
 
             var newPost = {
-                id: posts.length + 1,
+                id: Date.now(), // ID único basado en tiempo
                 type: type,
                 category: category,
                 title: title,
@@ -1795,13 +1856,17 @@
                 timeLeft: timer
             };
 
+            // Guardado en memoria y persistencia local inmediata
+            userCreatedPosts.unshift(newPost);
+            safeStorage.set("lubo_user_posts", JSON.stringify(userCreatedPosts));
+
             posts.unshift(newPost);
             renderFeed();
             updateMapMarkers();
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad viva en el radar');
+            showToast('🚀 Oportunidad guardada y viva en el radar');
             switchTab(type);
 
             if (map) {
@@ -1811,15 +1876,19 @@
 
         // Manejador del ciclo de temporizadores
         setInterval(function() {
+            var changed = false;
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
                 if (p.status === 'active' && p.timeLeft > 0 && !p.isSponsor) {
                     p.timeLeft--;
                     if (p.timeLeft === 0) {
                         p.status = 'expired';
-                        updateMapMarkers();
+                        changed = true;
                     }
                 }
+            }
+            if (changed) {
+                updateMapMarkers();
             }
             renderFeed();
         }, 1000);
