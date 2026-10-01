@@ -41,7 +41,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 2.2s forwards;
+            animation: autoHideSplash 0.5s ease-out 2.0s forwards;
         }
         @keyframes autoHideSplash {
             0% { opacity: 1; visibility: visible; }
@@ -66,7 +66,7 @@
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 2.1s linear forwards;
+            animation: fillLoading 1.9s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
@@ -261,7 +261,6 @@
         .card.expired { opacity: 0.85; border-color: #334155; }
         .card.in-deal { border: 2px solid var(--gold-bright); background: #182030; box-shadow: 0 0 20px rgba(251, 191, 36, 0.25); }
 
-        /* TARJETA DE PUBLICIDAD PATROCINADA */
         .card.sponsor-card {
             border: 2px solid #eab308;
             background: linear-gradient(145deg, #141a29 0%, #0d121f 100%);
@@ -486,7 +485,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA (SÓLO SI NO HAY SESIÓN) -->
+    <!-- PANTALLA 1: BIENVENIDA (SÓLO SI NO HAY SESIÓN) -->
     <div id="welcomeScreen">
         <div class="welcome-hero">
             <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
@@ -609,10 +608,10 @@
                 <div style="margin-top: 12px;">
                     <label style="font-size:0.75rem; color:var(--text-sub); font-weight:bold;">Radio de Búsqueda:</label>
                     <div class="radius-picker">
-                        <button class="radius-btn" onclick="setRadius(this, '1 km', 15)">1 km</button>
-                        <button class="radius-btn active" onclick="setRadius(this, '3 km', 13)">3 km</button>
-                        <button class="radius-btn" onclick="setRadius(this, '5 km', 12)">5 km</button>
-                        <button class="radius-btn" onclick="setRadius(this, '+10 km', 11)">+10 km</button>
+                        <button type="button" class="radius-btn" onclick="setRadius(this, '1 km', 15)">1 km</button>
+                        <button type="button" class="radius-btn active" onclick="setRadius(this, '3 km', 13)">3 km</button>
+                        <button type="button" class="radius-btn" onclick="setRadius(this, '5 km', 12)">5 km</button>
+                        <button type="button" class="radius-btn" onclick="setRadius(this, '+10 km', 11)">+10 km</button>
                     </div>
                 </div>
             </div>
@@ -992,9 +991,10 @@
     </div>
 
     <script>
-        const GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
-        const SUPABASE_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
+        // CONFIGURACIONES BÁSICAS
+        var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
+        var SUPABASE_ENDPOINT = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
+        var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
 
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
@@ -1026,19 +1026,26 @@
                 var fullName = data.name || data.given_name;
                 var picture = data.picture;
 
-                document.getElementById('googleVerifiedBox').style.display = 'block';
-                document.getElementById('verifiedEmailText').innerText = email;
-                document.getElementById('finalAliasInput').value = fullName;
+                var vBox = document.getElementById('googleVerifiedBox');
+                var vEmail = document.getElementById('verifiedEmailText');
+                var vAlias = document.getElementById('finalAliasInput');
+                var vBtn = document.getElementById('btnFinishRegistration');
+                
+                if (vBox) vBox.style.display = 'block';
+                if (vEmail) vEmail.innerText = email;
+                if (vAlias) vAlias.value = fullName;
                 
                 if (picture) {
                     var img = document.getElementById('verifiedUserAvatar');
-                    img.src = picture;
-                    img.style.display = 'block';
+                    if (img) {
+                        img.src = picture;
+                        img.style.display = 'block';
+                    }
                     safeStorage.set("lubo_photo", picture);
                     currentUserPhoto = picture;
                 }
 
-                document.getElementById('btnFinishRegistration').style.display = 'block';
+                if (vBtn) vBtn.style.display = 'block';
                 showToast("✓ Cuenta de Google autenticada");
             }
         }
@@ -1066,7 +1073,6 @@
                 });
             } catch (err) {
                 console.error("Error al contactar a Google:", err);
-                alert("Verifica que lubo.com.mx esté registrado en 'Orígenes autorizados de JavaScript' dentro de Google Cloud Console.");
             }
         }
 
@@ -1128,9 +1134,9 @@
             if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        var nowTimestamp = Date.now();
+        var nowTime = Date.now();
 
-        // PUBLICIDAD PATROCINADA: Fecha fija de creación para que baje conforme se publiquen cosas nuevas
+        // PATROCINADOR FIJO CON FECHA ANTIGUA PARA QUE LO NUEVO SUBA
         var SPONSOR_POSTS = [
             {
                 id: 9991, type: 'SPONSOR', category: 'AVENTURAS',
@@ -1139,20 +1145,21 @@
                 imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
                 user: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
                 created_at: 1000000000000,
-                expires_at: nowTimestamp + (999999 * 1000), location: 'Del Valle Centro, CDMX',
+                expires_at: nowTime + 999999000,
+                location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120
             }
         ];
 
-        // EJEMPLOS ANTERIORES: TOTALMENTE EXPIRADOS
+        // EJEMPLOS BASE CON TIEMPO EXPIRADO
         var BASE_POSTS = [
             {
                 id: 10001, type: 'TENGO', category: 'OBJETOS',
                 title: 'Tengo 2 botellas de Tequila Reposado selladas',
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
                 user: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
-                created_at: nowTimestamp - 7200000,
-                expires_at: nowTimestamp - 3600000,
+                created_at: nowTime - 7200000,
+                expires_at: nowTime - 3600000,
                 location: 'Coyoacán, CDMX', 
                 lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'expired', votes: 12
             },
@@ -1161,8 +1168,8 @@
                 title: 'Yo quiero un trabajo de fin de semana por las madrugadas (tengo insomnio y quiero aprovechar el tiempo)',
                 change: 'Abierto a propuestas',
                 user: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
-                created_at: nowTimestamp - 90000000,
-                expires_at: nowTimestamp - 3600000,
+                created_at: nowTime - 90000000,
+                expires_at: nowTime - 3600000,
                 location: 'Benito Juárez, CDMX', 
                 lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'expired', votes: 5
             },
@@ -1171,33 +1178,43 @@
                 title: 'DEPARTAMENTO CEDIDO: Regalé la posesión de un departamento a cambio de limpiar y vaciar la propiedad en 24 horas.',
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
                 user: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
-                created_at: nowTimestamp - 150000000,
-                expires_at: nowTimestamp - 1000, location: 'Cuauhtémoc, CDMX', 
+                created_at: nowTime - 150000000,
+                expires_at: nowTime - 1000, location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48
             }
         ];
 
+        // Memoria local garantizada
+        function getLocalStoredPosts() {
+            var raw = safeStorage.get("lubo_user_posts");
+            if (raw) {
+                try { return JSON.parse(raw); } catch(e) { return []; }
+            }
+            return [];
+        }
+
+        var localUserPosts = getLocalStoredPosts();
         var cloudPosts = [];
-        var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
+        var posts = [].concat(localUserPosts, SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // FUNCIONES DE SINCRONIZACIÓN SUPABASE (BLINDADAS)
+        // SINCRONIZACIÓN EN NUBE 100% AISLADA
         // ==========================================
-        function fetchPostsFromSupabase() {
+        function syncFromCloud() {
             try {
-                fetch(SUPABASE_URL + "/posts?select=*&order=created_at.desc", {
+                fetch(SUPABASE_ENDPOINT + "?select=*&order=created_at.desc", {
                     method: "GET",
                     headers: {
                         "apikey": SUPABASE_KEY,
                         "Authorization": "Bearer " + SUPABASE_KEY
                     }
                 })
-                .then(function(res) { 
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    return res.json(); 
+                .then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
                 })
                 .then(function(data) {
-                    if (Array.isArray(data)) {
+                    if (data && Array.isArray(data)) {
                         cloudPosts = data.map(function(p) {
                             return {
                                 id: Number(p.id),
@@ -1218,25 +1235,32 @@
                                 isSponsor: false
                             };
                         });
-                        posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
+                        // Fusión sin duplicados
+                        var idMap = {};
+                        var merged = [];
+                        for (var i = 0; i < cloudPosts.length; i++) {
+                            idMap[cloudPosts[i].id] = true;
+                            merged.push(cloudPosts[i]);
+                        }
+                        for (var j = 0; j < localUserPosts.length; j++) {
+                            if (!idMap[localUserPosts[j].id]) {
+                                merged.push(localUserPosts[j]);
+                            }
+                        }
+                        posts = [].concat(merged, SPONSOR_POSTS, BASE_POSTS);
                         renderFeed();
                         updateMapMarkers();
                     }
                 })
                 .catch(function(err) {
-                    console.warn("Aviso Supabase: usando tratos base locales.", err);
-                    posts = [].concat(cloudPosts, SPONSOR_POSTS, BASE_POSTS);
-                    renderFeed();
-                    updateMapMarkers();
+                    // Si falla la red no hace nada, la app sigue normal
                 });
-            } catch(e) {
-                console.warn("Excepción de red protegida:", e);
-            }
+            } catch(e) {}
         }
 
-        function savePostToSupabase(newPost) {
+        function pushToCloud(item) {
             try {
-                fetch(SUPABASE_URL + "/posts", {
+                fetch(SUPABASE_ENDPOINT, {
                     method: "POST",
                     headers: {
                         "apikey": SUPABASE_KEY,
@@ -1245,50 +1269,23 @@
                         "Prefer": "return=minimal"
                     },
                     body: JSON.stringify({
-                        id: newPost.id,
-                        type: newPost.type,
-                        category: newPost.category,
-                        title: newPost.title,
-                        change: newPost.change,
-                        user: newPost.user,
-                        rank: newPost.rank,
-                        location: newPost.location,
-                        lat: newPost.lat,
-                        lng: newPost.lng,
-                        discretion: newPost.discretion,
-                        status: newPost.status,
-                        votes: newPost.votes,
-                        created_at: newPost.created_at,
-                        expires_at: newPost.expires_at
+                        id: item.id,
+                        type: item.type,
+                        category: item.category,
+                        title: item.title,
+                        change: item.change,
+                        user: item.user,
+                        rank: item.rank,
+                        location: item.location,
+                        lat: item.lat,
+                        lng: item.lng,
+                        discretion: item.discretion,
+                        status: item.status,
+                        votes: item.votes,
+                        created_at: item.created_at,
+                        expires_at: item.expires_at
                     })
-                })
-                .then(function() {
-                    fetchPostsFromSupabase();
-                })
-                .catch(function(err) {
-                    console.error("Error al guardar en Supabase:", err);
-                });
-            } catch(e) {}
-        }
-
-        function updatePostInSupabase(postId, fields) {
-            try {
-                fetch(SUPABASE_URL + "/posts?id=eq." + postId, {
-                    method: "PATCH",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
-                    },
-                    body: JSON.stringify(fields)
-                })
-                .then(function() {
-                    fetchPostsFromSupabase();
-                })
-                .catch(function(err) {
-                    console.error("Error al actualizar en Supabase:", err);
-                });
+                }).catch(function() {});
             } catch(e) {}
         }
 
@@ -1346,10 +1343,8 @@
                 var mapBox = document.getElementById('mapBox');
                 if (!mapBox) return;
 
-                var cdmxCenter = [19.3900, -99.1550];
-
                 map = L.map('mapBox', {
-                    center: cdmxCenter,
+                    center: [19.3900, -99.1550],
                     zoom: 13,
                     zoomControl: true,
                     attributionControl: false
@@ -1365,9 +1360,9 @@
 
                 setTimeout(function() {
                     if (map) map.invalidateSize();
-                }, 400);
+                }, 300);
             } catch(e) {
-                console.error("Error iniciando Leaflet:", e);
+                console.error("Leaflet init error:", e);
             }
         }
 
@@ -1397,6 +1392,7 @@
                             callbackCenter(userCapturedCoords.lat, userCapturedCoords.lng);
                         } else if (!forPublishingModal && map) {
                             map.setView([userCapturedCoords.lat, userCapturedCoords.lng], 14);
+                            map.invalidateSize();
                         }
                     },
                     function(error) {
@@ -1707,7 +1703,7 @@
                 setTimeout(function() {
                     renderFeed();
                     feed.classList.remove('flash-update');
-                }, 100);
+                }, 80);
 
                 if (window.innerWidth < 1024) {
                     feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1823,7 +1819,7 @@
                             ? '<span class="timer" style="color:var(--gold-bright);">⏸ En Pausa</span>' 
                             : (isExpired 
                                 ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
-                                : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
+                                : '<span class="timer">⏱️️ ' + formatTime(secondsLeft) + '</span>')));
 
                 var avatarDisplay = post.user ? post.user[0] : 'U';
 
@@ -1847,7 +1843,7 @@
                                 '<div style="display:flex; align-items:center; gap:6px;">' +
                                     '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
                                     '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
-                                </div>' +
+                                '</div>' +
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
@@ -1868,17 +1864,11 @@
             if (!post) return;
             post.votes = (post.votes || 0) + 1;
             
-            var newStatus = post.status;
             if (post.votes >= 26) {
-                newStatus = 'leyenda';
                 post.status = 'leyenda';
                 showToast("🎉 ¡Promovido al SALÓN DE LEYENDAS! 🏆");
             } else {
                 showToast("👍 Voto registrado (" + post.votes + "/26)");
-            }
-
-            if (postId < 9000 || postId > 20000) {
-                updatePostInSupabase(postId, { votes: post.votes, status: newStatus });
             }
 
             renderFeed();
@@ -1907,10 +1897,6 @@
             
             currentPostInChat = post;
             post.status = 'in_deal';
-
-            if (postId < 9000 || postId > 20000) {
-                updatePostInSupabase(postId, { status: 'in_deal' });
-            }
 
             renderFeed();
             updateMapMarkers();
@@ -1945,9 +1931,6 @@
                 dealConfirmations.user2 = true;
                 if (currentPostInChat) {
                     currentPostInChat.status = 'leyenda';
-                    if (currentPostInChat.id < 9000 || currentPostInChat.id > 20000) {
-                        updatePostInSupabase(currentPostInChat.id, { status: 'leyenda' });
-                    }
                 }
                 document.getElementById('dealStatusBanner').innerText = '🎉 ¡AMBAS PARTES CONFIRMARON EL TRATO HECHO!';
                 showToast('🎉 ¡Trato cerrado con éxito!');
@@ -2006,16 +1989,21 @@
                 expires_at: calculatedExpiresAt
             };
 
-            // Publicación inmediata local y remota
+            // Guarda inmediatamente en el dispositivo
+            localUserPosts.unshift(newPost);
+            safeStorage.set("lubo_user_posts", JSON.stringify(localUserPosts));
+
+            // Actualiza la vista de inmediato
             posts.unshift(newPost);
             renderFeed();
             updateMapMarkers();
 
-            savePostToSupabase(newPost);
+            // Envía a la nube en segundo plano
+            pushToCloud(newPost);
 
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
-            showToast('🚀 Oportunidad viva en el radar y sincronizada');
+            showToast('🚀 Oportunidad viva en el radar');
             switchTab(type);
 
             if (map) {
@@ -2024,7 +2012,7 @@
             }
         }
 
-        // CICLO DE TIEMPO REAL: Revisa el vencimiento cada segundo
+        // CICLO DE TIEMPO REAL: Revisa el reloj local cada segundo
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2035,9 +2023,6 @@
                     if (currentTime >= p.expires_at) {
                         p.status = 'expired';
                         statusChanged = true;
-                        if (p.id < 9000 || p.id > 20000) {
-                            updatePostInSupabase(p.id, { status: 'expired' });
-                        }
                     }
                 }
             }
@@ -2048,10 +2033,10 @@
             renderFeed();
         }, 1000);
 
-        // POLLING: Sincroniza novedades de Supabase cada 6 segundos automáticamente
+        // SINCRONIZACIÓN SUAVE: Pide datos cada 8 segundos sin tocar el hilo principal
         setInterval(function() {
-            fetchPostsFromSupabase();
-        }, 6000);
+            syncFromCloud();
+        }, 8000);
 
         // Arranque inicial inmediato
         renderFeed();
@@ -2062,8 +2047,8 @@
             var splash = document.getElementById('splashScreen');
             if (splash) splash.style.display = 'none';
             initRealMap();
-            fetchPostsFromSupabase();
-        }, 2300);
+            syncFromCloud();
+        }, 2100);
     </script>
 </body>
 </html>
