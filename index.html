@@ -1958,7 +1958,7 @@
                     }
                 })
                 .then(function(res) {
-                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    if (!res.ok) return null;
                     return res.json();
                 })
                 .then(function(data) {
@@ -1995,7 +1995,7 @@
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
 
-                        // AUTO-ACTUALIZAR MENSAJES SI EL CHAT ESTÁ ABIERTO
+                        // Sincronizar mensajes en vivo si el modal de chat está abierto
                         if (currentPostInChat) {
                             for (var k = 0; k < posts.length; k++) {
                                 if (posts[k].id === currentPostInChat.id) {
@@ -2136,14 +2136,20 @@
         }
 
         // ==========================================
-        // ARRANQUE SEGURO
+        // ARRANQUE DIRECTO
         // ==========================================
         renderFeed();
         updateUIForLoggedInUser();
         initRealMap();
         syncFromCloud();
 
-        // Reloj de expiración cada segundo
+        // Destruir cualquier residuo del splash de inmediato
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) splash.remove();
+        }, 1200);
+
+        // Ciclo de expiración
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2165,7 +2171,7 @@
             renderFeed();
         }, 1000);
 
-        // Sincronización continua cada 3 segundos
+        // Sincronización continua en segundo plano cada 3 segundos
         setInterval(function() {
             syncFromCloud();
         }, 3000);
