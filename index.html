@@ -31,10 +31,63 @@
             --live-green-glow: 0 0 10px rgba(34, 197, 94, 0.85);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
 
         p, div, label { text-align: justify; }
+
+        /* PANTALLA 0: SPLASH SCREEN LUBÓ */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020617;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            animation: autoHideSplash 0.5s ease-out 1.5s forwards;
+            pointer-events: none;
+        }
+        @keyframes autoHideSplash {
+            0% { opacity: 1; visibility: visible; }
+            90% { opacity: 0; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        
+        .lubo-splash-title { 
+            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+        }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+
+        .loader-container {
+            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: var(--gold-gradient);
+            box-shadow: var(--gold-glow);
+            animation: fillLoading 1.4s linear forwards;
+        }
+        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* PANTALLA 1: BIENVENIDA */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
+            z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .welcome-hero { 
+            max-width: 500px; width: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-hero h1 { 
+            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
+        }
+        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
 
         /* HEADER */
         header {
@@ -149,8 +202,12 @@
         }
 
         .mini-map {
-            width: 100%; height: 300px; background: #090d16; border-radius: 10px; border: 1px solid var(--border-gold);
+            width: 100%; height: 300px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
+        }
+
+        .leaflet-tile-pane {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
         }
 
         .map-marker-pin {
@@ -442,6 +499,34 @@
 <body>
 
     <div id="toast">Notificación</div>
+
+    <!-- PANTALLA 0: SPLASH SCREEN LUBÓ -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <div class="trident-splash">🔱</div>
+            <div class="lubo-splash-title">Lubó</div>
+            <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
+            
+            <div class="loader-container">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: BIENVENIDA -->
+    <div id="welcomeScreen">
+        <div class="welcome-hero">
+            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
+            <h1>Lubó</h1>
+            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
+            <p>
+                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
+            </p>
+            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
+                Iniciar Experiencia
+            </button>
+        </div>
+    </div>
 
     <!-- HEADER -->
     <header>
@@ -751,7 +836,6 @@
                     <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
                     <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
                 </div>
-                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
@@ -1049,6 +1133,12 @@
             if (reg) reg.style.display = 'flex';
         }
 
+        function goToRegister() {
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            openRegisterModal();
+        }
+
         function openPrivacyModal() {
             var p = document.getElementById('privacyModal');
             if (p) p.style.display = 'flex';
@@ -1309,11 +1399,17 @@
             updateUIForLoggedInUser();
             showToast("¡Bienvenido a Lubó, " + alias + "!");
             closeModal('registerModal');
+            
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
             renderFeed();
         }
 
         function updateUIForLoggedInUser() {
             if (currentUser) {
+                var welcome = document.getElementById('welcomeScreen');
+                if (welcome) welcome.style.display = 'none';
+
                 var btnAuth = document.getElementById('btnAuthHeader');
                 if (btnAuth) btnAuth.style.display = 'none';
 
@@ -1465,7 +1561,7 @@
                     attributionControl: false
                 });
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19
                 }).addTo(map);
 
@@ -1473,8 +1569,7 @@
                 updateMapMarkers();
                 detectCurrentLocation(false);
 
-                setTimeout(function() { if (map) map.invalidateSize(); }, 200);
-                setTimeout(function() { if (map) map.invalidateSize(); }, 800);
+                setTimeout(function() { if (map) map.invalidateSize(); }, 300);
             } catch(e) {}
         }
 
@@ -1994,19 +2089,6 @@
                         renderFeed();
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
-
-                        // Sincronizar mensajes en vivo si el modal de chat está abierto
-                        if (currentPostInChat) {
-                            for (var k = 0; k < posts.length; k++) {
-                                if (posts[k].id === currentPostInChat.id) {
-                                    if (posts[k].chat_history !== currentPostInChat.chat_history) {
-                                        currentPostInChat.chat_history = posts[k].chat_history;
-                                        renderChatMessagesFromHistory(currentPostInChat);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
                     }
                 })
                 .catch(function() {
@@ -2136,20 +2218,13 @@
         }
 
         // ==========================================
-        // ARRANQUE DIRECTO
+        // ARRANQUE SEGURO
         // ==========================================
         renderFeed();
         updateUIForLoggedInUser();
         initRealMap();
         syncFromCloud();
 
-        // Destruir cualquier residuo del splash de inmediato
-        setTimeout(function() {
-            var splash = document.getElementById('splashScreen');
-            if (splash) splash.remove();
-        }, 1200);
-
-        // Ciclo de expiración
         setInterval(function() {
             var currentTime = Date.now();
             var statusChanged = false;
@@ -2171,10 +2246,15 @@
             renderFeed();
         }, 1000);
 
-        // Sincronización continua en segundo plano cada 3 segundos
         setInterval(function() {
             syncFromCloud();
-        }, 3000);
+        }, 3500);
+
+        setTimeout(function() {
+            var splash = document.getElementById('splashScreen');
+            if (splash) splash.style.display = 'none';
+            initRealMap();
+        }, 1600);
     </script>
 </body>
 </html>
