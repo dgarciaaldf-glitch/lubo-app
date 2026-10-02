@@ -36,6 +36,59 @@
 
         p, div, label { text-align: justify; }
 
+        /* PANTALLA 0: SPLASH SCREEN LUBÓ */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020617;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            animation: autoHideSplash 0.5s ease-out 1.5s forwards;
+            pointer-events: none;
+        }
+        @keyframes autoHideSplash {
+            0% { opacity: 1; visibility: visible; }
+            90% { opacity: 0; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; display: none; }
+        }
+
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        
+        .lubo-splash-title { 
+            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+        }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+
+        .loader-container {
+            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: var(--gold-gradient);
+            box-shadow: var(--gold-glow);
+            animation: fillLoading 1.4s linear forwards;
+        }
+        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* PANTALLA 1: BIENVENIDA OBLIGATORIA (CUANDO NO HAY SESIÓN) */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
+            z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .welcome-hero { 
+            max-width: 500px; width: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-hero h1 { 
+            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
+        }
+        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+
         /* HEADER */
         header {
             background: #020617; padding: 12px 20px; border-bottom: 1px solid var(--border-gold); position: sticky; top: 0; z-index: 100;
@@ -443,7 +496,7 @@
 
     <div id="toast">Notificación</div>
 
-    <!-- PANTALLA 0: SPLASH SCREEN EFÍMERO -->
+    <!-- PANTALLA 0: SPLASH SCREEN LUBÓ -->
     <div id="splashScreen">
         <div class="splash-content">
             <div class="trident-splash">🔱</div>
@@ -453,6 +506,21 @@
             <div class="loader-container">
                 <div class="loader-bar"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA (CUANDO NO HAY SESIÓN) -->
+    <div id="welcomeScreen">
+        <div class="welcome-hero">
+            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
+            <h1>Lubó</h1>
+            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
+            <p>
+                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
+            </p>
+            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
+                Iniciar Experiencia
+            </button>
         </div>
     </div>
 
@@ -1035,7 +1103,7 @@
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
         // ==========================================
-        // FUNCIONES DE CONTROL DE INTERFAZ
+        // FUNCIONES DE CONTROL DE INTERFAZ (100% AISLADAS)
         // ==========================================
         function toggleDrawer(open) {
             var overlay = document.getElementById('drawerOverlay');
@@ -1063,6 +1131,12 @@
         function openRegisterModal() {
             var reg = document.getElementById('registerModal');
             if (reg) reg.style.display = 'flex';
+        }
+
+        function goToRegister() {
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            openRegisterModal();
         }
 
         function openPrivacyModal() {
@@ -1325,11 +1399,17 @@
             updateUIForLoggedInUser();
             showToast("¡Bienvenido a Lubó, " + alias + "!");
             closeModal('registerModal');
+            
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
             renderFeed();
         }
 
         function updateUIForLoggedInUser() {
+            var welcome = document.getElementById('welcomeScreen');
             if (currentUser) {
+                if (welcome) welcome.style.display = 'none';
+
                 var btnAuth = document.getElementById('btnAuthHeader');
                 if (btnAuth) btnAuth.style.display = 'none';
 
@@ -1350,6 +1430,8 @@
 
                 var logoutBtn = document.getElementById('drawerLogoutBtn');
                 if (logoutBtn) logoutBtn.style.display = 'block';
+            } else {
+                if (welcome) welcome.style.display = 'flex';
             }
         }
 
@@ -1375,6 +1457,7 @@
                 document.getElementById('btnFinishRegistration').disabled = true;
 
                 showToast('Sesión cerrada');
+                updateUIForLoggedInUser();
                 renderFeed();
             }
         }
@@ -1558,7 +1641,7 @@
                     if (p.status === 'active' && p.lat && p.lng) {
                         var iconEmoji = '📦';
                         if (p.isSponsor) iconEmoji = '⭐';
-                        else if (p.category === 'FAVORES') iconEmoji = '🛠️️';
+                        else if (p.category === 'FAVORES') iconEmoji = '🛠️';
                         else if (p.category === 'RELAMPAGO') iconEmoji = '⚡';
                         else if (p.category === 'SOLIDARIDAD') iconEmoji = '🤝';
                         else if (p.category === 'AVENTURAS') iconEmoji = '🎲';
@@ -1967,9 +2050,6 @@
             }
         }
 
-        // ==========================================
-        // SINCRONIZACIÓN SUPABASE AISLADA
-        // ==========================================
         function syncFromCloud() {
             if (isSyncing) return;
             isSyncing = true;
@@ -2018,6 +2098,18 @@
                         renderFeed();
                         updateMapMarkers();
                         updateActiveChatWidgetUI();
+
+                        if (currentPostInChat) {
+                            for (var k = 0; k < posts.length; k++) {
+                                if (posts[k].id === currentPostInChat.id) {
+                                    if (posts[k].chat_history !== currentPostInChat.chat_history) {
+                                        currentPostInChat.chat_history = posts[k].chat_history;
+                                        renderChatMessagesFromHistory(currentPostInChat);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
                     }
                 })
                 .catch(function() {
@@ -2149,20 +2241,12 @@
         // ==========================================
         // ARRANQUE SEGURO
         // ==========================================
-        renderFeed();
-        updateUIForLoggedInUser();
-        initRealMap();
-        syncFromCloud();
-
-        // Destruir Splash Screen tras carga
-        setTimeout(function() {
-            var splash = document.getElementById('splashScreen');
-            if (splash) {
-                splash.style.display = 'none';
-                try { splash.remove(); } catch(e) {}
-            }
-            if (map) map.invalidateSize();
-        }, 1300);
+        window.addEventListener('DOMContentLoaded', function() {
+            renderFeed();
+            updateUIForLoggedInUser();
+            initRealMap();
+            syncFromCloud();
+        });
 
         // Reloj de expiración cada segundo
         setInterval(function() {
@@ -2186,10 +2270,10 @@
             renderFeed();
         }, 1000);
 
-        // Sincronización continua en segundo plano cada 4 segundos
+        // Sincronización continua en segundo plano cada 3 segundos
         setInterval(function() {
             syncFromCloud();
-        }, 4000);
+        }, 3000);
     </script>
 </body>
 </html>
