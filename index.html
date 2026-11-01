@@ -41,7 +41,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617;
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            animation: autoHideSplash 0.5s ease-out 1.5s forwards;
+            animation: autoHideSplash 0.5s ease-out 1.4s forwards;
             pointer-events: none;
         }
         @keyframes autoHideSplash {
@@ -67,7 +67,7 @@
         .loader-bar {
             width: 0%; height: 100%; background: var(--gold-gradient);
             box-shadow: var(--gold-glow);
-            animation: fillLoading 1.4s linear forwards;
+            animation: fillLoading 1.3s linear forwards;
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
@@ -202,7 +202,7 @@
         }
 
         .mini-map {
-            width: 100%; height: 300px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
+            width: 100%; height: 300px; background: #090d16; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
         }
 
@@ -422,21 +422,13 @@
         }
 
         .chat-box {
-            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px; position: relative;
+            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
         }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.3; text-align: justify; }
         .msg-them { background: #1e293b; align-self: flex-start; color: #fff; border: 1px solid var(--border-gold); }
         .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
         .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
-
-        .typing-status-bar {
-            font-size: 0.75rem;
-            color: var(--gold-bright);
-            font-style: italic;
-            padding: 4px 6px;
-            display: none;
-        }
 
         .btn-safe-point {
             background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);
@@ -517,7 +509,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: BIENVENIDA (OBLIGATORIA SI NO HAY SESIÓN) -->
+    <!-- PANTALLA 1: BIENVENIDA (SÓLO SI NO HAY SESIÓN) -->
     <div id="welcomeScreen">
         <div class="welcome-hero">
             <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
@@ -840,6 +832,7 @@
                     <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
                     <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
                 </div>
+                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
@@ -984,7 +977,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHAT EFÍMERO CON INDICADOR DE ESCRITURA Y CANCELACIÓN -->
+    <!-- MODAL CHAT EFÍMERO CON PUNTO SEGURO Y CANCELACIÓN -->
     <div id="chatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1003,9 +996,8 @@
                 <div class="chat-messages" id="chatMessages">
                     <div class="msg msg-them">¡Hola! Vi tu publicación y me interesa coordinar contigo.</div>
                 </div>
-                <div id="typingStatusBar" class="typing-status-bar">✍️ La contraparte está escribiendo...</div>
                 <div class="chat-input-row">
-                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;" oninput="handleTypingEvent()">
+                    <input type="text" id="chatInput" placeholder="Escribe las indicaciones o detalles..." style="flex:1;">
                     <button class="btn-action" onclick="sendMessage()">Enviar</button>
                 </div>
             </div>
@@ -1025,6 +1017,7 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN DE ACCESO Y PERSISTENCIA
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
         var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
@@ -1055,6 +1048,7 @@
         var dealConfirmations = { user1: false, user2: false };
         var isSyncing = false;
 
+        // EJEMPLOS FICTICIOS BASE GARANTIZADOS PARA PRIMEROS USUARIOS
         var nowTime = Date.now();
         var SPONSOR_POSTS = [
             {
@@ -1063,7 +1057,7 @@
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
                 user: 'Café Obsidiana', user_name: 'Café Obsidiana', rank: 'Aliado Oficial', rating: '5.0',
-                created_at: 1000000000000,
+                created_at: nowTime,
                 expires_at: nowTime + 999999000,
                 location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active', votes: 120,
@@ -1078,9 +1072,9 @@
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
                 user: 'Diego I.', user_name: 'Diego I.', rank: 'Pacto de Confianza', rating: '4.9',
                 created_at: nowTime - 7200000,
-                expires_at: nowTime - 3600000,
+                expires_at: nowTime + 7200000,
                 location: 'Coyoacán, CDMX', 
-                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'expired', votes: 12,
+                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active', votes: 12,
                 creator_id: 'example_diego'
             },
             {
@@ -1089,9 +1083,9 @@
                 change: 'Abierto a propuestas',
                 user: 'Anónimo', user_name: 'Anónimo', rank: 'Cazador Novato', rating: '5.0',
                 created_at: nowTime - 90000000,
-                expires_at: nowTime - 3600000,
+                expires_at: nowTime + 86400000,
                 location: 'Benito Juárez, CDMX', 
-                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'expired', votes: 5,
+                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active', votes: 5,
                 creator_id: 'example_anon'
             },
             {
@@ -1100,7 +1094,8 @@
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
                 user: 'Anónimo', user_name: 'Anónimo', rank: 'Leyenda Urbana', rating: '5.0',
                 created_at: nowTime - 150000000,
-                expires_at: nowTime - 1000, location: 'Cuauhtémoc, CDMX', 
+                expires_at: nowTime - 1000,
+                location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda', votes: 48,
                 creator_id: 'example_legend'
             }
@@ -1109,6 +1104,7 @@
         var cloudPosts = [];
         var posts = [].concat(SPONSOR_POSTS, BASE_POSTS);
 
+        // FUNCIONES DE CONTROL DE INTERFAZ
         function toggleDrawer(open) {
             var overlay = document.getElementById('drawerOverlay');
             var drawer = document.getElementById('drawerContent');
@@ -1277,7 +1273,8 @@
 
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
-                var secondsLeft = Math.max(0, Math.floor(((p.expires_at || 0) - currentTime) / 1000));
+                var expires = Number(p.expires_at) || 0;
+                var secondsLeft = Math.max(0, Math.floor((expires - currentTime) / 1000));
                 
                 if (p.status === 'active' && !p.isSponsor) activeCount++;
                 if (p.status === 'active' && secondsLeft <= 1800 && secondsLeft > 0 && !p.isSponsor) expiringCount++;
@@ -1372,7 +1369,7 @@
                 if (btn) btn.disabled = false;
                 var now = new Date();
                 if (timeLabel) {
-                    timeLabel.innerText = "Consentimiento voluntario registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                    timeLabel.innerText = "Consentimiento registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
                     timeLabel.style.display = 'block';
                 }
             } else {
@@ -1513,7 +1510,7 @@
         function triggerOfficialGoogleLogin() {
             try {
                 if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-                    showToast("Cargando servicios de Google... Reintenta en 2 segundos");
+                    showToast("Cargando Google... Reintenta en un momento");
                     return;
                 }
 
@@ -1531,9 +1528,7 @@
                         );
                     }
                 });
-            } catch (err) {
-                console.error("Error al contactar a Google:", err);
-            }
+            } catch (err) {}
         }
 
         function handlePushToggle(checkbox) {
@@ -1552,9 +1547,7 @@
             document.getElementById('legendModal').style.display = 'flex';
         }
 
-        // ==========================================
         // MAPA LEAFLET RESILIENTE
-        // ==========================================
         function initRealMap() {
             try {
                 if (map) return;
@@ -1639,455 +1632,4 @@
 
         function updateMapMarkers() {
             try {
-                if (!markersLayer || typeof L === 'undefined') return;
-                markersLayer.clearLayers();
-
-                for (var i = 0; i < posts.length; i++) {
-                    var p = posts[i];
-                    if (p.status === 'active' && p.lat && p.lng) {
-                        var iconEmoji = '📦';
-                        if (p.isSponsor) iconEmoji = '⭐';
-                        else if (p.category === 'FAVORES') iconEmoji = '🛠️';
-                        else if (p.category === 'RELAMPAGO') iconEmoji = '⚡';
-                        else if (p.category === 'SOLIDARIDAD') iconEmoji = '🤝';
-                        else if (p.category === 'AVENTURAS') iconEmoji = '🎲';
-                        else if (p.type === 'TENGO' && p.category === 'OBJETOS') iconEmoji = '🍾';
-                        
-                        var pinClass = p.isSponsor ? 'map-marker-sponsor' : 'map-marker-pin';
-
-                        var pinIcon = L.divIcon({
-                            className: 'custom-leaflet-pin',
-                            html: '<div class="' + pinClass + '" style="width:34px; height:34px;">' + iconEmoji + '</div>',
-                            iconSize: [34, 34],
-                            iconAnchor: [17, 17]
-                        });
-
-                        var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
-                        var isMyPostOnMap = isCurrentUserAuthor(p);
-
-                        var actionButtonHTML = '';
-                        if (p.isSponsor) {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="openNavChoice(' + p.lat + ', ' + p.lng + ', \'' + p.user + '\')">🧭 Trazar Ruta GPS</button>';
-                        } else if (isMyPostOnMap) {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 6px 8px; border-radius: 4px; cursor: default; font-weight:bold;">Tu Publicación</button>';
-                        } else {
-                            actionButtonHTML = '<button style="margin-top:8px; width:100%; background: linear-gradient(135deg, #fff3a1 0%, #eab308 50%, #9a6200 100%); color: #000; font-weight: bold; border: none; padding: 6px 8px; border-radius: 4px; cursor: pointer;" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + p.id + '); })">Coordinar Trato</button>';
-                        }
-
-                        var popupContent = 
-                            '<div style="font-family: inherit; font-size: 12px; line-height: 1.4;">' +
-                                '<strong style="color: #ffd700; text-transform: uppercase;">' + (p.isSponsor ? '⭐ Aliado Oficial (Punto Seguro)' : (p.type === 'TENGO' ? 'Yo Tengo' : 'Yo Quiero')) + '</strong><br/>' +
-                                '<p style="margin: 4px 0; color: #fff;">' + p.title + '</p>' +
-                                '<small style="color: #94a3b8;">' + p.user + ' • ' + p.location + '</small><br/>' +
-                                actionButtonHTML +
-                            '</div>';
-
-                        marker.bindPopup(popupContent);
-                        markersLayer.addLayer(marker);
-                    }
-                }
-            } catch(e) {}
-        }
-
-        // ==========================================
-        // RENDERIZADO DEL MURO
-        // ==========================================
-        function renderFeed() {
-            var feed = document.getElementById('feed');
-            if (!feed) return;
-            feed.innerHTML = '';
-
-            var currentTime = Date.now();
-
-            var filteredPosts = [];
-            for (var i = 0; i < posts.length; i++) {
-                var p = posts[i];
-                if (p.isSponsor) {
-                    if (currentTab === 'TENGO') filteredPosts.push(p);
-                    continue;
-                }
-                var matchTab = (currentTab === 'LEYENDAS') ? p.status === 'leyenda' : (p.type === currentTab && p.status !== 'leyenda');
-                var matchCat = (currentCategory === 'TODAS') ? true : p.category === currentCategory;
-                if (matchTab && matchCat) {
-                    filteredPosts.push(p);
-                }
-            }
-
-            filteredPosts.sort(function(a,b) {
-                var timeA = a.created_at || 0;
-                var timeB = b.created_at || 0;
-                return timeB - timeA;
-            });
-
-            if (filteredPosts.length === 0) {
-                feed.innerHTML = '<p style="text-align:center; color: var(--text-sub); padding: 40px;">No hay publicaciones en este filtro actualmente.</p>';
-                updateMetricsCounters();
-                return;
-            }
-
-            for (var j = 0; j < filteredPosts.length; j++) {
-                var post = filteredPosts[j];
-                var card = document.createElement('div');
-                
-                var secondsLeft = Math.max(0, Math.floor(((post.expires_at || 0) - currentTime) / 1000));
-                var isExpired = (post.status === 'expired') || (secondsLeft === 0 && post.status !== 'leyenda' && !post.isSponsor);
-                var isInDeal = post.status === 'in_deal';
-                var isSponsor = post.isSponsor;
-                var isMyOwnPost = isCurrentUserAuthor(post);
-                var isMyInterestedDeal = isCurrentUserInterested(post);
-                
-                card.className = 'card ' + (isExpired ? 'expired ' : '') + (isInDeal ? 'in-deal ' : '') + (isSponsor ? 'sponsor-card' : '');
-                
-                var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
-                var badgeLabel = post.type;
-                
-                if (isSponsor) {
-                    badgeClass = 'badge-sponsor';
-                    badgeLabel = 'ESPACIO ALIADO';
-                } else if (post.status === 'leyenda') {
-                    badgeClass = 'badge-leyenda';
-                    badgeLabel = 'SALÓN DE LEYENDAS 🏆';
-                } else if (isInDeal) {
-                    if (isMyOwnPost || isMyInterestedDeal) {
-                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChat(' + post.id + ')">💬 Ver Chat del Trato</button>';
-                    } else {
-                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright); border:1px solid #eab308;">⏳ Trato en proceso...</button>';
-                    }
-                } else if (post.status === 'leyenda') {
-                    actionBtnHTML = '<button class="btn-action" onclick="openLegendModal(' + post.id + ')">Ver Leyenda</button>';
-                } else if (isExpired) {
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ voteForLegend(' + post.id + '); })">🏆 Votar a Leyenda (' + (post.votes || 0) + '/26)</button>';
-                } else if (isMyOwnPost) {
-                    actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú publicaste esta oportunidad">✓ Tu Publicación (Activa)</button>';
-                } else if (post.status === 'active') {
-                    var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="checkAuthAndRun(function(){ initiateDealInterest(' + post.id + '); })">' + actionText + '</button>';
-                }
-
-                var sponsorDisclaimerHTML = isSponsor
-                    ? '<div class="sponsor-disclaimer-bar">' +
-                          '<span class="sponsor-disclaimer-text">📢 Publicidad Pagada • Aliado Comercial Oficial</span>' +
-                          '<span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span>' +
-                      '</div>'
-                    : '';
-
-                var mediaHeaderHTML = (isSponsor && post.imageUrl) 
-                    ? '<div class="sponsor-media-header" style="background-image: url(\'' + post.imageUrl + '\');"><div class="sponsor-media-overlay"></div></div>'
-                    : '';
-
-                var timerHTML = isSponsor 
-                    ? '<span class="timer" style="color:var(--gold-bright);">🌟 Destacado</span>'
-                    : (post.status === 'leyenda'
-                        ? '<span class="timer" style="color:var(--gold-bright);">✨ Historia Real</span>'
-                        : (isInDeal 
-                            ? '<span class="timer" style="color:#22c55e;">⏸️ Negociando</span>' 
-                            : (isExpired 
-                                ? '<span class="timer" style="color:#ef4444;">⌛ Tiempo Vencido</span>' 
-                                : '<span class="timer">⏱️ ' + formatTime(secondsLeft) + '</span>')));
-
-                var avatarDisplay = post.user ? post.user[0] : 'U';
-
-                card.innerHTML = 
-                    sponsorDisclaimerHTML +
-                    mediaHeaderHTML +
-                    '<div class="card-header">' +
-                        '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
-                            '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
-                            '<span class="badge-category">' + getCategoryLabel(post.category) + '</span>' +
-                            (post.discretion ? '<span class="badge-discretion">🔒 Sello de Discreción</span>' : '') +
-                        '</div>' +
-                        timerHTML +
-                    '</div>' +
-                    '<div class="card-title">' + post.title + '</div>' +
-                    '<div class="card-change">' + (post.change ? post.change : 'Sin condiciones prefijadas') + '</div>' +
-                    '<div class="card-footer">' +
-                        '<div class="user-info">' +
-                            '<div class="avatar">' + avatarDisplay + '</div>' +
-                            '<div>' +
-                                '<div style="display:flex; align-items:center; gap:6px;">' +
-                                    '<span style="font-size:0.85rem; font-weight:bold;">' + post.user + '</span>' +
-                                    '<span class="user-rank">' + (post.rank || 'Cazador Novato') + '</span>' +
-                                </div>' +
-                                '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        actionBtnHTML +
-                    '</div>';
-
-                feed.appendChild(card);
-            }
-
-            updateMetricsCounters();
-        }
-
-        function formatTime(seconds) {
-            if (seconds <= 0) return "00:00:00";
-            var days = Math.floor(seconds / 86400);
-            var hrs = Math.floor((seconds % 86400) / 3600);
-            var mins = Math.floor((seconds % 3600) / 60);
-            var secs = seconds % 60;
-            
-            if (days > 0) {
-                return days + "d " + (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-            }
-            return (hrs < 10 ? "0" + hrs : hrs) + ":" + (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-        }
-
-        function voteForLegend(postId) {
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-            if (!post) return;
-            post.votes = (post.votes || 0) + 1;
-            
-            var newStatus = post.status;
-            if (post.votes >= 26) {
-                newStatus = 'leyenda';
-                post.status = 'leyenda';
-                showToast("🎉 ¡Promovido al SALÓN DE LEYENDAS! 🏆");
-            } else {
-                showToast("👍 Voto registrado (" + post.votes + "/26)");
-            }
-
-            updatePostInCloud(postId, { votes: post.votes, status: newStatus });
-            renderFeed();
-            updateMapMarkers();
-        }
-
-        function initiateDealInterest(postId) {
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-            if (!post) return;
-
-            post.status = 'in_deal';
-            post.interested_user = currentUser || 'Cazador Interesado';
-            post.interested_device = myDeviceId;
-
-            var defaultMsg = JSON.stringify([{
-                sender: currentUser || 'Interesado',
-                text: '¡Hola! Me interesa tu publicación y quiero coordinar contigo.',
-                isMeDevice: myDeviceId
-            }]);
-            post.chat_history = defaultMsg;
-
-            updatePostInCloud(postId, { 
-                status: 'in_deal',
-                interested_user: post.interested_user,
-                interested_device: post.interested_device,
-                chat_history: defaultMsg
-            });
-
-            showToast("🤝 Solicitud enviada al creador. Abriendo canal...");
-            openChat(postId);
-            renderFeed();
-        }
-
-        function openChat(postId) {
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-            if (!post) return;
-            
-            currentPostInChat = post;
-            dealConfirmations = { user1: false, user2: false };
-            
-            var isAuthor = isCurrentUserAuthor(post);
-            var counterpartName = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
-            
-            document.getElementById('chatUserName').innerText = "Chat con " + counterpartName;
-            document.getElementById('chatPostTitle').innerText = post.title;
-            document.getElementById('dealStatusBanner').innerText = '⏱️ Trato pausado en el Muro (En Negociación)';
-            document.getElementById('btnConfirmDeal').innerText = '🤝 Confirmar mi Parte ("Trato Hecho")';
-            
-            var btnCancel = document.getElementById('btnCancelDeal');
-            if (btnCancel) {
-                btnCancel.innerText = isAuthor ? "❌ Rechazar y Volver a Publicar" : "❌ Cancelar mi Interés en el Trato";
-            }
-
-            renderChatMessagesFromHistory(post);
-            document.getElementById('chatModal').style.display = 'flex';
-        }
-
-        function renderChatMessagesFromHistory(post) {
-            var container = document.getElementById('chatMessages');
-            if (!container) return;
-            container.innerHTML = '';
-
-            var history = [];
-            if (post.chat_history) {
-                try { history = JSON.parse(post.chat_history); } catch(e) {}
-            }
-
-            if (!history || history.length === 0) {
-                history = [{
-                    sender: post.interested_user || 'Interesado',
-                    text: '¡Hola! Vi tu publicación y me interesa coordinar contigo.',
-                    isMeDevice: post.interested_device
-                }];
-            }
-
-            for (var i = 0; i < history.length; i++) {
-                var m = history[i];
-                var msgDiv = document.createElement('div');
-                var isMine = (m.isMeDevice === myDeviceId) || (currentUser && m.sender === currentUser);
-                msgDiv.className = 'msg ' + (isMine ? 'msg-me' : 'msg-them');
-                msgDiv.innerText = m.text;
-                container.appendChild(msgDiv);
-            }
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function suggestSafePoint() {
-            var msgText = "🛡️ Sugerencia de seguridad: ¿Te parece si cerramos el trato en Café Obsidiana o un punto neutro concurrido?";
-            sendChatMessageToHistory(msgText);
-            showToast("Punto seguro sugerido");
-        }
-
-        function sendMessage() {
-            var input = document.getElementById('chatInput');
-            if (!input || !input.value.trim()) return;
-            var text = input.value.trim();
-            input.value = '';
-            sendChatMessageToHistory(text);
-        }
-
-        function sendChatMessageToHistory(text) {
-            if (!currentPostInChat) return;
-
-            var history = [];
-            if (currentPostInChat.chat_history) {
-                try { history = JSON.parse(currentPostInChat.chat_history); } catch(e) {}
-            }
-
-            history.push({
-                sender: currentUser || 'Participante',
-                text: text,
-                isMeDevice: myDeviceId
-            });
-
-            currentPostInChat.chat_history = JSON.stringify(history);
-            renderChatMessagesFromHistory(currentPostInChat);
-
-            updatePostInCloud(currentPostInChat.id, {
-                chat_history: currentPostInChat.chat_history
-            });
-        }
-
-        // CONTROL DE ESCRITURA SEGURO
-        var typingDisplayTimer = null;
-        function handleTypingEvent() {
-            var bar = document.getElementById('typingStatusBar');
-            if (!bar) return;
-            bar.style.display = 'block';
-            if (typingDisplayTimer) clearTimeout(typingDisplayTimer);
-            typingDisplayTimer = setTimeout(function() {
-                bar.style.display = 'none';
-            }, 2500);
-        }
-
-        function handleCancelDeal() {
-            if (!currentPostInChat) return;
-            
-            var isAuthor = isCurrentUserAuthor(currentPostInChat);
-            var confirmMsg = isAuthor 
-                ? "¿Deseas rechazar esta negociación y dejar tu oportunidad activa en el muro para otros usuarios?"
-                : "¿Deseas cancelar tu postulación y liberar el trato?";
-
-            if (confirm(confirmMsg)) {
-                currentPostInChat.status = 'active';
-                currentPostInChat.interested_user = null;
-                currentPostInChat.interested_device = null;
-                currentPostInChat.chat_history = null;
-
-                updatePostInCloud(currentPostInChat.id, {
-                    status: 'active',
-                    interested_user: null,
-                    interested_device: null,
-                    chat_history: null
-                });
-
-                closeModal('chatModal');
-                showToast("🔓 Trato liberado nuevamente en el radar");
-                renderFeed();
-                updateActiveChatWidgetUI();
-            }
-        }
-
-        function handleDealConfirmation() {
-            if (!dealConfirmations.user1) {
-                dealConfirmations.user1 = true;
-                document.getElementById('dealStatusBanner').innerText = '⏳ Esperando que la otra parte también confirme "Trato Hecho"...';
-                document.getElementById('btnConfirmDeal').innerText = '✓ Tu parte está confirmada (Esperando al otro)';
-                showToast('Has marcado Trato Hecho');
-            } else if (!dealConfirmations.user2) {
-                dealConfirmations.user2 = true;
-                if (currentPostInChat) {
-                    currentPostInChat.status = 'leyenda';
-                    updatePostInCloud(currentPostInChat.id, { status: 'leyenda' });
-                }
-                document.getElementById('dealStatusBanner').innerText = '🎉 ¡AMBAS PARTES CONFIRMARON EL TRATO HECHO!';
-                showToast('🎉 ¡Trato cerrado con éxito!');
-                closeModal('chatModal');
-                renderFeed();
-                updateMapMarkers();
-                updateActiveChatWidgetUI();
-            }
-        }
-
-        function openNavChoice(lat, lng, destinationTitle) {
-            var isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-            var titleEl = document.getElementById('navDestinationTitle');
-            if (titleEl) titleEl.innerText = destinationTitle || "Punto de Encuentro";
-
-            var gBtn = document.getElementById('btnNavGoogle');
-            if (gBtn) gBtn.href = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + lng + "&travelmode=driving";
-
-            var wBtn = document.getElementById('btnNavWaze');
-            if (wBtn) wBtn.href = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
-
-            var aBtn = document.getElementById('btnNavApple');
-            if (aBtn) {
-                aBtn.href = isAppleDevice 
-                    ? "http://maps.apple.com/?daddr=" + lat + "," + lng + "&dirflg=d"
-                    : "https://maps.apple.com/?daddr=" + lat + "," + lng;
-            }
-
-            var modal = document.getElementById('navModal');
-            if (modal) modal.style.display = 'flex';
-        }
-
-        function triggerChatNavigation() {
-            if (currentPostInChat && currentPostInChat.lat && currentPostInChat.lng) {
-                openNavChoice(currentPostInChat.lat, currentPostInChat.lng, currentPostInChat.title);
-            } else {
-                showToast("Coordenadas no disponibles para este trato");
-            }
-        }
-
-        function syncFromCloud() {
-            if (isSyncing) return;
-            isSyncing = true;
-            try {
-                fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
-                    method: "GET",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
-                    }
-                })
-                .then(function(res) {
-                    if (!res.ok) return null;
-                    return res.json();
-                })
-                .then(function(data) {
-                    isSyncing = false;
-                    if (data && Array.isArray(data)) {
-                        cloudPosts = data.map(function(p) {
-                            var resolvedUser = p.user_name || p.user || 'Anónimo';
-                            return {
-                                id: Number(p.id),
-                                type
+                if (!markersLayer || typeof
