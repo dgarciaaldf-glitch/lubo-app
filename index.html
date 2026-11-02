@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lubó - Centro de Caza de Oportunidades</title>
 
-    <!-- Librería de Mapas Interactivos (Leaflet) -->
+    <!-- Librerías de Mapas Interactivos y Google Identity Services -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
@@ -42,7 +42,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 5 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 6 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -63,6 +63,59 @@
             text-transform: uppercase !important;
             pointer-events: none !important;
         }
+
+        /* PANTALLA 0: CARGA SIMULADA DE LUBÓ (SPLASH CON TRIDENTES) */
+        #splashScreen {
+            position: fixed; top: 38px; left: 0; width: 100%; height: calc(100% - 38px);
+            background-color: #020617;
+            z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            animation: autoHideSplash 0.5s ease-out 1.4s forwards;
+            pointer-events: none;
+        }
+        @keyframes autoHideSplash {
+            0% { opacity: 1; visibility: visible; }
+            90% { opacity: 0; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; display: none; }
+        }
+
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .trident-splash { font-size: 5rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+        
+        .lubo-splash-title { 
+            font-size: 3.5rem; font-weight: 900; font-family: 'Georgia', serif; font-style: italic; letter-spacing: -1px;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+        }
+        .lubo-splash-sub { color: var(--text-sub); font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+
+        .loader-container {
+            width: 200px; height: 3px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin-top: 35px; position: relative;
+        }
+        .loader-bar {
+            width: 0%; height: 100%; background: var(--gold-gradient);
+            box-shadow: var(--gold-glow);
+            animation: fillLoading 1.3s linear forwards;
+        }
+        @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* PANTALLA 1: BIENVENIDA OBLIGATORIA SI NO HAY SESIÓN INICIADA */
+        #welcomeScreen {
+            position: fixed; top: 38px; left: 0; width: 100%; height: calc(100% - 38px);
+            background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
+            z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .welcome-hero { 
+            max-width: 500px; width: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .welcome-hero h1 { 
+            font-size: 2.8rem; margin-bottom: 5px; font-family: 'Georgia', serif; font-style: italic; text-align: center;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
+        }
+        .welcome-hero p { text-align: justify; color: var(--text-sub); line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
 
         /* HEADER */
         header {
@@ -176,13 +229,12 @@
             100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
         }
 
-        /* CONTENEDOR DEL MAPA Y ESTILIZACIÓN VISIBLE DE CALLES */
+        /* CONTENEDOR DEL MAPA CON CALLES ABIERTAS */
         .mini-map {
             width: 100%; height: 320px; min-height: 320px; background: #0b1120; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
         }
 
-        /* Estilo nocturno limpio que deja 100% legibles calles y nombres */
         .leaflet-tile-pane {
             filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
@@ -351,7 +403,7 @@
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
+            background: rgba(0,0,0,0.9); z-index: 60000; justify-content: center; align-items: center; padding: 20px;
         }
         .modal-content {
             background: var(--card-bg); width: 100%; max-width: 480px; border-radius: 12px; padding: 20px; border: 1px solid #eab308;
@@ -365,9 +417,38 @@
             background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
         }
 
+        .btn-google-sso {
+            background: #ffffff;
+            color: #1f2937;
+            font-weight: 700;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .btn-google-sso:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+
+        .legal-link {
+            color: var(--gold-bright);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         #toast {
             visibility: hidden; min-width: 250px; background: var(--gold-gradient); color: #000; font-weight: 800;
-            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 11000;
+            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 70000;
             left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.85rem;
             box-shadow: var(--gold-glow); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
         }
@@ -376,10 +457,38 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 5 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 5 (CALLES Y GPS ACTIVOS)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 6 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 6 (REGISTRO GOOGLE +18 Y TÉRMINOS)</div>
 
     <div id="toast">Notificación</div>
+
+    <!-- PANTALLA 0: CARGA SIMULADA DE LUBÓ -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <div class="trident-splash">🔱</div>
+            <div class="lubo-splash-title">Lubó</div>
+            <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
+            
+            <div class="loader-container">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA (SE MUESTRA SI NO HAY SESIÓN) -->
+    <div id="welcomeScreen">
+        <div class="welcome-hero">
+            <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
+            <h1>Lubó</h1>
+            <p style="color: var(--gold-bright); font-weight: bold; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">YO TENGO, YO QUIERO</p>
+            <p>
+                Bienvenido a la red de trueque de experiencias, favores y oportunidades en tiempo real. Aquí las historias cobran vida y el tiempo cuenta. Publica lo que tienes o lo que deseas, encuentra tratos locales únicos y construye leyendas comunitarias.
+            </p>
+            <button type="button" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 10px;" onclick="goToRegister()">
+                Iniciar Experiencia
+            </button>
+        </div>
+    </div>
 
     <!-- HEADER -->
     <header>
@@ -512,6 +621,98 @@
         <button class="fab" onclick="openPublishModal()" title="Crear Publicación">+</button>
     </div>
 
+    <!-- MODAL REGISTRO OBLIGATORIO: GOOGLE SIGN-IN REAL (+18 Y TÉRMINOS LEGALES) -->
+    <div id="registerModal" class="modal" style="backdrop-filter: blur(8px);">
+        <div class="modal-content" style="border: 2px solid var(--gold-bright);">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
+                </div>
+                <button class="close-btn" id="closeRegisterModalBtn" onclick="closeModal('registerModal')" style="display:none;">&times;</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
+                <button type="button" class="btn-google-sso" onclick="triggerOfficialGoogleLogin()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Continuar con Google</span>
+                </button>
+
+                <div id="googleVerifiedBox" style="display:none; background:var(--widget-bg); padding:12px; border-radius:8px; border:1px solid var(--gold-bright);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img id="verifiedUserAvatar" src="" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--gold-bright); display:none;">
+                        <div>
+                            <p id="verifiedEmailText" style="font-size:0.85rem; color:#fff; font-weight:bold;"></p>
+                            <span style="font-size:0.75rem; color:var(--live-green); font-weight:bold;">✓ Cuenta de Google Verificada</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label style="font-size:0.8rem; color:#fff; display:block; margin-bottom:5px;">Tu Alias Oficial para Tratos:</label>
+                        <input type="text" id="finalAliasInput" placeholder="Ej. Diego I." style="width:100%;">
+                    </div>
+                </div>
+
+                <div style="background:var(--widget-bg); padding:12px; border-radius:8px; border:1px solid var(--border-gold);">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: var(--text-sub); font-size: 0.78rem;">
+                        <input type="checkbox" id="legalCheckbox" onchange="toggleConsentButton(this)" style="margin-top: 3px;">
+                        <span>
+                            Declaro bajo protesta de decir verdad ser mayor de edad (+18) y manifiesto mi consentimiento expreso con los <span class="legal-link" onclick="openPrivacyModal()">Términos de Servicio y el Aviso de Privacidad Integral</span>. Reconozco que Lubó es una plataforma de enlace entre particulares y los acuerdos o intercambios son de exclusiva responsabilidad de las partes.
+                        </span>
+                    </label>
+                    <div id="consentTimestamp" style="display:none; font-size:0.7rem; color:var(--gold-bright); margin-top:6px;"></div>
+                </div>
+
+                <button type="button" id="btnFinishRegistration" class="btn-action" disabled style="display:none; width:100%; padding:12px;" onclick="completeRegistration()">Entrar al Radar Lubó</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AVISO DE PRIVACIDAD INTEGRAL -->
+    <div id="privacyModal" class="modal" style="z-index: 65000;">
+        <div class="modal-content" style="max-width:540px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color:#fff; font-size:1.1rem;">Aviso de Privacidad Integral</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">lubo.com.mx • Ley Federal de Protección de Datos Personales (LFPDPPP)</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('privacyModal')">&times;</button>
+            </div>
+
+            <div style="font-size:0.8rem; color:var(--text-sub); line-height:1.6; display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow-y:auto; padding-right:6px;">
+                <p>
+                    <strong style="color:#fff;">1. Responsable del Tratamiento:</strong><br>
+                    Lubó opera como plataforma digital comunitaria accesible a través del dominio oficial <strong>lubo.com.mx</strong> para la coordinación de trueques e intercambios cívicos.
+                </p>
+                <p>
+                    <strong style="color:#fff;">2. Datos Personales Recabados:</strong><br>
+                    A través de la autenticación con Google Identity Services se recaban exclusivamente los datos públicos de tu perfil de Google (nombre, correo electrónico verificado y fotografía). Al publicar se fijan las coordenadas GPS del instante para situar el pin de la oportunidad en el mapa.
+                </p>
+                <p>
+                    <strong style="color:#fff;">3. Finalidad del Uso:</strong><br>
+                    • Conectar usuarios dentro de radios geográficos definidos.<br>
+                    • Permitir la apertura de canales de negociación efímeros.<br>
+                    • Prevenir abusos, fraudes y cuentas falsas.
+                </p>
+                <p>
+                    <strong style="color:#fff;">4. Deslinde de Responsabilidad Legal y Civil:</strong><br>
+                    Lubó no es parte contractual, intermediario financiero ni custodio de los bienes o favores intercambiados. La legalidad, calidad, seguridad física y cumplimiento de cualquier trato convenido es responsabilidad total y exclusiva de los usuarios participantes (+18).
+                </p>
+                <p>
+                    <strong style="color:#fff;">5. Ejercicio de Derechos ARCO:</strong><br>
+                    En cualquier momento el titular podrá solicitar el Acceso, Rectificación, Cancelación u Oposición del uso de sus datos contactando a <strong>privacidad@lubo.com.mx</strong>.
+                </p>
+            </div>
+
+            <button class="btn-action" style="width:100%; margin-top:15px; padding:10px;" onclick="closeModal('privacyModal')">Entendido y Cerrar</button>
+        </div>
+    </div>
+
     <!-- MODAL PUBLICACIÓN -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
@@ -546,26 +747,9 @@
         </div>
     </div>
 
-    <!-- MODAL REGISTRO SIMPLE -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content" style="border: 2px solid var(--gold-bright);">
-            <div class="modal-header">
-                <div>
-                    <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
-                    <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial (+18)</p>
-                </div>
-                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
-                <p style="font-size:0.85rem; color:var(--text-sub);">Inicia sesión para sincronizar tus coordenadas en el radar y coordinar tratos locales.</p>
-                <input type="text" id="directAliasInput" placeholder="Escribe tu alias para tratos (Ej. Diego I.)" style="width:100%;">
-                <button type="button" class="btn-action" onclick="quickLogin()">Entrar como Usuario</button>
-            </div>
-        </div>
-    </div>
-
     <script>
+        var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
+
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
             set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
@@ -577,6 +761,7 @@
 
         var currentUser = safeStorage.get("lubo_user") || null;
         var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
+        var currentUserPhoto = safeStorage.get("lubo_photo") || null;
 
         var map = null;
         var markersLayer = null;
@@ -653,7 +838,23 @@
             if (reg) reg.style.display = 'flex';
         }
 
+        function goToRegister() {
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
+            openRegisterModal();
+        }
+
+        function openPrivacyModal() {
+            var p = document.getElementById('privacyModal');
+            if (p) p.style.display = 'flex';
+        }
+
         function openPublishModal() {
+            if (!currentUser) {
+                showToast("Primero identifícate para participar");
+                openRegisterModal();
+                return;
+            }
             var p = document.getElementById('publishModal');
             if (p) p.style.display = 'flex';
         }
@@ -662,44 +863,165 @@
             showToast("Buscando conversaciones en tu radio...");
         }
 
-        function quickLogin() {
-            var input = document.getElementById('directAliasInput');
-            var val = (input && input.value.trim()) ? input.value.trim() : 'Diego I.';
-            currentUser = val;
-            safeStorage.set("lubo_user", val);
+        // ==========================================
+        // AUTENTICACIÓN GOOGLE IDENTITY SERVICES
+        // ==========================================
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            var data = parseJwt(response.credential);
+            if (data) {
+                var email = data.email;
+                var fullName = data.name || data.given_name;
+                var picture = data.picture;
+
+                var vBox = document.getElementById('googleVerifiedBox');
+                var vEmail = document.getElementById('verifiedEmailText');
+                var vAlias = document.getElementById('finalAliasInput');
+                var vBtn = document.getElementById('btnFinishRegistration');
+                
+                if (vBox) vBox.style.display = 'block';
+                if (vEmail) vEmail.innerText = email;
+                if (vAlias) vAlias.value = fullName;
+                
+                if (picture) {
+                    var img = document.getElementById('verifiedUserAvatar');
+                    if (img) {
+                        img.src = picture;
+                        img.style.display = 'block';
+                    }
+                    safeStorage.set("lubo_photo", picture);
+                    currentUserPhoto = picture;
+                }
+
+                if (vBtn) vBtn.style.display = 'block';
+                showToast("✓ Cuenta de Google verificada");
+            }
+        }
+
+        function triggerOfficialGoogleLogin() {
+            try {
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                    showToast("Cargando servicios de Google... Reintenta en 2 segundos");
+                    return;
+                }
+
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false
+                });
+
+                google.accounts.id.prompt(function(notification) {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        google.accounts.id.renderButton(
+                            document.querySelector('.btn-google-sso'),
+                            { theme: "outline", size: "large", width: "100%" }
+                        );
+                    }
+                });
+            } catch (err) {
+                console.error("Error al contactar a Google:", err);
+            }
+        }
+
+        function toggleConsentButton(checkbox) {
+            var btn = document.getElementById('btnFinishRegistration');
+            var timeLabel = document.getElementById('consentTimestamp');
+            
+            if (checkbox && checkbox.checked) {
+                if (btn) btn.disabled = false;
+                var now = new Date();
+                if (timeLabel) {
+                    timeLabel.innerText = "Consentimiento registrado: " + now.toLocaleDateString() + " a las " + now.toLocaleTimeString();
+                    timeLabel.style.display = 'block';
+                }
+            } else {
+                if (btn) btn.disabled = true;
+                if (timeLabel) timeLabel.style.display = 'none';
+            }
+        }
+
+        function completeRegistration() {
+            var legalCheckbox = document.getElementById('legalCheckbox');
+            if (!legalCheckbox || !legalCheckbox.checked) {
+                alert("Es indispensable que marques la casilla de aceptación expresa de términos y mayoría de edad (+18).");
+                return;
+            }
+
+            var aliasInput = document.getElementById('finalAliasInput');
+            var alias = aliasInput ? aliasInput.value.trim() : '';
+            if (!alias) {
+                alert("Por favor confirma tu alias para tratos.");
+                return;
+            }
+
+            currentUser = alias;
+            safeStorage.set("lubo_user", alias);
+            safeStorage.set("lubo_rank", currentUserRank);
+            safeStorage.set("lubo_consent_time", new Date().toISOString());
+
             updateUIForLoggedInUser();
+            showToast("¡Bienvenido a Lubó, " + alias + "!");
             closeModal('registerModal');
-            showToast("Sesión iniciada como " + val);
+            
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'none';
             renderFeed();
         }
 
         function confirmLogout() {
             currentUser = null;
+            currentUserPhoto = null;
             safeStorage.remove("lubo_user");
+            safeStorage.remove("lubo_rank");
+            safeStorage.remove("lubo_photo");
+            safeStorage.remove("lubo_consent_time");
+            
             updateUIForLoggedInUser();
             showToast("Sesión cerrada");
             renderFeed();
+
+            var welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.style.display = 'flex';
         }
 
         function updateUIForLoggedInUser() {
+            var welcome = document.getElementById('welcomeScreen');
             var btnAuth = document.getElementById('btnAuthHeader');
             var nameBadge = document.getElementById('userNameHeaderDisplay');
             var drawerLabel = document.getElementById('drawerUserLabel');
             var drawerRank = document.getElementById('drawerUserRankLabel');
             var logoutBtn = document.getElementById('drawerLogoutBtn');
+            var closeRegBtn = document.getElementById('closeRegisterModalBtn');
 
             if (currentUser) {
+                if (welcome) welcome.style.display = 'none';
                 if (btnAuth) btnAuth.style.display = 'none';
                 if (nameBadge) { nameBadge.innerText = currentUser; nameBadge.style.display = 'inline-block'; }
                 if (drawerLabel) drawerLabel.innerText = currentUser;
                 if (drawerRank) { drawerRank.innerText = "Rango: " + currentUserRank; drawerRank.style.display = 'block'; }
                 if (logoutBtn) logoutBtn.style.display = 'block';
+                if (closeRegBtn) closeRegBtn.style.display = 'block';
             } else {
+                if (welcome) welcome.style.display = 'flex';
                 if (btnAuth) btnAuth.style.display = 'block';
                 if (nameBadge) nameBadge.style.display = 'none';
                 if (drawerLabel) drawerLabel.innerText = 'Sin sesión iniciada';
                 if (drawerRank) drawerRank.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'none';
+                if (closeRegBtn) closeRegBtn.style.display = 'none';
             }
         }
 
@@ -730,7 +1052,6 @@
             if (btn) btn.classList.add('active');
             showToast("🎯 Recentrado a " + label);
             
-            // Re-centra con las coordenadas satelitales actuales
             if (map) {
                 map.setView([userCoords.lat, userCoords.lng], zoomLevel);
                 map.invalidateSize();
@@ -806,7 +1127,6 @@
                 var mapBox = document.getElementById('mapBox');
                 if (!mapBox || typeof L === 'undefined') return;
 
-                // Inicializamos Leaflet centrado inicialmente en la zona centro
                 map = L.map('mapBox', {
                     center: [userCoords.lat, userCoords.lng],
                     zoom: 13,
@@ -814,7 +1134,6 @@
                     attributionControl: false
                 });
 
-                // Servidor de mosaicos oficial OpenStreetMap (Carga calles, avenidas y nombres al 100%)
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     crossOrigin: true
@@ -822,13 +1141,9 @@
 
                 markersLayer = L.layerGroup().addTo(map);
 
-                // Pintamos los pines existentes (Cafetería, Tequila, Departamento)
                 renderMapPins();
-
-                // Solicitamos la ubicación satelital en tiempo real al usuario
                 locateUserGPS();
 
-                // Forzamos el redibujado de las calles
                 setTimeout(function() { if (map) map.invalidateSize(); }, 300);
                 setTimeout(function() { if (map) map.invalidateSize(); }, 1000);
             } catch(e) {
@@ -859,7 +1174,6 @@
             });
         }
 
-        // GEOLOCALIZACIÓN SATELITAL EN TIEMPO REAL
         function locateUserGPS() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -870,7 +1184,6 @@
                         if (map) {
                             map.setView([userCoords.lat, userCoords.lng], 14);
                             
-                            // Pin distintivo en color verde para TU ubicación exacta en la calle
                             if (userMarker) {
                                 userMarker.setLatLng([userCoords.lat, userCoords.lng]);
                             } else {
@@ -927,7 +1240,9 @@
             showToast("🚀 Publicación agregada al instante");
         }
 
+        // ==========================================
         // ARRANQUE SEGURO
+        // ==========================================
         function boot() {
             try { renderFeed(); } catch(e) {}
             try { updateUIForLoggedInUser(); } catch(e) {}
