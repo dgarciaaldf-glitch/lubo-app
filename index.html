@@ -42,7 +42,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 8 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 9 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -351,9 +351,16 @@
             font-size: 0.7rem; padding: 3px 8px; border-radius: 12px;
         }
 
+        /* DISTINTIVO OFICIAL DEL SELLO DE DISCRECIÓN */
         .badge-discretion {
-            background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid #a855f7;
-            font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: bold;
+            background: rgba(168, 85, 247, 0.15) !important;
+            color: #c084fc !important;
+            border: 1px solid #a855f7 !important;
+            font-size: 0.72rem !important;
+            padding: 3px 8px !important;
+            border-radius: 6px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.5px !important;
         }
         
         .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
@@ -467,8 +474,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 8 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 8 (ESQUEMA SUPABASE AJUSTADO)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 9 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 9 (SELLO DE DISCRECIÓN ACTIVO)</div>
 
     <div id="toast">Notificación</div>
 
@@ -723,7 +730,7 @@
         </div>
     </div>
 
-    <!-- MODAL PUBLICACIÓN CON TIPO, CATEGORÍA Y TIEMPO REAL -->
+    <!-- MODAL PUBLICACIÓN CON EL SELLO DE DISCRECIÓN -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -752,6 +759,17 @@
                 <label>¿Pides u ofreces algo a cambio?</label>
                 <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas">
 
+                <!-- CASILLA OFICIAL DEL SELLO DE DISCRECIÓN -->
+                <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; padding: 12px; border-radius: 8px;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: #c084fc; font-size: 0.82rem; font-weight: bold;">
+                        <input type="checkbox" id="discretionCheck" style="margin-top: 2px;">
+                        <span>🔒 Solicitar Sello de Discreción (Publicar como Anónimo con reserva estricta)</span>
+                    </label>
+                    <small style="color: var(--text-sub); display: block; margin-top: 4px; font-size: 0.72rem;">
+                        Oculta tu nombre en el muro y mapa, mostrando tu trato únicamente como 'Anónimo'.
+                    </small>
+                </div>
+
                 <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold); font-size: 0.8rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="color: var(--gold-bright); font-weight: bold;">📍 Ubicación Satelital:</span>
@@ -766,7 +784,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN OFICIAL DE GOOGLE Y SUPABASE
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
         var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
         var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
@@ -893,7 +910,7 @@
         function isCurrentUserAuthor(post) {
             if (!post || post.is_sponsor) return false;
             if (post.creator_id && post.creator_id === myDeviceId) return true;
-            if (currentUser && post.user) {
+            if (currentUser && post.user && post.user !== 'Anónimo') {
                 if (currentUser.trim().toLowerCase() === post.user.trim().toLowerCase()) return true;
             }
             return false;
@@ -1167,7 +1184,7 @@
                 card.innerHTML = 
                     (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
                     '<div class="card-header">' +
-                        '<div style="display:flex; align-items:center; gap:6px;">' +
+                        '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
                             '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
                             '<span class="badge-category">' + post.category + '</span>' +
                             (post.discretion ? '<span class="badge-discretion">🔒 Sello de Discreción</span>' : '') +
@@ -1235,7 +1252,7 @@
 
             posts.forEach(function(p) {
                 if (p.lat && p.lng && p.status === 'active') {
-                    var iconEmoji = p.is_sponsor ? '☕' : (p.type === 'TENGO' ? '🍾' : '📦');
+                    var iconEmoji = p.is_sponsor ? '☕' : (p.discretion ? '🔒' : (p.type === 'TENGO' ? '🍾' : '📦'));
                     var pinClass = p.is_sponsor ? 'map-marker-sponsor' : 'map-marker-pin';
 
                     var pinIcon = L.divIcon({
@@ -1288,7 +1305,7 @@
         }
 
         // ====================================================
-        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (ESQUEMA EXACTO)
+        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL CON SELLO
         // ====================================================
         function syncFromCloud() {
             if (isSyncing) return;
@@ -1309,7 +1326,7 @@
                     isSyncing = false;
                     if (data && Array.isArray(data)) {
                         cloudPosts = data.map(function(p) {
-                            var resolvedUser = p.user_name || p.user || 'Anónimo';
+                            var resolvedUser = p.discretion ? 'Anónimo' : (p.user_name || p.user || 'Anónimo');
                             return {
                                 id: Number(p.id),
                                 type: p.type || 'TENGO',
@@ -1358,22 +1375,25 @@
             var change = document.getElementById('postChange').value || 'Abierto a propuestas';
             var type = document.getElementById('postType').value;
             var cat = document.getElementById('postCategory').value;
+            var hasDiscretion = document.getElementById('discretionCheck').checked;
             var creationNow = Date.now();
 
-            // Cargas con los nombres exactos requeridos por tu tabla en Supabase
+            // Si se activa el sello, se enmascara el nombre como Anónimo
+            var displayUser = hasDiscretion ? 'Anónimo' : currentUser;
+
             var payload = {
                 id: creationNow,
                 type: type,
                 category: cat,
                 title: title,
                 change: change,
-                user: currentUser,
-                user_name: currentUser,
+                user: displayUser,
+                user_name: displayUser,
                 rank: currentUserRank,
                 location: 'Ubicación Satelital',
                 lat: userCoords.lat,
                 lng: userCoords.lng,
-                discretion: false,
+                discretion: hasDiscretion,
                 is_sponsor: false,
                 status: 'active',
                 votes: 0,
@@ -1408,7 +1428,7 @@
                     closeModal('publishModal');
                     document.getElementById('publishForm').reset();
                     switchTab(type);
-                    showToast("🚀 Oportunidad compartida con toda la red Lubó");
+                    showToast(hasDiscretion ? "🔒 Publicado con Sello de Discreción" : "🚀 Publicado para toda la red Lubó");
                     if (map) {
                         map.setView([userCoords.lat, userCoords.lng], 14);
                         map.invalidateSize();
@@ -1446,7 +1466,6 @@
             boot();
         }
 
-        // Sincronización continua de novedades cada 3.5 segundos
         setInterval(function() {
             syncFromCloud();
         }, 3500);
