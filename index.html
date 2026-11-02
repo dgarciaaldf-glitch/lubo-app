@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 12 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 13 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -320,7 +320,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
         }
 
-        /* RESALTADO DINÁMICO AL CLICKEAR DESDE EL MAPA */
         .card.card-focus-highlight {
             border-color: #ffd700 !important;
             box-shadow: 0 0 25px rgba(255, 215, 0, 0.8) !important;
@@ -395,13 +394,38 @@
         .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; line-height: 1.6; text-align: justify; word-break: break-word; color: #fff; }
         .card-change { font-size: 0.88rem; color: var(--text-sub); margin-bottom: 14px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; text-align: justify; line-height: 1.5; border: 1px solid var(--border-gold); }
-        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--border-gold); padding-top: 12px; gap: 10px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--border-gold); padding-top: 12px; gap: 8px; flex-wrap: wrap; }
         .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--border-gold); color: var(--gold-bright); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; border: 1px solid #eab308; overflow:hidden; }
         
         .user-rank {
             font-size: 0.68rem; color: var(--gold-bright); background: rgba(234,179,8,0.12);
             padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(234,179,8,0.3); font-weight: bold;
+        }
+
+        .card-actions-group {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* BOTÓN BIDIRECCIONAL: VER EN MAPA */
+        .btn-view-map {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--gold-bright);
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            padding: 8px 11px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-view-map:hover {
+            background: rgba(234, 179, 8, 0.18);
+            border-color: var(--gold-bright);
+            transform: scale(1.02);
         }
 
         .btn-action {
@@ -503,8 +527,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 12 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 12 (MAPA NAVEGABLE AL MURO + GPS CALIBRADO)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 13 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 13 (BOTÓN: VER EN MAPA)</div>
 
     <div id="toast">Notificación</div>
 
@@ -591,7 +615,7 @@
     <div class="dashboard-layout">
         <!-- RADAR GPS CON LUZ VERDE FLUORESCENTE -->
         <aside class="side-panel">
-            <div class="side-widget">
+            <div class="side-widget" id="radarMapSection">
                 <div class="widget-title">
                     <span>🎯 Radar GPS de Oportunidades</span>
                     
@@ -831,6 +855,7 @@
 
         var map = null;
         var markersLayer = null;
+        var markersRegistry = {};
         var userMarker = null;
         var userCoords = { lat: 19.3900, lng: -99.1550 };
         var currentTab = 'TENGO';
@@ -921,7 +946,6 @@
             if (p) p.style.display = 'flex';
         }
 
-        // APERTURA DE MODAL CON CALIBRACIÓN GPS SATELITAL FORZADA
         function openPublishModal() {
             if (!currentUser) {
                 showToast("Primero identifícate para participar");
@@ -937,7 +961,6 @@
                 statusEl.style.color = "var(--gold-bright)";
             }
 
-            // Calibración GPS inmediata
             locateUserGPS(function(lat, lng, accuracy) {
                 if (statusEl) {
                     statusEl.innerText = "✓ Coordenadas satelitales fijadas";
@@ -1180,7 +1203,7 @@
         }
 
         // ====================================================
-        // NAVEGACIÓN DIRECTA: DEL MAPA AL MURO CON RESALTADO
+        // NAVEGACIÓN BIDIRECCIONAL: MAPA ➔ MURO Y MURO ➔ MAPA
         // ====================================================
         function goToFeedCard(postId, postType) {
             if (map) map.closePopup();
@@ -1202,6 +1225,24 @@
                     if (feedEl) feedEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }, 120);
+        }
+
+        function locatePostOnMap(lat, lng, postId) {
+            var radarSec = document.getElementById('radarMapSection');
+            if (radarSec) {
+                radarSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            setTimeout(function() {
+                if (map) {
+                    map.setView([lat, lng], 16);
+                    map.invalidateSize();
+
+                    if (markersRegistry[postId]) {
+                        markersRegistry[postId].openPopup();
+                    }
+                }
+            }, 300);
         }
 
         function renderFeed() {
@@ -1250,6 +1291,12 @@
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Iniciando trato con ' + post.user + '...\')">' + actionText + '</button>';
                 }
 
+                // Botón "Ver en Mapa" disponible si la publicación tiene coordenadas válidas
+                var viewMapBtnHTML = '';
+                if (post.lat && post.lng && post.status === 'active') {
+                    viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
+                }
+
                 card.innerHTML = 
                     (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
                     '<div class="card-header">' +
@@ -1270,7 +1317,10 @@
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
-                        actionBtnHTML +
+                        '<div class="card-actions-group">' +
+                            viewMapBtnHTML +
+                            actionBtnHTML +
+                        '</div>' +
                     '</div>';
 
                 feed.appendChild(card);
@@ -1316,11 +1366,12 @@
         }
 
         // ====================================================
-        // PINES EN EL MAPA CON TARJETA EJECUTIVA CLICKEABLE
+        // PINES EN EL MAPA REGISTRADOS PARA ENLACE BIDIRECCIONAL
         // ====================================================
         function renderMapPins() {
             if (!markersLayer || typeof L === 'undefined') return;
             markersLayer.clearLayers();
+            markersRegistry = {};
 
             posts.forEach(function(p) {
                 if (p.lat && p.lng && p.status === 'active') {
@@ -1350,7 +1401,6 @@
                     var titleBadge = p.type === 'TENGO' ? 'Yo Tengo 🔱' : 'Yo Quiero 🎯';
                     var discretionTag = p.discretion ? ' <span style="color:#c084fc; font-weight:bold;">[🔒 Sello de Discreción]</span>' : '';
                     
-                    // Tarjeta ejecutiva clickeable completa que te lleva directo al muro
                     var popupHtml = 
                         '<div onclick="goToFeedCard(' + p.id + ', \'' + p.type + '\')" style="cursor:pointer; padding:6px; min-width:210px; border-radius:6px; transition:0.2s;" title="Haz clic para ver y coordinar en el Muro">' +
                             '<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:4px; margin-bottom:6px;">' +
@@ -1366,6 +1416,7 @@
 
                     marker.bindPopup(popupHtml);
                     markersLayer.addLayer(marker);
+                    markersRegistry[p.id] = marker;
                 }
             });
         }
@@ -1455,7 +1506,6 @@
                             };
                         });
 
-                        // Deduplicar para garantizar que todas las publicaciones se muestren en todos los dispositivos
                         var combined = [].concat(cloudPosts);
                         BASE_POSTS.forEach(function(bp) {
                             var exists = false;
@@ -1500,7 +1550,6 @@
             var creationNow = Date.now();
             var displayUser = hasDiscretion ? 'Anónimo' : currentUser;
 
-            // Garantizamos que las coordenadas satelitales sean las de este instante exacto
             locateUserGPS(function(lat, lng) {
                 if (btnSubmit) btnSubmit.innerText = "Publicando...";
 
