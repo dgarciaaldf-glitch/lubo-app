@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 16 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 17 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -232,6 +232,7 @@
             100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
         }
 
+        /* CONTENEDOR DEL MAPA */
         .mini-map {
             width: 100%; height: 320px; min-height: 320px; background: #0b1120; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
@@ -241,6 +242,7 @@
             filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
 
+        /* PINES: TRIDENTE DORADO (OFERTA) VS DIANA CIAN (BÚSQUEDA) */
         .map-marker-tengo {
             background: var(--gold-gradient);
             border: 2px solid #ffffff;
@@ -474,7 +476,7 @@
             background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
         }
 
-        /* ESTILOS DEL CHAT EFÍMERO EN VIVO */
+        /* ESTILOS DEL CHAT EFÍMERO */
         .chat-box {
             display: flex; flex-direction: column; height: 280px; background: var(--widget-bg);
             border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
@@ -505,8 +507,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 16 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 16 (CHAT EFÍMERO EN TIEMPO REAL CONECTADO)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 17 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 17 (PUBLICACIÓN RESTAURADA Y CHAT EFÍMERO ESTABLE)</div>
 
     <div id="toast">Notificación</div>
 
@@ -658,7 +660,6 @@
                 </div>
             </div>
 
-            <!-- WIDGET LATERAL: CONVERSACIÓN ACTIVA -->
             <div class="side-widget">
                 <div class="widget-title">
                     <span>💬 Negociación Comunitaria</span>
@@ -801,7 +802,7 @@
                     <h3 id="chatModalCounterpart" style="color:#fff; font-size:1.15rem;">Chat de Negociación</h3>
                     <p id="chatModalPostTitle" style="font-size:0.75rem; color:var(--gold-bright); margin-top:2px;">Cargando trato...</p>
                 </div>
-                <button class="close-btn" onclick="closeModal('chatModal')">&times;</button>
+                <button class="close-btn" onclick="closeChatModal()">&times;</button>
             </div>
 
             <div style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.4); padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; color: #4ade80; text-align: center; margin-bottom: 6px;">
@@ -913,6 +914,7 @@
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
         var currentChatPost = null;
+        var isChatOpen = false;
         var isSyncing = false;
 
         var BASE_POSTS = [
@@ -923,7 +925,6 @@
                 user: 'Café Obsidiana', rank: 'Aliado Oficial',
                 location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, is_sponsor: true, status: 'active',
-                reports_count: 0,
                 creator_id: 'sponsor_obsidiana'
             },
             {
@@ -933,7 +934,6 @@
                 user: 'Diego I.', rank: 'Pacto de Confianza',
                 location: 'Coyoacán, CDMX', 
                 lat: 19.3498, lng: -99.1622, discretion: true, is_sponsor: false, status: 'active',
-                reports_count: 0,
                 creator_id: 'example_diego'
             },
             {
@@ -943,7 +943,6 @@
                 user: 'Anónimo', rank: 'Cazador Novato',
                 location: 'Benito Juárez, CDMX', 
                 lat: 19.3984, lng: -99.1600, discretion: false, is_sponsor: false, status: 'active',
-                reports_count: 0,
                 creator_id: 'example_anon'
             },
             {
@@ -953,7 +952,6 @@
                 user: 'Anónimo', rank: 'Leyenda Urbana',
                 location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, is_sponsor: false, status: 'leyenda',
-                reports_count: 0,
                 creator_id: 'example_legend'
             }
         ];
@@ -985,6 +983,11 @@
         function closeModal(id) {
             var el = document.getElementById(id);
             if (el) el.style.display = 'none';
+        }
+
+        function closeChatModal() {
+            closeModal('chatModal');
+            isChatOpen = false;
         }
 
         function openRegisterModal() {
@@ -1086,47 +1089,11 @@
             if (!idInput) return;
             var postId = Number(idInput.value);
 
-            var post = null;
-            for (var i = 0; i < posts.length; i++) {
-                if (posts[i].id === postId) { post = posts[i]; break; }
-            }
-
-            if (!post) {
-                closeModal('reportModal');
-                return;
-            }
-
-            post.reports_count = (Number(post.reports_count) || 0) + 1;
-            var newStatus = post.status;
-
-            if (post.reports_count >= 3) {
-                newStatus = 'flagged';
-                post.status = 'flagged';
-                showToast("🚫 Publicación bloqueada por moderación comunitaria (3 reportes)");
-            } else {
-                showToast("🚩 Reporte recibido. Ocultando de tu muro");
-            }
-
+            showToast("🚩 Reporte recibido. Ocultando de tu muro");
             posts = posts.filter(function(p) { return p.id !== postId; });
             renderFeed();
             renderMapPins();
             closeModal('reportModal');
-
-            try {
-                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
-                    method: "PATCH",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json",
-                        "Prefer": "return=minimal"
-                    },
-                    body: JSON.stringify({
-                        reports_count: post.reports_count,
-                        status: newStatus
-                    })
-                }).catch(function() {});
-            } catch(err) {}
         }
 
         function isCurrentUserAuthor(post) {
@@ -1148,7 +1115,7 @@
         }
 
         // ====================================================
-        // CONEXIÓN Y OPERACIÓN DEL CHAT EFÍMERO EN TIEMPO REAL
+        // CONEXIÓN Y OPERACIÓN ROBUSTA DEL CHAT EFÍMERO
         // ====================================================
         function initiateDealInterest(postId) {
             if (!currentUser) {
@@ -1163,17 +1130,28 @@
             }
             if (!post) return;
 
-            var initialChatHistory = JSON.stringify([{
-                sender: currentUser,
-                text: "¡Hola! Vi tu publicación y me interesa coordinar este trato contigo.",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                deviceId: myDeviceId
-            }]);
+            var existingHistory = [];
+            if (post.chat_history) {
+                try {
+                    existingHistory = typeof post.chat_history === 'string' ? JSON.parse(post.chat_history) : post.chat_history;
+                } catch(e) { existingHistory = []; }
+            }
+
+            if (existingHistory.length === 0) {
+                existingHistory.push({
+                    sender: currentUser,
+                    text: "¡Hola! Vi tu publicación y me interesa coordinar este trato contigo.",
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    deviceId: myDeviceId
+                });
+            }
+
+            var updatedChatHistory = JSON.stringify(existingHistory);
 
             post.status = 'in_deal';
             post.interested_user = currentUser;
             post.interested_device = myDeviceId;
-            post.chat_history = initialChatHistory;
+            post.chat_history = updatedChatHistory;
 
             renderFeed();
             updateMapPins();
@@ -1193,7 +1171,7 @@
                         status: 'in_deal',
                         interested_user: currentUser,
                         interested_device: myDeviceId,
-                        chat_history: initialChatHistory
+                        chat_history: updatedChatHistory
                     })
                 }).catch(function() {});
             } catch(e) {}
@@ -1207,6 +1185,8 @@
             if (!post) return;
 
             currentChatPost = post;
+            isChatOpen = true;
+
             var isAuthor = isCurrentUserAuthor(post);
             var counterpart = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
 
@@ -1308,7 +1288,7 @@
             currentChatPost.interested_device = null;
             currentChatPost.chat_history = null;
 
-            closeModal('chatModal');
+            closeChatModal();
             renderFeed();
             updateMapPins();
             updateSideWidgetChatUI();
@@ -1607,9 +1587,6 @@
             if (lEl) lEl.innerText = legendCount;
         }
 
-        // ====================================================
-        // NAVEGACIÓN BIDIRECCIONAL: MAPA ➔ MURO Y MURO ➔ MAPA
-        // ====================================================
         function goToFeedCard(postId, postType) {
             if (map) map.closePopup();
 
@@ -1885,7 +1862,7 @@
         }
 
         // ====================================================
-        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (CON CHAT EN VIVO)
+        // SINCRONIZACIÓN Y PUBLICACIÓN (SIN REFRESCAR MODAL ACTIVO)
         // ====================================================
         function syncFromCloud() {
             if (isSyncing) return;
@@ -1921,7 +1898,6 @@
                                 discretion: Boolean(p.discretion),
                                 status: p.status || 'active',
                                 is_sponsor: Boolean(p.is_sponsor),
-                                reports_count: Number(p.reports_count) || 0,
                                 creator_id: p.creator_id || resolvedUser,
                                 interested_user: p.interested_user || null,
                                 interested_device: p.interested_device || null,
@@ -1942,8 +1918,8 @@
                         renderFeed();
                         renderMapPins();
 
-                        // Si el usuario tiene el modal del chat abierto, refrescar mensajes en tiempo real
-                        if (currentChatPost) {
+                        // Actualización de mensajes en vivo sin reiniciar el modal
+                        if (currentChatPost && isChatOpen) {
                             for (var k = 0; k < posts.length; k++) {
                                 if (posts[k].id === currentChatPost.id) {
                                     if (posts[k].chat_history !== currentChatPost.chat_history) {
@@ -2001,6 +1977,7 @@
             locateUserGPS(function(lat, lng) {
                 if (btnSubmit) btnSubmit.innerText = "Publicando...";
 
+                // Estructura garantizada idéntica a la Versión 8 y 9
                 var payload = {
                     id: creationNow,
                     type: type,
@@ -2017,7 +1994,6 @@
                     is_sponsor: false,
                     status: 'active',
                     votes: 0,
-                    reports_count: 0,
                     time_left: 86400,
                     created_at: creationNow,
                     expires_at: creationNow + 86400000,
