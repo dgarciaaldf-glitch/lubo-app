@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 10 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 11 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -242,7 +242,7 @@
             filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
 
-        /* PINES SEGÚN LA OPCIÓN 1 (TRIDENTE VS DIANA DE CAZA) */
+        /* PINES: TRIDENTE DORADO (OFERTA) VS DIANA CIAN (BÚSQUEDA) */
         .map-marker-tengo {
             background: var(--gold-gradient);
             border: 2px solid #ffffff;
@@ -264,18 +264,6 @@
             justify-content: center;
             font-size: 14px;
             box-shadow: var(--target-cyan-glow);
-            cursor: pointer;
-        }
-
-        .map-marker-discretion {
-            background: #2e1065;
-            border: 2px solid #c084fc;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            box-shadow: 0 0 14px rgba(192, 132, 252, 0.85);
             cursor: pointer;
         }
 
@@ -502,8 +490,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 10 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 10 (PINES: TRIDENTE 🔱 VS DIANA 🎯)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 11 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 11 (RADAR HOMOGÉNEO: 🔱 Y 🎯)</div>
 
     <div id="toast">Notificación</div>
 
@@ -1274,7 +1262,7 @@
         }
 
         // ====================================================
-        // PINES EN EL MAPA: OPCIÓN 1 (TRIDENTE VS DIANA DE CAZA)
+        // PINES EN EL MAPA: OPCIÓN A (HOMOGÉNEO 🔱 VS 🎯)
         // ====================================================
         function renderMapPins() {
             if (!markersLayer || typeof L === 'undefined') return;
@@ -1288,14 +1276,12 @@
                     if (p.is_sponsor) {
                         iconEmoji = '☕';
                         pinClass = 'map-marker-sponsor';
-                    } else if (p.discretion) {
-                        iconEmoji = '🔒';
-                        pinClass = 'map-marker-discretion';
                     } else if (p.type === 'QUIERO') {
+                        // Yo Quiero siempre con la Diana de Caza
                         iconEmoji = '🎯';
                         pinClass = 'map-marker-quiero';
                     } else {
-                        // Por defecto para YO TENGO: Tridente de Lubó
+                        // Yo Tengo siempre con el Tridente dorado de Lubó
                         iconEmoji = '🔱';
                         pinClass = 'map-marker-tengo';
                     }
@@ -1308,8 +1294,16 @@
                     });
 
                     var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
+                    
                     var titleBadge = p.type === 'TENGO' ? 'Yo Tengo 🔱' : 'Yo Quiero 🎯';
-                    marker.bindPopup('<b style="color:#ffd700;">' + titleBadge + '</b><br><span style="color:#fff;">' + p.title + '</span><br><small style="color:#94a3b8;">' + p.user + ' • ' + p.location + '</small>');
+                    var discretionTag = p.discretion ? ' <span style="color:#c084fc; font-weight:bold;">[🔒 Sello de Discreción]</span>' : '';
+                    
+                    marker.bindPopup(
+                        '<b style="color:#ffd700;">' + titleBadge + '</b>' + discretionTag + '<br>' +
+                        '<span style="color:#fff;">' + p.title + '</span><br>' +
+                        '<small style="color:#94a3b8;">' + p.user + ' • ' + p.location + '</small>'
+                    );
+                    
                     markersLayer.addLayer(marker);
                 }
             });
