@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 14 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 15 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -390,6 +390,24 @@
             font-weight: 800 !important;
             letter-spacing: 0.5px !important;
         }
+
+        /* BOTÓN DE REPORTE DISCRETO EN LA CABECERA DE LA TARJETA */
+        .btn-report-flag {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: 0.2s;
+            opacity: 0.6;
+        }
+        .btn-report-flag:hover {
+            opacity: 1;
+            color: #ef4444;
+            transform: scale(1.15);
+        }
         
         .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; line-height: 1.6; text-align: justify; word-break: break-word; color: #fff; }
@@ -526,8 +544,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 14 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 14 (REGLA DE ORO ANTI-DINERO)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 15 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 15 (SISTEMA DE REPORTE Y MODERACIÓN 🚩)</div>
 
     <div id="toast">Notificación</div>
 
@@ -782,6 +800,46 @@
         </div>
     </div>
 
+    <!-- MODAL DE REPORTE COMUNITARIO (MODERACIÓN 🚩) -->
+    <div id="reportModal" class="modal" style="z-index: 68000;">
+        <div class="modal-content" style="max-width: 420px; border: 2px solid #ef4444;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color:#fff; font-size:1.1rem;">🚩 Reportar Publicación</h3>
+                    <p style="font-size:0.75rem; color:#fca5a5;">Moderación y Seguridad Comunitaria</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('reportModal')">&times;</button>
+            </div>
+
+            <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">
+                Selecciona el motivo del reporte. Las publicaciones que acumulen 3 reportes son congeladas de inmediato en toda la red Lubó:
+            </p>
+
+            <form onsubmit="submitPostReport(event)">
+                <input type="hidden" id="reportPostId">
+
+                <label style="display:flex; align-items:center; gap:8px; background:var(--widget-bg); padding:10px; border-radius:8px; border:1px solid var(--border-gold); cursor:pointer;">
+                    <input type="radio" name="reportReason" value="money" checked>
+                    <span style="font-size:0.82rem; color:#fff;">💵 Pide dinero, pago en efectivo o cobro encubierto</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:8px; background:var(--widget-bg); padding:10px; border-radius:8px; border:1px solid var(--border-gold); cursor:pointer;">
+                    <input type="radio" name="reportReason" value="illegal">
+                    <span style="font-size:0.82rem; color:#fff;">⚠️ Objeto ilícito, peligroso o prohibido</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:8px; background:var(--widget-bg); padding:10px; border-radius:8px; border:1px solid var(--border-gold); cursor:pointer;">
+                    <input type="radio" name="reportReason" value="abuse">
+                    <span style="font-size:0.82rem; color:#fff;">🚫 Contenido ofensivo, violento o sospechoso</span>
+                </label>
+
+                <button type="submit" id="btnConfirmReport" class="btn-action" style="background: linear-gradient(135deg, #ef4444, #991b1b); color:#fff; margin-top:10px; padding:12px;">
+                    Confirmar y Enviar Reporte
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL PUBLICACIÓN CON EL SELLO DE DISCRECIÓN Y REGLA ANTI-DINERO -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
@@ -884,6 +942,7 @@
                 user: 'Café Obsidiana', rank: 'Aliado Oficial',
                 location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, is_sponsor: true, status: 'active',
+                reports_count: 0,
                 creator_id: 'sponsor_obsidiana'
             },
             {
@@ -893,6 +952,7 @@
                 user: 'Diego I.', rank: 'Pacto de Confianza',
                 location: 'Coyoacán, CDMX', 
                 lat: 19.3498, lng: -99.1622, discretion: true, is_sponsor: false, status: 'active',
+                reports_count: 0,
                 creator_id: 'example_diego'
             },
             {
@@ -902,6 +962,7 @@
                 user: 'Anónimo', rank: 'Cazador Novato',
                 location: 'Benito Juárez, CDMX', 
                 lat: 19.3984, lng: -99.1600, discretion: false, is_sponsor: false, status: 'active',
+                reports_count: 0,
                 creator_id: 'example_anon'
             },
             {
@@ -911,6 +972,7 @@
                 user: 'Anónimo', rank: 'Leyenda Urbana',
                 location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, is_sponsor: false, status: 'leyenda',
+                reports_count: 0,
                 creator_id: 'example_legend'
             }
         ];
@@ -1025,6 +1087,73 @@
                     btnSubmit.style.cursor = 'pointer';
                 }
             }
+        }
+
+        // ====================================================
+        // SISTEMA DE REPORTE Y MODERACIÓN COMUNITARIA
+        // ====================================================
+        function openReportModal(postId) {
+            if (!currentUser) {
+                showToast("Identifícate para emitir un reporte comunitario");
+                openRegisterModal();
+                return;
+            }
+            var idInput = document.getElementById('reportPostId');
+            if (idInput) idInput.value = postId;
+            var modal = document.getElementById('reportModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function submitPostReport(e) {
+            e.preventDefault();
+            var idInput = document.getElementById('reportPostId');
+            if (!idInput) return;
+            var postId = Number(idInput.value);
+
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+
+            if (!post) {
+                closeModal('reportModal');
+                return;
+            }
+
+            post.reports_count = (Number(post.reports_count) || 0) + 1;
+            var newStatus = post.status;
+
+            // Si acumula 3 reportes, se congela/baja automáticamente
+            if (post.reports_count >= 3) {
+                newStatus = 'flagged';
+                post.status = 'flagged';
+                showToast("🚫 Publicación bloqueada por moderación comunitaria (3 reportes)");
+            } else {
+                showToast("🚩 Reporte recibido. Ocultando de tu muro");
+            }
+
+            // Ocultar del muro del usuario actual de inmediato
+            posts = posts.filter(function(p) { return p.id !== postId; });
+            renderFeed();
+            renderMapPins();
+            closeModal('reportModal');
+
+            // Actualizar el conteo de reportes en Supabase
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        reports_count: post.reports_count,
+                        status: newStatus
+                    })
+                }).catch(function() {});
+            } catch(err) {}
         }
 
         function openActiveOrFirstDeal() {
@@ -1309,6 +1438,7 @@
             feed.innerHTML = '';
 
             var filtered = posts.filter(function(p) {
+                if (p.status === 'flagged') return false; // Ocultar tratos bloqueados por reporte
                 if (currentTab === 'LEYENDAS') return p.status === 'leyenda';
                 return p.type === currentTab && p.status !== 'leyenda';
             });
@@ -1354,6 +1484,12 @@
                     viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
                 }
 
+                // Botón discreto de reporte (no se muestra en publicaciones de aliados ni propias)
+                var reportBtnHTML = '';
+                if (!post.is_sponsor && !isMyOwn && post.status === 'active') {
+                    reportBtnHTML = '<button type="button" class="btn-report-flag" onclick="openReportModal(' + post.id + ')" title="Reportar contenido inapropiado o cobro de dinero">🚩</button>';
+                }
+
                 card.innerHTML = 
                     (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
                     '<div class="card-header">' +
@@ -1362,7 +1498,10 @@
                             '<span class="badge-category">' + post.category + '</span>' +
                             (post.discretion ? '<span class="badge-discretion">🔒 Sello de Discreción</span>' : '') +
                         '</div>' +
-                        '<span class="timer">⏱️ Activo</span>' +
+                        '<div style="display:flex; align-items:center; gap:8px;">' +
+                            '<span class="timer">⏱️ Activo</span>' +
+                            reportBtnHTML +
+                        '</div>' +
                     '</div>' +
                     '<div class="card-title">' + post.title + '</div>' +
                     '<div class="card-change">' + post.change + '</div>' +
@@ -1559,6 +1698,7 @@
                                 discretion: Boolean(p.discretion),
                                 status: p.status || 'active',
                                 is_sponsor: Boolean(p.is_sponsor),
+                                reports_count: Number(p.reports_count) || 0,
                                 creator_id: p.creator_id || resolvedUser
                             };
                         });
@@ -1639,6 +1779,7 @@
                     is_sponsor: false,
                     status: 'active',
                     votes: 0,
+                    reports_count: 0,
                     time_left: 86400,
                     created_at: creationNow,
                     expires_at: creationNow + 86400000,
