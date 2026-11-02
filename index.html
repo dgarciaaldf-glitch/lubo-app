@@ -42,7 +42,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 7 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 8 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -467,8 +467,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 7 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 7 (PUBLICACIÓN Y SINCRONIZACIÓN EN TIEMPO REAL)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 8 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 8 (ESQUEMA SUPABASE AJUSTADO)</div>
 
     <div id="toast">Notificación</div>
 
@@ -799,7 +799,7 @@
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 user: 'Café Obsidiana', rank: 'Aliado Oficial',
                 location: 'Del Valle Centro, CDMX',
-                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active',
+                lat: 19.3780, lng: -99.1650, discretion: false, is_sponsor: true, status: 'active',
                 creator_id: 'sponsor_obsidiana'
             },
             {
@@ -808,7 +808,7 @@
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
                 user: 'Diego I.', rank: 'Pacto de Confianza',
                 location: 'Coyoacán, CDMX', 
-                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active',
+                lat: 19.3498, lng: -99.1622, discretion: true, is_sponsor: false, status: 'active',
                 creator_id: 'example_diego'
             },
             {
@@ -817,7 +817,7 @@
                 change: 'Abierto a propuestas',
                 user: 'Anónimo', rank: 'Cazador Novato',
                 location: 'Benito Juárez, CDMX', 
-                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active',
+                lat: 19.3984, lng: -99.1600, discretion: false, is_sponsor: false, status: 'active',
                 creator_id: 'example_anon'
             },
             {
@@ -826,7 +826,7 @@
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
                 user: 'Anónimo', rank: 'Leyenda Urbana',
                 location: 'Cuauhtémoc, CDMX', 
-                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda',
+                lat: 19.4326, lng: -99.1332, discretion: true, is_sponsor: false, status: 'leyenda',
                 creator_id: 'example_legend'
             }
         ];
@@ -891,7 +891,7 @@
         }
 
         function isCurrentUserAuthor(post) {
-            if (!post || post.isSponsor) return false;
+            if (!post || post.is_sponsor) return false;
             if (post.creator_id && post.creator_id === myDeviceId) return true;
             if (currentUser && post.user) {
                 if (currentUser.trim().toLowerCase() === post.user.trim().toLowerCase()) return true;
@@ -1102,7 +1102,7 @@
 
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
-                if (p.status === 'active' && p.type === 'TENGO' && !p.isSponsor) tengoCount++;
+                if (p.status === 'active' && p.type === 'TENGO' && !p.is_sponsor) tengoCount++;
                 if (p.status === 'active' && p.type === 'QUIERO') quieroCount++;
                 if (p.status === 'in_deal') inDealCount++;
                 if (p.status === 'leyenda') legendCount++;
@@ -1144,16 +1144,16 @@
                 var card = document.createElement('div');
                 var isMyOwn = isCurrentUserAuthor(post);
 
-                card.className = 'card ' + (post.isSponsor ? 'sponsor-card' : '');
+                card.className = 'card ' + (post.is_sponsor ? 'sponsor-card' : '');
 
                 var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
-                if (post.isSponsor) badgeClass = 'badge-sponsor';
+                if (post.is_sponsor) badgeClass = 'badge-sponsor';
                 else if (post.status === 'leyenda') badgeClass = 'badge-leyenda';
 
-                var badgeLabel = post.isSponsor ? 'ESPACIO ALIADO' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type);
+                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type);
 
                 var actionBtnHTML = '';
-                if (post.isSponsor) {
+                if (post.is_sponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Leyenda comunitaria verificada\')">Ver Leyenda</button>';
@@ -1165,7 +1165,7 @@
                 }
 
                 card.innerHTML = 
-                    (post.isSponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
+                    (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
                     '<div class="card-header">' +
                         '<div style="display:flex; align-items:center; gap:6px;">' +
                             '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
@@ -1235,8 +1235,8 @@
 
             posts.forEach(function(p) {
                 if (p.lat && p.lng && p.status === 'active') {
-                    var iconEmoji = p.isSponsor ? '☕' : (p.type === 'TENGO' ? '🍾' : '📦');
-                    var pinClass = p.isSponsor ? 'map-marker-sponsor' : 'map-marker-pin';
+                    var iconEmoji = p.is_sponsor ? '☕' : (p.type === 'TENGO' ? '🍾' : '📦');
+                    var pinClass = p.is_sponsor ? 'map-marker-sponsor' : 'map-marker-pin';
 
                     var pinIcon = L.divIcon({
                         className: 'custom-pin',
@@ -1288,7 +1288,7 @@
         }
 
         // ====================================================
-        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (SUPABASE CLOUD)
+        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (ESQUEMA EXACTO)
         // ====================================================
         function syncFromCloud() {
             if (isSyncing) return;
@@ -1318,12 +1318,12 @@
                                 change: p.change || '',
                                 user: resolvedUser,
                                 rank: p.rank || 'Cazador Novato',
-                                location: p.location || 'Ubicación Local',
+                                location: p.location || 'Ubicación Satelital',
                                 lat: Number(p.lat) || 19.3900,
                                 lng: Number(p.lng) || -99.1550,
                                 discretion: Boolean(p.discretion),
                                 status: p.status || 'active',
-                                isSponsor: false,
+                                is_sponsor: Boolean(p.is_sponsor),
                                 creator_id: p.creator_id || resolvedUser
                             };
                         });
@@ -1360,7 +1360,8 @@
             var cat = document.getElementById('postCategory').value;
             var creationNow = Date.now();
 
-            var newPost = {
+            // Cargas con los nombres exactos requeridos por tu tabla en Supabase
+            var payload = {
                 id: creationNow,
                 type: type,
                 category: cat,
@@ -1373,15 +1374,18 @@
                 lat: userCoords.lat,
                 lng: userCoords.lng,
                 discretion: false,
-                isSponsor: false,
+                is_sponsor: false,
                 status: 'active',
                 votes: 0,
+                time_left: 86400,
                 created_at: creationNow,
                 expires_at: creationNow + 86400000,
-                creator_id: myDeviceId
+                creator_id: myDeviceId,
+                interested_user: null,
+                interested_device: null,
+                chat_history: null
             };
 
-            // Enviar a la base de datos Supabase para que llegue a todos los usuarios
             fetch(SUPABASE_REST_URL, {
                 method: "POST",
                 headers: {
@@ -1390,37 +1394,39 @@
                     "Content-Type": "application/json",
                     "Prefer": "return=minimal"
                 },
-                body: JSON.stringify([newPost])
+                body: JSON.stringify([payload])
             })
             .then(function(res) {
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
                     btnSubmit.innerText = "Lanzar al Muro";
                 }
-                posts.unshift(newPost);
-                renderFeed();
-                renderMapPins();
-                closeModal('publishModal');
-                document.getElementById('publishForm').reset();
-                switchTab(type);
-                showToast("🚀 Oportunidad publicada para toda la red Lubó");
-                if (map) {
-                    map.setView([userCoords.lat, userCoords.lng], 14);
-                    map.invalidateSize();
+                if (res.ok) {
+                    posts.unshift(payload);
+                    renderFeed();
+                    renderMapPins();
+                    closeModal('publishModal');
+                    document.getElementById('publishForm').reset();
+                    switchTab(type);
+                    showToast("🚀 Oportunidad compartida con toda la red Lubó");
+                    if (map) {
+                        map.setView([userCoords.lat, userCoords.lng], 14);
+                        map.invalidateSize();
+                    }
+                } else {
+                    return res.json().then(function(errData) {
+                        console.error("Detalle de rechazo Supabase:", errData);
+                        showToast("Error en base de datos: revisa la consola");
+                    });
                 }
             })
-            .catch(function() {
+            .catch(function(netErr) {
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
                     btnSubmit.innerText = "Lanzar al Muro";
                 }
-                // Si la red tiene retraso, se pinta localmente y avisa
-                posts.unshift(newPost);
-                renderFeed();
-                renderMapPins();
-                closeModal('publishModal');
-                switchTab(type);
-                showToast("Publicado en tu entorno local");
+                console.error("Fallo de red al publicar:", netErr);
+                showToast("Fallo al conectar con el servidor");
             });
         }
 
@@ -1440,7 +1446,7 @@
             boot();
         }
 
-        // Descarga de publicaciones nuevas de otros usuarios cada 3.5 segundos
+        // Sincronización continua de novedades cada 3.5 segundos
         setInterval(function() {
             syncFromCloud();
         }, 3500);
