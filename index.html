@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 17 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 18 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -428,6 +428,18 @@
             cursor: default !important; font-size: 0.75rem !important; padding: 8px 10px !important; box-shadow: none !important; opacity: 1 !important;
         }
 
+        /* BOTÓN DE NEGOCIACIÓN PARA QUIEN YA SE POSTULÓ */
+        .btn-my-interested {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #4ade80 !important;
+            border: 1px solid #22c55e !important;
+            cursor: pointer !important;
+            font-size: 0.78rem !important;
+            font-weight: 800 !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4) !important;
+        }
+
         .btn-in-deal-open {
             background: #22c55e !important; color: #000 !important; font-weight: 900 !important;
             box-shadow: 0 0 14px rgba(34, 197, 94, 0.7) !important; cursor: pointer !important;
@@ -507,8 +519,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 17 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 17 (PUBLICACIÓN RESTAURADA Y CHAT EFÍMERO ESTABLE)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 18 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 18 (CHAT ESTABLE Y CONTROL DE POSTULACIÓN)</div>
 
     <div id="toast">Notificación</div>
 
@@ -817,7 +829,7 @@
                 </div>
             </div>
 
-            <button type="button" class="btn-cancel-deal" onclick="cancelCurrentDeal()">
+            <button type="button" id="btnCancelOrRejectDeal" class="btn-cancel-deal" onclick="cancelCurrentDeal()">
                 ❌ Cancelar Interés / Liberar Trato al Muro
             </button>
         </div>
@@ -916,6 +928,17 @@
         var currentChatPost = null;
         var isChatOpen = false;
         var isSyncing = false;
+
+        // Registro de intentos locales para postulaciones rechazadas (hasta 3)
+        var attemptsRegistry = {};
+        try {
+            attemptsRegistry = JSON.parse(safeStorage.get("lubo_deal_attempts") || "{}");
+        } catch(e) { attemptsRegistry = {}; }
+
+        function recordAttempt(postId) {
+            attemptsRegistry[postId] = (attemptsRegistry[postId] || 0) + 1;
+            safeStorage.set("lubo_deal_attempts", JSON.stringify(attemptsRegistry));
+        }
 
         var BASE_POSTS = [
             {
@@ -1124,6 +1147,12 @@
                 return;
             }
 
+            var attempts = attemptsRegistry[postId] || 0;
+            if (attempts >= 3) {
+                showToast("Has agotado los 3 intentos para coordinar este trato.");
+                return;
+            }
+
             var post = null;
             for (var i = 0; i < posts.length; i++) {
                 if (posts[i].id === postId) { post = posts[i]; break; }
@@ -1154,7 +1183,7 @@
             post.chat_history = updatedChatHistory;
 
             renderFeed();
-            updateMapPins();
+            renderMapPins();
             updateSideWidgetChatUI();
             openChatModal(postId);
 
@@ -1192,8 +1221,14 @@
 
             var titleEl = document.getElementById('chatModalCounterpart');
             var postTitleEl = document.getElementById('chatModalPostTitle');
-            if (titleEl) titleEl.innerText = "Trato con: " + counterpart;
+            var btnCancel = document.getElementById('btnCancelOrRejectDeal');
+
+            if (titleEl) titleEl.innerText = isAuthor ? ("Trato con interesado: " + counterpart) : ("Trato con autor: " + counterpart);
             if (postTitleEl) postTitleEl.innerText = post.title;
+
+            if (btnCancel) {
+                btnCancel.innerText = isAuthor ? "❌ Rechazar Trato y Liberar Publicación" : "❌ Cancelar mi Interés / Salir de Negociación";
+            }
 
             renderChatMessages();
             var modal = document.getElementById('chatModal');
@@ -1280,9 +1315,21 @@
 
         function cancelCurrentDeal() {
             if (!currentChatPost) return;
-            if (!confirm("¿Deseas cancelar la negociación y liberar esta oportunidad nuevamente en el muro y mapa?")) return;
+
+            var isAuthor = isCurrentUserAuthor(currentChatPost);
+            var confirmText = isAuthor 
+                ? "¿Deseas rechazar esta negociación y liberar nuevamente la publicación en el muro?"
+                : "¿Deseas cancelar tu postulación y liberar el trato?";
+
+            if (!confirm(confirmText)) return;
 
             var postId = currentChatPost.id;
+            var wasInterestedDevice = currentChatPost.interested_device;
+
+            if (isAuthor && wasInterestedDevice) {
+                recordAttempt(postId);
+            }
+
             currentChatPost.status = 'active';
             currentChatPost.interested_user = null;
             currentChatPost.interested_device = null;
@@ -1290,7 +1337,7 @@
 
             closeChatModal();
             renderFeed();
-            updateMapPins();
+            renderMapPins();
             updateSideWidgetChatUI();
             showToast("🔓 Oportunidad liberada nuevamente en el radar");
 
@@ -1343,9 +1390,10 @@
             var btnEl = document.getElementById('btnSideOpenChat');
 
             if (activeDeal) {
+                var isAuthor = isCurrentUserAuthor(activeDeal);
                 if (titleEl) titleEl.innerText = "Trato: " + activeDeal.title.substring(0, 24) + "...";
                 if (subEl) {
-                    subEl.innerText = "🟢 Negociación activa en curso";
+                    subEl.innerText = isAuthor ? "🟢 Un cazador está coordinando contigo" : "🟢 Estás coordinando este trato";
                     subEl.style.color = "#4ade80";
                 }
                 if (btnEl) {
@@ -1654,6 +1702,7 @@
                 var isMyOwn = isCurrentUserAuthor(post);
                 var isInterested = isCurrentUserInterested(post);
                 var isInDeal = (post.status === 'in_deal');
+                var attempts = attemptsRegistry[post.id] || 0;
 
                 card.id = 'card-' + post.id;
                 card.className = 'card ' + (post.is_sponsor ? 'sponsor-card ' : '') + (isInDeal ? 'in-deal ' : '');
@@ -1671,18 +1720,30 @@
                 if (post.is_sponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
                 } else if (isInDeal) {
-                    if (isMyOwn || isInterested) {
-                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChatModal(' + post.id + ')">💬 Ver Chat del Trato</button>';
+                    if (isMyOwn) {
+                        // El autor ve que alguien se postuló y puede entrar al chat
+                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChatModal(' + post.id + ')">💬 Usuario Interesado (Ver Chat)</button>';
+                    } else if (isInterested) {
+                        // Tú eres el interesado y estás esperando respuesta
+                        actionBtnHTML = '<button class="btn-action btn-my-interested" onclick="openChatModal(' + post.id + ')">⏳ Esperando respuesta (Ver Chat)</button>';
                     } else {
-                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright);">⏳ Trato en proceso...</button>';
+                        // Otro usuario ajeno ve el trato pausado
+                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--text-sub);">🔒 En negociación con otro cazador</button>';
                     }
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Leyenda comunitaria verificada\')">Ver Leyenda</button>';
                 } else if (isMyOwn) {
-                    actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú creaste esta oportunidad">✓ Tu Publicación</button>';
+                    actionBtnHTML = '<button class="btn-own-post" disabled title="Tú creaste esta oportunidad">✓ Tu Publicación</button>';
                 } else {
-                    var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="initiateDealInterest(' + post.id + ')">' + actionText + '</button>';
+                    // Si el autor te canceló anteriormente y tienes intentos restantes
+                    if (attempts > 0 && attempts < 3) {
+                        actionBtnHTML = '<button class="btn-action" style="border:1px solid #ef4444;" onclick="initiateDealInterest(' + post.id + ')">⚠️ Reintentar Trato (' + (3 - attempts) + ' restantes)</button>';
+                    } else if (attempts >= 3) {
+                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:#f87171;">❌ Reintentos agotados</button>';
+                    } else {
+                        var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
+                        actionBtnHTML = '<button class="btn-action" onclick="initiateDealInterest(' + post.id + ')">' + actionText + '</button>';
+                    }
                 }
 
                 var viewMapBtnHTML = '';
@@ -1773,7 +1834,7 @@
             markersRegistry = {};
 
             posts.forEach(function(p) {
-                if (p.lat && p.lng && p.status === 'active') {
+                if (p.lat && p.lng && (p.status === 'active' || p.status === 'in_deal')) {
                     var iconEmoji = '';
                     var pinClass = '';
 
@@ -1798,13 +1859,14 @@
                     var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
                     
                     var titleBadge = p.type === 'TENGO' ? 'Yo Tengo 🔱' : 'Yo Quiero 🎯';
+                    var statusNote = (p.status === 'in_deal') ? ' <span style="color:#22c55e; font-weight:bold;">[En Negociación]</span>' : '';
                     var discretionTag = p.discretion ? ' <span style="color:#c084fc; font-weight:bold;">[🔒 Sello de Discreción]</span>' : '';
                     
                     var popupHtml = 
                         '<div onclick="goToFeedCard(' + p.id + ', \'' + p.type + '\')" style="cursor:pointer; padding:6px; min-width:210px; border-radius:6px; transition:0.2s;" title="Haz clic para ver y coordinar en el Muro">' +
                             '<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:4px; margin-bottom:6px;">' +
-                                '<span style="color:#ffd700; font-weight:900; font-size:0.75rem; text-transform:uppercase;">' + titleBadge + '</span>' +
-                                '<span style="font-size:0.68rem; color:#4ade80; font-weight:bold;">EN VIVO ➔</span>' +
+                                '<span style="color:#ffd700; font-weight:900; font-size:0.75rem; text-transform:uppercase;">' + titleBadge + statusNote + '</span>' +
+                                '<span style="font-size:0.68rem; color:#4ade80; font-weight:bold;">VER ➔</span>' +
                             '</div>' +
                             '<div style="color:#fff; font-size:0.85rem; font-weight:600; line-height:1.3; margin-bottom:4px;">' + p.title + '</div>' +
                             '<div style="font-size:0.72rem; color:#94a3b8;">' + (p.discretion ? '🔒 Anónimo' : p.user) + ' • ' + p.location + '</div>' +
@@ -1918,7 +1980,7 @@
                         renderFeed();
                         renderMapPins();
 
-                        // Actualización de mensajes en vivo sin reiniciar el modal
+                        // Refrescar mensajes en vivo en el modal abierto sin parpadear
                         if (currentChatPost && isChatOpen) {
                             for (var k = 0; k < posts.length; k++) {
                                 if (posts[k].id === currentChatPost.id) {
@@ -1977,7 +2039,7 @@
             locateUserGPS(function(lat, lng) {
                 if (btnSubmit) btnSubmit.innerText = "Publicando...";
 
-                // Estructura garantizada idéntica a la Versión 8 y 9
+                // Estructura de esquema que Supabase acepta
                 var payload = {
                     id: creationNow,
                     type: type,
