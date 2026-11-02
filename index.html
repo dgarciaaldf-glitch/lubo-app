@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 13 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 14 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -407,7 +407,6 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* BOTÓN BIDIRECCIONAL: VER EN MAPA */
         .btn-view-map {
             background: rgba(255, 255, 255, 0.06);
             color: var(--gold-bright);
@@ -527,8 +526,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 13 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 13 (BOTÓN: VER EN MAPA)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 14 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 14 (REGLA DE ORO ANTI-DINERO)</div>
 
     <div id="toast">Notificación</div>
 
@@ -783,7 +782,7 @@
         </div>
     </div>
 
-    <!-- MODAL PUBLICACIÓN CON EL SELLO DE DISCRECIÓN -->
+    <!-- MODAL PUBLICACIÓN CON EL SELLO DE DISCRECIÓN Y REGLA ANTI-DINERO -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -807,10 +806,25 @@
                 </select>
 
                 <label>¿Qué tienes o qué quieres?</label>
-                <textarea id="postTitle" rows="3" placeholder="Ej. Una chamarra de piel en buen estado..." required></textarea>
+                <textarea id="postTitle" rows="3" placeholder="Ej. Una chamarra de piel en buen estado..." required oninput="validateAntiMoneyRule()"></textarea>
 
                 <label>¿Pides u ofreces algo a cambio?</label>
-                <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas">
+                <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas en especie o favores" oninput="validateAntiMoneyRule()">
+
+                <!-- REGLA DE ORO ANTI-DINERO PREVENTIVA -->
+                <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--gold-bright); padding: 12px; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--gold-bright); font-size: 0.82rem; font-weight: bold; margin-bottom: 4px;">
+                        <span>⚖️ Regla de Oro Lubó (Cero Dinero):</span>
+                    </div>
+                    <p style="color: var(--text-sub); font-size: 0.74rem; line-height: 1.4;">
+                        En esta red está estrictamente prohibido solicitar o transferir dinero en efectivo, transferencias bancarias o cobros monetarios. Todo trato debe ser 100% en especie, habilidades o experiencias compartidas.
+                    </p>
+                </div>
+
+                <!-- ALERTA DINÁMICA SI ESCRIBE PALABRAS DE DINERO -->
+                <div id="moneyDetectedWarning" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 8px; font-size: 0.78rem; font-weight: bold;">
+                    ⚠️ Atención: Has escrito términos relacionados con dinero en efectivo o pagos. Lubó es una red de trueque puro; por favor retira esas referencias para habilitar la publicación.
+                </div>
 
                 <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; padding: 12px; border-radius: 8px;">
                     <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: #c084fc; font-size: 0.82rem; font-weight: bold;">
@@ -946,6 +960,7 @@
             if (p) p.style.display = 'flex';
         }
 
+        // APERTURA DE MODAL CON CALIBRACIÓN GPS SATELITAL FORZADA
         function openPublishModal() {
             if (!currentUser) {
                 showToast("Primero identifícate para participar");
@@ -961,12 +976,55 @@
                 statusEl.style.color = "var(--gold-bright)";
             }
 
+            validateAntiMoneyRule();
+
             locateUserGPS(function(lat, lng, accuracy) {
                 if (statusEl) {
                     statusEl.innerText = "✓ Coordenadas satelitales fijadas";
                     statusEl.style.color = "#4ade80";
                 }
             });
+        }
+
+        // VALIDACIÓN PREVENTIVA DE LA REGLA DE ORO ANTI-DINERO
+        function validateAntiMoneyRule() {
+            var titleInput = document.getElementById('postTitle');
+            var changeInput = document.getElementById('postChange');
+            var warningBox = document.getElementById('moneyDetectedWarning');
+            var btnSubmit = document.getElementById('btnSubmitPublish');
+
+            var fullText = ((titleInput ? titleInput.value : '') + ' ' + (changeInput ? changeInput.value : '')).toLowerCase();
+            var forbiddenWords = [
+                '$', 'peso', 'pesos', 'efectivo', 'deposito', 'depósito', 'transferencia', 'transferir',
+                'cobro', 'cobrar', 'vendo', 'precio', 'tarifa', 'anticipo', 'dinero', 'mxn', 'usd'
+            ];
+
+            var hasForbidden = false;
+            for (var i = 0; i < forbiddenWords.length; i++) {
+                var word = forbiddenWords[i];
+                if (word === '$') {
+                    if (fullText.indexOf('$') !== -1) { hasForbidden = true; break; }
+                } else {
+                    var regex = new RegExp('\\b' + word + '\\b', 'i');
+                    if (regex.test(fullText)) { hasForbidden = true; break; }
+                }
+            }
+
+            if (hasForbidden) {
+                if (warningBox) warningBox.style.display = 'block';
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.style.opacity = '0.5';
+                    btnSubmit.style.cursor = 'not-allowed';
+                }
+            } else {
+                if (warningBox) warningBox.style.display = 'none';
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                    btnSubmit.style.cursor = 'pointer';
+                }
+            }
         }
 
         function openActiveOrFirstDeal() {
@@ -1291,7 +1349,6 @@
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Iniciando trato con ' + post.user + '...\')">' + actionText + '</button>';
                 }
 
-                // Botón "Ver en Mapa" disponible si la publicación tiene coordenadas válidas
                 var viewMapBtnHTML = '';
                 if (post.lat && post.lng && post.status === 'active') {
                     viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
@@ -1536,14 +1593,27 @@
                 return;
             }
 
+            var title = document.getElementById('postTitle').value;
+            var change = document.getElementById('postChange').value || 'Abierto a propuestas';
+
+            // Comprobación de seguridad final contra dinero
+            var fullCheckText = (title + ' ' + change).toLowerCase();
+            var forbidden = ['$', 'peso', 'pesos', 'efectivo', 'deposito', 'depósito', 'transferencia', 'transferir', 'cobro', 'cobrar', 'vendo', 'precio', 'tarifa', 'anticipo', 'dinero', 'mxn', 'usd'];
+            for (var f = 0; f < forbidden.length; f++) {
+                var term = forbidden[f];
+                if ((term === '$' && fullCheckText.indexOf('$') !== -1) || (term !== '$' && new RegExp('\\b' + term + '\\b', 'i').test(fullCheckText))) {
+                    showToast("⚠️ En Lubó no se permite dinero. Retira las menciones de pago.");
+                    validateAntiMoneyRule();
+                    return;
+                }
+            }
+
             var btnSubmit = document.getElementById('btnSubmitPublish');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
                 btnSubmit.innerText = "Fijando satélites...";
             }
 
-            var title = document.getElementById('postTitle').value;
-            var change = document.getElementById('postChange').value || 'Abierto a propuestas';
             var type = document.getElementById('postType').value;
             var cat = document.getElementById('postCategory').value;
             var hasDiscretion = document.getElementById('discretionCheck').checked;
