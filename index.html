@@ -42,7 +42,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 6 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 7 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -51,20 +51,20 @@
             height: 38px !important;
             background: #00ff66 !important;
             color: #000000 !important;
-            font-size: 0.9rem !important;
+            font-size: 0.82rem !important;
             font-weight: 900 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
-            letter-spacing: 1.5px !important;
+            letter-spacing: 1px !important;
             z-index: 2147483647 !important;
             box-shadow: 0 3px 15px rgba(0, 255, 102, 0.9) !important;
             text-transform: uppercase !important;
             pointer-events: none !important;
         }
 
-        /* PANTALLA 0: CARGA SIMULADA DE LUBÓ (SPLASH CON TRIDENTES) */
+        /* PANTALLA 0: CARGA SIMULADA DE LUBÓ */
         #splashScreen {
             position: fixed; top: 38px; left: 0; width: 100%; height: calc(100% - 38px);
             background-color: #020617;
@@ -99,7 +99,7 @@
         }
         @keyframes fillLoading { 0% { width: 0%; } 100% { width: 100%; } }
 
-        /* PANTALLA 1: BIENVENIDA OBLIGATORIA SI NO HAY SESIÓN INICIADA */
+        /* PANTALLA 1: BIENVENIDA OBLIGATORIA */
         #welcomeScreen {
             position: fixed; top: 38px; left: 0; width: 100%; height: calc(100% - 38px);
             background: linear-gradient(135deg, #020617 0%, #0a0f1d 100%);
@@ -229,7 +229,6 @@
             100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
         }
 
-        /* CONTENEDOR DEL MAPA CON CALLES ABIERTAS */
         .mini-map {
             width: 100%; height: 320px; min-height: 320px; background: #0b1120; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
@@ -376,6 +375,17 @@
         .btn-action:disabled { background: #1e293b; color: var(--text-sub); cursor: not-allowed; opacity: 0.6; box-shadow: none; filter: grayscale(1); }
         .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
 
+        .btn-own-post {
+            background: rgba(234, 179, 8, 0.1) !important;
+            color: var(--gold-bright) !important;
+            border: 1px solid var(--gold-bright) !important;
+            cursor: default !important;
+            font-size: 0.75rem !important;
+            padding: 8px 10px !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
+        }
+
         .floating-actions-row {
             position: fixed; bottom: 20px; right: 20px; z-index: 90;
             display: flex; gap: 12px; align-items: center;
@@ -457,8 +467,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 6 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 6 (REGISTRO GOOGLE +18 Y TÉRMINOS)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 7 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 7 (PUBLICACIÓN Y SINCRONIZACIÓN EN TIEMPO REAL)</div>
 
     <div id="toast">Notificación</div>
 
@@ -475,7 +485,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA (SE MUESTRA SI NO HAY SESIÓN) -->
+    <!-- PANTALLA 1: BIENVENIDA OBLIGATORIA -->
     <div id="welcomeScreen">
         <div class="welcome-hero">
             <div style="font-size: 4rem; margin-bottom: 5px;">🔱</div>
@@ -575,19 +585,19 @@
                 </div>
                 <div class="stat-grid">
                     <div class="stat-card" onclick="switchTab('TENGO')">
-                        <div class="stat-number" style="color:var(--gold-bright);">3</div>
-                        <div class="stat-label">Cerca de ti</div>
+                        <div class="stat-number stat-count-tengo" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-label">Tengo</div>
                     </div>
                     <div class="stat-card" onclick="switchTab('QUIERO')">
-                        <div class="stat-number" style="color:var(--gold-bright);">1</div>
-                        <div class="stat-label">Por expirar</div>
+                        <div class="stat-number stat-count-quiero" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-label">Quiero</div>
                     </div>
                     <div class="stat-card" onclick="openActiveOrFirstDeal()">
-                        <div class="stat-number" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-number stat-count-indeal" style="color:var(--gold-bright);">0</div>
                         <div class="stat-label">En proceso</div>
                     </div>
                     <div class="stat-card" onclick="switchTab('LEYENDAS')">
-                        <div class="stat-number" style="color:#94a3b8;">1</div>
+                        <div class="stat-number stat-count-legends" style="color:#94a3b8;">0</div>
                         <div class="stat-label">Leyendas</div>
                     </div>
                 </div>
@@ -621,7 +631,7 @@
         <button class="fab" onclick="openPublishModal()" title="Crear Publicación">+</button>
     </div>
 
-    <!-- MODAL REGISTRO OBLIGATORIO: GOOGLE SIGN-IN REAL (+18 Y TÉRMINOS LEGALES) -->
+    <!-- MODAL REGISTRO: GOOGLE SIGN-IN REAL (+18) -->
     <div id="registerModal" class="modal" style="backdrop-filter: blur(8px);">
         <div class="modal-content" style="border: 2px solid var(--gold-bright);">
             <div class="modal-header">
@@ -713,7 +723,7 @@
         </div>
     </div>
 
-    <!-- MODAL PUBLICACIÓN -->
+    <!-- MODAL PUBLICACIÓN CON TIPO, CATEGORÍA Y TIEMPO REAL -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -742,13 +752,24 @@
                 <label>¿Pides u ofreces algo a cambio?</label>
                 <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas">
 
-                <button type="submit" class="btn-action" style="margin-top: 10px;">Lanzar al Muro</button>
+                <div style="background: var(--widget-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gold); font-size: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--gold-bright); font-weight: bold;">📍 Ubicación Satelital:</span>
+                        <span id="gpsStatusPublish" style="color: #4ade80;">Coordenadas fijadas ✓</span>
+                    </div>
+                    <small style="color: var(--text-sub); display: block; margin-top: 4px;">Tu oportunidad se mostrará en el mapa de toda la comunidad en vivo.</small>
+                </div>
+
+                <button type="submit" id="btnSubmitPublish" class="btn-action" style="margin-top: 10px;">Lanzar al Muro</button>
             </form>
         </div>
     </div>
 
     <script>
+        // CONFIGURACIÓN OFICIAL DE GOOGLE Y SUPABASE
         var GOOGLE_CLIENT_ID = "483315345721-uo1eio1h91tguc8ch8n56tmupvan4ebp.apps.googleusercontent.com";
+        var SUPABASE_REST_URL = "https://zkikxumrqrowysrkolbj.supabase.co/rest/v1/posts";
+        var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraWt4dW1ycXJvd3lzcmtvbGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3Mjg5NDgsImV4cCI6MjEwNjMwNDk0OH0.vHHctV4nTewTqSoiFhTt4D_XgNHBm-achHW2pBFyU64";
 
         var safeStorage = {
             get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
@@ -769,6 +790,7 @@
         var userCoords = { lat: 19.3900, lng: -99.1550 };
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
+        var isSyncing = false;
 
         var BASE_POSTS = [
             {
@@ -777,7 +799,8 @@
                 change: 'Presenta tu chat activo de Lubó en mostrador y disfruta de un espacio seguro, cámaras y wifi de alta velocidad.',
                 user: 'Café Obsidiana', rank: 'Aliado Oficial',
                 location: 'Del Valle Centro, CDMX',
-                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active'
+                lat: 19.3780, lng: -99.1650, discretion: false, isSponsor: true, status: 'active',
+                creator_id: 'sponsor_obsidiana'
             },
             {
                 id: 10001, type: 'TENGO', category: 'OBJETOS',
@@ -785,7 +808,8 @@
                 change: 'A cambio de: Que vengas por ellas, te las lleves discretamente y me traigas una pizza y un postre.',
                 user: 'Diego I.', rank: 'Pacto de Confianza',
                 location: 'Coyoacán, CDMX', 
-                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active'
+                lat: 19.3498, lng: -99.1622, discretion: true, isSponsor: false, status: 'active',
+                creator_id: 'example_diego'
             },
             {
                 id: 10002, type: 'QUIERO', category: 'FAVORES',
@@ -793,7 +817,8 @@
                 change: 'Abierto a propuestas',
                 user: 'Anónimo', rank: 'Cazador Novato',
                 location: 'Benito Juárez, CDMX', 
-                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active'
+                lat: 19.3984, lng: -99.1600, discretion: false, isSponsor: false, status: 'active',
+                creator_id: 'example_anon'
             },
             {
                 id: 10003, type: 'LEYENDA', category: 'SOLIDARIDAD',
@@ -801,10 +826,12 @@
                 change: '🔒 El otorgante solicitó Sello de Discreción (Evidencia fotográfica verificada).',
                 user: 'Anónimo', rank: 'Leyenda Urbana',
                 location: 'Cuauhtémoc, CDMX', 
-                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda'
+                lat: 19.4326, lng: -99.1332, discretion: true, isSponsor: false, status: 'leyenda',
+                creator_id: 'example_legend'
             }
         ];
 
+        var cloudPosts = [];
         var posts = [].concat(BASE_POSTS);
 
         function showToast(text) {
@@ -861,6 +888,15 @@
 
         function openActiveOrFirstDeal() {
             showToast("Buscando conversaciones en tu radio...");
+        }
+
+        function isCurrentUserAuthor(post) {
+            if (!post || post.isSponsor) return false;
+            if (post.creator_id && post.creator_id === myDeviceId) return true;
+            if (currentUser && post.user) {
+                if (currentUser.trim().toLowerCase() === post.user.trim().toLowerCase()) return true;
+            }
+            return false;
         }
 
         // ==========================================
@@ -1058,6 +1094,31 @@
             }
         }
 
+        function updateMetricsCounters() {
+            var tengoCount = 0;
+            var quieroCount = 0;
+            var inDealCount = 0;
+            var legendCount = 0;
+
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                if (p.status === 'active' && p.type === 'TENGO' && !p.isSponsor) tengoCount++;
+                if (p.status === 'active' && p.type === 'QUIERO') quieroCount++;
+                if (p.status === 'in_deal') inDealCount++;
+                if (p.status === 'leyenda') legendCount++;
+            }
+
+            var tEl = document.querySelector('.stat-count-tengo');
+            var qEl = document.querySelector('.stat-count-quiero');
+            var dEl = document.querySelector('.stat-count-indeal');
+            var lEl = document.querySelector('.stat-count-legends');
+
+            if (tEl) tEl.innerText = tengoCount;
+            if (qEl) qEl.innerText = quieroCount;
+            if (dEl) dEl.innerText = inDealCount;
+            if (lEl) lEl.innerText = legendCount;
+        }
+
         function renderFeed() {
             var feed = document.getElementById('feed');
             if (!feed) return;
@@ -1073,13 +1134,16 @@
             }
 
             if (filtered.length === 0) {
-                feed.innerHTML = '<p style="text-align:center; color: var(--text-sub); padding: 40px;">No hay publicaciones en este filtro.</p>';
+                feed.innerHTML = '<p style="text-align:center; color: var(--text-sub); padding: 40px;">No hay publicaciones en este filtro actualmente.</p>';
+                updateMetricsCounters();
                 return;
             }
 
             for (var i = 0; i < filtered.length; i++) {
                 var post = filtered[i];
                 var card = document.createElement('div');
+                var isMyOwn = isCurrentUserAuthor(post);
+
                 card.className = 'card ' + (post.isSponsor ? 'sponsor-card' : '');
 
                 var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
@@ -1087,6 +1151,18 @@
                 else if (post.status === 'leyenda') badgeClass = 'badge-leyenda';
 
                 var badgeLabel = post.isSponsor ? 'ESPACIO ALIADO' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type);
+
+                var actionBtnHTML = '';
+                if (post.isSponsor) {
+                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
+                } else if (post.status === 'leyenda') {
+                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Leyenda comunitaria verificada\')">Ver Leyenda</button>';
+                } else if (isMyOwn) {
+                    actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú creaste esta oportunidad">✓ Tu Publicación</button>';
+                } else {
+                    var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
+                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Iniciando trato con ' + post.user + '...\')">' + actionText + '</button>';
+                }
 
                 card.innerHTML = 
                     (post.isSponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
@@ -1108,11 +1184,13 @@
                                 '<div style="font-size:0.75rem; color:var(--text-sub);">' + post.location + '</div>' +
                             '</div>' +
                         '</div>' +
-                        '<button class="btn-action" onclick="showToast(\'Abriendo canal con ' + post.user + '...\')">Coordinar</button>' +
+                        actionBtnHTML +
                     '</div>';
 
                 feed.appendChild(card);
             }
+
+            updateMetricsCounters();
         }
 
         // ====================================================
@@ -1156,7 +1234,7 @@
             markersLayer.clearLayers();
 
             posts.forEach(function(p) {
-                if (p.lat && p.lng) {
+                if (p.lat && p.lng && p.status === 'active') {
                     var iconEmoji = p.isSponsor ? '☕' : (p.type === 'TENGO' ? '🍾' : '📦');
                     var pinClass = p.isSponsor ? 'map-marker-sponsor' : 'map-marker-pin';
 
@@ -1168,7 +1246,7 @@
                     });
 
                     var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
-                    marker.bindPopup('<b style="color:#ffd700;">' + p.user + '</b><br><span style="color:#fff;">' + p.title + '</span><br><small style="color:#94a3b8;">' + p.location + '</small>');
+                    marker.bindPopup('<b style="color:#ffd700;">' + (p.type === 'TENGO' ? 'Yo Tengo' : 'Yo Quiero') + '</b><br><span style="color:#fff;">' + p.title + '</span><br><small style="color:#94a3b8;">' + p.user + ' • ' + p.location + '</small>');
                     markersLayer.addLayer(marker);
                 }
             });
@@ -1209,35 +1287,141 @@
             }
         }
 
+        // ====================================================
+        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (SUPABASE CLOUD)
+        // ====================================================
+        function syncFromCloud() {
+            if (isSyncing) return;
+            isSyncing = true;
+            try {
+                fetch(SUPABASE_REST_URL + "?select=*&order=created_at.desc", {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                })
+                .then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .then(function(data) {
+                    isSyncing = false;
+                    if (data && Array.isArray(data)) {
+                        cloudPosts = data.map(function(p) {
+                            var resolvedUser = p.user_name || p.user || 'Anónimo';
+                            return {
+                                id: Number(p.id),
+                                type: p.type || 'TENGO',
+                                category: p.category || 'OBJETOS',
+                                title: p.title || '',
+                                change: p.change || '',
+                                user: resolvedUser,
+                                rank: p.rank || 'Cazador Novato',
+                                location: p.location || 'Ubicación Local',
+                                lat: Number(p.lat) || 19.3900,
+                                lng: Number(p.lng) || -99.1550,
+                                discretion: Boolean(p.discretion),
+                                status: p.status || 'active',
+                                isSponsor: false,
+                                creator_id: p.creator_id || resolvedUser
+                            };
+                        });
+                        posts = [].concat(cloudPosts, BASE_POSTS);
+                        renderFeed();
+                        renderMapPins();
+                    }
+                })
+                .catch(function() {
+                    isSyncing = false;
+                });
+            } catch(e) {
+                isSyncing = false;
+            }
+        }
+
         function handlePublish(e) {
             e.preventDefault();
+            if (!currentUser) {
+                showToast("Debes iniciar sesión para publicar");
+                openRegisterModal();
+                return;
+            }
+
+            var btnSubmit = document.getElementById('btnSubmitPublish');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Publicando...";
+            }
+
             var title = document.getElementById('postTitle').value;
             var change = document.getElementById('postChange').value || 'Abierto a propuestas';
             var type = document.getElementById('postType').value;
             var cat = document.getElementById('postCategory').value;
+            var creationNow = Date.now();
 
             var newPost = {
-                id: Date.now(),
+                id: creationNow,
                 type: type,
                 category: cat,
                 title: title,
                 change: change,
-                user: currentUser || 'Diego I.',
+                user: currentUser,
+                user_name: currentUser,
                 rank: currentUserRank,
                 location: 'Ubicación Satelital',
                 lat: userCoords.lat,
                 lng: userCoords.lng,
                 discretion: false,
                 isSponsor: false,
-                status: 'active'
+                status: 'active',
+                votes: 0,
+                created_at: creationNow,
+                expires_at: creationNow + 86400000,
+                creator_id: myDeviceId
             };
 
-            posts.unshift(newPost);
-            renderMapPins();
-            closeModal('publishModal');
-            document.getElementById('publishForm').reset();
-            switchTab(type);
-            showToast("🚀 Publicación agregada al instante");
+            // Enviar a la base de datos Supabase para que llegue a todos los usuarios
+            fetch(SUPABASE_REST_URL, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify([newPost])
+            })
+            .then(function(res) {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Lanzar al Muro";
+                }
+                posts.unshift(newPost);
+                renderFeed();
+                renderMapPins();
+                closeModal('publishModal');
+                document.getElementById('publishForm').reset();
+                switchTab(type);
+                showToast("🚀 Oportunidad publicada para toda la red Lubó");
+                if (map) {
+                    map.setView([userCoords.lat, userCoords.lng], 14);
+                    map.invalidateSize();
+                }
+            })
+            .catch(function() {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Lanzar al Muro";
+                }
+                // Si la red tiene retraso, se pinta localmente y avisa
+                posts.unshift(newPost);
+                renderFeed();
+                renderMapPins();
+                closeModal('publishModal');
+                switchTab(type);
+                showToast("Publicado en tu entorno local");
+            });
         }
 
         // ==========================================
@@ -1247,6 +1431,7 @@
             try { renderFeed(); } catch(e) {}
             try { updateUIForLoggedInUser(); } catch(e) {}
             try { initRealMap(); } catch(e) {}
+            try { syncFromCloud(); } catch(e) {}
         }
 
         if (document.readyState === 'loading') {
@@ -1254,6 +1439,11 @@
         } else {
             boot();
         }
+
+        // Descarga de publicaciones nuevas de otros usuarios cada 3.5 segundos
+        setInterval(function() {
+            syncFromCloud();
+        }, 3500);
     </script>
 </body>
 </html>
