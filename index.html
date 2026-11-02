@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lubó - Centro de Caza de Oportunidades</title>
 
-    <!-- Librerías cargadas de forma directa y garantizada -->
+    <!-- Librería de Mapas Interactivos (Leaflet) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
@@ -42,7 +42,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 4 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 5 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -176,9 +176,15 @@
             100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
         }
 
+        /* CONTENEDOR DEL MAPA Y ESTILIZACIÓN VISIBLE DE CALLES */
         .mini-map {
-            width: 100%; height: 320px; min-height: 320px; background: #020617; border-radius: 10px; border: 1px solid var(--border-gold);
+            width: 100%; height: 320px; min-height: 320px; background: #0b1120; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
+        }
+
+        /* Estilo nocturno limpio que deja 100% legibles calles y nombres */
+        .leaflet-tile-pane {
+            filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
 
         .map-marker-pin {
@@ -203,6 +209,17 @@
             font-size: 16px;
             box-shadow: 0 0 18px rgba(255, 215, 0, 0.95);
             cursor: pointer;
+        }
+
+        .map-marker-user {
+            background: #22c55e;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.9);
         }
 
         .leaflet-popup-content-wrapper {
@@ -307,17 +324,6 @@
         .btn-action:disabled { background: #1e293b; color: var(--text-sub); cursor: not-allowed; opacity: 0.6; box-shadow: none; filter: grayscale(1); }
         .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
 
-        .btn-own-post {
-            background: rgba(234, 179, 8, 0.1) !important;
-            color: var(--gold-bright) !important;
-            border: 1px solid var(--gold-bright) !important;
-            cursor: default !important;
-            font-size: 0.75rem !important;
-            padding: 8px 10px !important;
-            box-shadow: none !important;
-            opacity: 1 !important;
-        }
-
         .floating-actions-row {
             position: fixed; bottom: 20px; right: 20px; z-index: 90;
             display: flex; gap: 12px; align-items: center;
@@ -370,8 +376,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA OBLIGATORIA CON VERSIÓN 4 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 4 (BLINDADA)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 5 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 5 (CALLES Y GPS ACTIVOS)</div>
 
     <div id="toast">Notificación</div>
 
@@ -436,7 +442,7 @@
                     
                     <span class="live-indicator-tag">
                         <span class="live-dot-glow"></span>
-                        <span>EN VIVO</span>
+                        <span id="gpsLiveBadge">EN VIVO</span>
                     </span>
                 </div>
                 
@@ -540,20 +546,20 @@
         </div>
     </div>
 
-    <!-- MODAL REGISTRO: GOOGLE SIGN-IN REAL (+18) -->
+    <!-- MODAL REGISTRO SIMPLE -->
     <div id="registerModal" class="modal">
         <div class="modal-content" style="border: 2px solid var(--gold-bright);">
             <div class="modal-header">
                 <div>
                     <h3 style="font-size:1.2rem; color:#fff;">Acceso a la Red Lubó</h3>
-                    <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial de Google (+18)</p>
+                    <p style="font-size:0.75rem; color:var(--gold-bright);">Autenticación Oficial (+18)</p>
                 </div>
                 <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px;">
                 <p style="font-size:0.85rem; color:var(--text-sub);">Inicia sesión para sincronizar tus coordenadas en el radar y coordinar tratos locales.</p>
-                <input type="text" id="directAliasInput" placeholder="Escribe tu alias para pruebas (Ej. Diego)" style="width:100%;">
+                <input type="text" id="directAliasInput" placeholder="Escribe tu alias para tratos (Ej. Diego I.)" style="width:100%;">
                 <button type="button" class="btn-action" onclick="quickLogin()">Entrar como Usuario</button>
             </div>
         </div>
@@ -574,6 +580,8 @@
 
         var map = null;
         var markersLayer = null;
+        var userMarker = null;
+        var userCoords = { lat: 19.3900, lng: -99.1550 };
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
 
@@ -720,8 +728,13 @@
             var btns = document.querySelectorAll('.radius-picker .radius-btn');
             for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
             if (btn) btn.classList.add('active');
-            showToast("🎯 Radar centrado: " + label);
-            if (map) map.setZoom(zoomLevel);
+            showToast("🎯 Recentrado a " + label);
+            
+            // Re-centra con las coordenadas satelitales actuales
+            if (map) {
+                map.setView([userCoords.lat, userCoords.lng], zoomLevel);
+                map.invalidateSize();
+            }
         }
 
         function renderFeed() {
@@ -781,36 +794,105 @@
             }
         }
 
+        // ====================================================
+        // SISTEMA DE CALLES CON OPENSTREETMAP DIRECTO + GPS
+        // ====================================================
         function initRealMap() {
             try {
-                if (map) return;
+                if (map) {
+                    map.invalidateSize();
+                    return;
+                }
                 var mapBox = document.getElementById('mapBox');
                 if (!mapBox || typeof L === 'undefined') return;
 
+                // Inicializamos Leaflet centrado inicialmente en la zona centro
                 map = L.map('mapBox', {
-                    center: [19.3900, -99.1550],
+                    center: [userCoords.lat, userCoords.lng],
                     zoom: 13,
                     zoomControl: true,
                     attributionControl: false
                 });
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    maxZoom: 19
+                // Servidor de mosaicos oficial OpenStreetMap (Carga calles, avenidas y nombres al 100%)
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    crossOrigin: true
                 }).addTo(map);
 
                 markersLayer = L.layerGroup().addTo(map);
 
-                posts.forEach(function(p) {
-                    if (p.lat && p.lng) {
-                        var marker = L.marker([p.lat, p.lng]);
-                        marker.bindPopup('<b style="color:#000;">' + p.user + '</b><br><span style="color:#333;">' + p.title + '</span>');
-                        markersLayer.addLayer(marker);
-                    }
-                });
+                // Pintamos los pines existentes (Cafetería, Tequila, Departamento)
+                renderMapPins();
 
-                setTimeout(function() { if (map) map.invalidateSize(); }, 400);
+                // Solicitamos la ubicación satelital en tiempo real al usuario
+                locateUserGPS();
+
+                // Forzamos el redibujado de las calles
+                setTimeout(function() { if (map) map.invalidateSize(); }, 300);
+                setTimeout(function() { if (map) map.invalidateSize(); }, 1000);
             } catch(e) {
-                console.log("Aviso de mapa:", e);
+                console.log("Error al inicializar mapa:", e);
+            }
+        }
+
+        function renderMapPins() {
+            if (!markersLayer || typeof L === 'undefined') return;
+            markersLayer.clearLayers();
+
+            posts.forEach(function(p) {
+                if (p.lat && p.lng) {
+                    var iconEmoji = p.isSponsor ? '☕' : (p.type === 'TENGO' ? '🍾' : '📦');
+                    var pinClass = p.isSponsor ? 'map-marker-sponsor' : 'map-marker-pin';
+
+                    var pinIcon = L.divIcon({
+                        className: 'custom-pin',
+                        html: '<div class="' + pinClass + '" style="width:34px; height:34px;">' + iconEmoji + '</div>',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    });
+
+                    var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
+                    marker.bindPopup('<b style="color:#ffd700;">' + p.user + '</b><br><span style="color:#fff;">' + p.title + '</span><br><small style="color:#94a3b8;">' + p.location + '</small>');
+                    markersLayer.addLayer(marker);
+                }
+            });
+        }
+
+        // GEOLOCALIZACIÓN SATELITAL EN TIEMPO REAL
+        function locateUserGPS() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        userCoords.lat = position.coords.latitude;
+                        userCoords.lng = position.coords.longitude;
+
+                        if (map) {
+                            map.setView([userCoords.lat, userCoords.lng], 14);
+                            
+                            // Pin distintivo en color verde para TU ubicación exacta en la calle
+                            if (userMarker) {
+                                userMarker.setLatLng([userCoords.lat, userCoords.lng]);
+                            } else {
+                                var userIcon = L.divIcon({
+                                    className: 'custom-pin-user',
+                                    html: '<div class="map-marker-user" style="width:32px; height:32px;">📍</div>',
+                                    iconSize: [32, 32],
+                                    iconAnchor: [16, 16]
+                                });
+                                userMarker = L.marker([userCoords.lat, userCoords.lng], { icon: userIcon }).addTo(map);
+                                userMarker.bindPopup('<b style="color:#22c55e;">Estás aquí</b><br><small style="color:#fff;">Tu ubicación en tiempo real</small>');
+                            }
+                            map.invalidateSize();
+                        }
+                        var badge = document.getElementById('gpsLiveBadge');
+                        if (badge) badge.innerText = "GPS EXACTO";
+                    },
+                    function(err) {
+                        console.log("Aviso GPS:", err.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
+                );
             }
         }
 
@@ -829,22 +911,23 @@
                 change: change,
                 user: currentUser || 'Diego I.',
                 rank: currentUserRank,
-                location: 'Ubicación Local',
-                lat: 19.4326,
-                lng: -99.1332,
+                location: 'Ubicación Satelital',
+                lat: userCoords.lat,
+                lng: userCoords.lng,
                 discretion: false,
                 isSponsor: false,
                 status: 'active'
             };
 
             posts.unshift(newPost);
+            renderMapPins();
             closeModal('publishModal');
             document.getElementById('publishForm').reset();
             switchTab(type);
             showToast("🚀 Publicación agregada al instante");
         }
 
-        // ARRANQUE BLINDADO Y DIRECTO
+        // ARRANQUE SEGURO
         function boot() {
             try { renderFeed(); } catch(e) {}
             try { updateUIForLoggedInUser(); } catch(e) {}
