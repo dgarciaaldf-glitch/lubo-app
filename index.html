@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 15 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 16 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -232,7 +232,6 @@
             100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 2px var(--live-green); }
         }
 
-        /* CONTENEDOR DEL MAPA */
         .mini-map {
             width: 100%; height: 320px; min-height: 320px; background: #0b1120; border-radius: 10px; border: 1px solid var(--border-gold);
             position: relative; overflow: hidden; z-index: 1;
@@ -242,7 +241,6 @@
             filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
 
-        /* PINES: TRIDENTE DORADO (OFERTA) VS DIANA CIAN (BÚSQUEDA) */
         .map-marker-tengo {
             background: var(--gold-gradient);
             border: 2px solid #ffffff;
@@ -320,6 +318,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
         }
 
+        .card.in-deal {
+            border: 2px solid #22c55e !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
+        }
+
         .card.card-focus-highlight {
             border-color: #ffd700 !important;
             box-shadow: 0 0 25px rgba(255, 215, 0, 0.8) !important;
@@ -350,24 +353,17 @@
             text-transform: uppercase;
         }
 
-        .sponsor-media-header {
-            width: calc(100% + 36px);
-            margin: -12px -18px 14px -18px;
-            height: 150px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-        .sponsor-media-overlay {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: linear-gradient(to bottom, rgba(2,6,23,0.1) 0%, rgba(18,24,38,0.95) 100%);
-        }
-        
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
         
         .badge { font-size: 0.72rem; font-weight: 800; padding: 4px 9px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-tengo, .badge-quiero, .badge-leyenda, .badge-deal { 
+        .badge-tengo, .badge-quiero, .badge-leyenda { 
             background: var(--gold-soft); color: var(--gold-bright); border: 1px solid var(--gold-bright); box-shadow: var(--gold-glow); 
+        }
+        .badge-deal {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #4ade80 !important;
+            border: 1px solid #22c55e !important;
+            font-weight: 900 !important;
         }
 
         .badge-sponsor {
@@ -391,23 +387,11 @@
             letter-spacing: 0.5px !important;
         }
 
-        /* BOTÓN DE REPORTE DISCRETO EN LA CABECERA DE LA TARJETA */
         .btn-report-flag {
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
-            font-size: 0.9rem;
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: 0.2s;
-            opacity: 0.6;
+            background: transparent; border: none; color: var(--text-sub); font-size: 0.9rem;
+            cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: 0.2s; opacity: 0.6;
         }
-        .btn-report-flag:hover {
-            opacity: 1;
-            color: #ef4444;
-            transform: scale(1.15);
-        }
+        .btn-report-flag:hover { opacity: 1; color: #ef4444; transform: scale(1.15); }
         
         .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; line-height: 1.6; text-align: justify; word-break: break-word; color: #fff; }
@@ -421,29 +405,14 @@
             padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(234,179,8,0.3); font-weight: bold;
         }
 
-        .card-actions-group {
-            display: flex; align-items: center; gap: 8px;
-        }
+        .card-actions-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
         .btn-view-map {
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--gold-bright);
-            border: 1px solid rgba(234, 179, 8, 0.4);
-            padding: 8px 11px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            background: rgba(255, 255, 255, 0.06); color: var(--gold-bright); border: 1px solid rgba(234, 179, 8, 0.4);
+            padding: 8px 11px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 4px;
         }
-        .btn-view-map:hover {
-            background: rgba(234, 179, 8, 0.18);
-            border-color: var(--gold-bright);
-            transform: scale(1.02);
-        }
+        .btn-view-map:hover { background: rgba(234, 179, 8, 0.18); border-color: var(--gold-bright); transform: scale(1.02); }
 
         .btn-action {
             background: var(--gold-gradient); color: #000; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; font-size: 0.85rem;
@@ -453,25 +422,27 @@
         .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
 
         .btn-own-post {
-            background: rgba(234, 179, 8, 0.1) !important;
-            color: var(--gold-bright) !important;
-            border: 1px solid var(--gold-bright) !important;
-            cursor: default !important;
-            font-size: 0.75rem !important;
-            padding: 8px 10px !important;
-            box-shadow: none !important;
-            opacity: 1 !important;
+            background: rgba(234, 179, 8, 0.1) !important; color: var(--gold-bright) !important; border: 1px solid var(--gold-bright) !important;
+            cursor: default !important; font-size: 0.75rem !important; padding: 8px 10px !important; box-shadow: none !important; opacity: 1 !important;
         }
 
-        .floating-actions-row {
-            position: fixed; bottom: 20px; right: 20px; z-index: 90;
-            display: flex; gap: 12px; align-items: center;
+        .btn-in-deal-open {
+            background: #22c55e !important; color: #000 !important; font-weight: 900 !important;
+            box-shadow: 0 0 14px rgba(34, 197, 94, 0.7) !important; cursor: pointer !important;
         }
+
+        .btn-cancel-deal {
+            background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444;
+            padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; cursor: pointer;
+            width: 100%; margin-top: 8px; transition: 0.2s;
+        }
+        .btn-cancel-deal:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
+
+        .floating-actions-row { position: fixed; bottom: 20px; right: 20px; z-index: 90; display: flex; gap: 12px; align-items: center; }
 
         .fab-chat, .fab {
-            width: 56px; height: 56px; border-radius: 50%;
-            background: var(--gold-gradient); color: #000; font-size: 1.8rem; border: none; cursor: pointer;
-            box-shadow: var(--gold-glow); display: flex; align-items: center; justify-content: center; font-weight: 900;
+            width: 56px; height: 56px; border-radius: 50%; background: var(--gold-gradient); color: #000; font-size: 1.8rem;
+            border: none; cursor: pointer; box-shadow: var(--gold-glow); display: flex; align-items: center; justify-content: center; font-weight: 900;
         }
 
         .drawer-overlay {
@@ -481,8 +452,7 @@
         .drawer-content {
             position: fixed; top: 0; left: -82%; width: 82%; max-width: 360px; height: 100%;
             background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
-            padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+            padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out; box-shadow: 10px 0 30px rgba(0,0,0,0.8);
         }
         .drawer-content.open { left: 0; }
 
@@ -504,34 +474,25 @@
             background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
         }
 
-        .btn-google-sso {
-            background: #ffffff;
-            color: #1f2937;
-            font-weight: 700;
-            border: 1px solid #e5e7eb;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            font-size: 0.95rem;
-            transition: 0.2s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        /* ESTILOS DEL CHAT EFÍMERO EN VIVO */
+        .chat-box {
+            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg);
+            border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
         }
-        .btn-google-sso:hover {
-            background: #f3f4f6;
-            transform: translateY(-1px);
-        }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+        .msg { max-width: 82%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.35; text-align: justify; word-break: break-word; }
+        .msg-them { background: #1e293b; align-self: flex-start; color: #fff; border: 1px solid var(--border-gold); }
+        .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
+        .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
 
-        .legal-link {
-            color: var(--gold-bright);
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
+        .btn-google-sso {
+            background: #ffffff; color: #1f2937; font-weight: 700; border: 1px solid #e5e7eb; padding: 12px;
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 10px; width: 100%; font-size: 0.95rem; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
+        .btn-google-sso:hover { background: #f3f4f6; transform: translateY(-1px); }
+
+        .legal-link { color: var(--gold-bright); text-decoration: underline; cursor: pointer; font-weight: bold; }
 
         #toast {
             visibility: hidden; min-width: 250px; background: var(--gold-gradient); color: #000; font-weight: 800;
@@ -544,8 +505,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 15 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 15 (SISTEMA DE REPORTE Y MODERACIÓN 🚩)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 16 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 16 (CHAT EFÍMERO EN TIEMPO REAL CONECTADO)</div>
 
     <div id="toast">Notificación</div>
 
@@ -555,10 +516,7 @@
             <div class="trident-splash">🔱</div>
             <div class="lubo-splash-title">Lubó</div>
             <div class="lubo-splash-sub">Yo Tengo, Yo Quiero</div>
-            
-            <div class="loader-container">
-                <div class="loader-bar"></div>
-            </div>
+            <div class="loader-container"><div class="loader-bar"></div></div>
         </div>
     </div>
 
@@ -670,7 +628,7 @@
                         <div class="stat-label">Quiero</div>
                     </div>
                     <div class="stat-card" onclick="openActiveOrFirstDeal()">
-                        <div class="stat-number stat-count-indeal" style="color:var(--gold-bright);">0</div>
+                        <div class="stat-number stat-count-indeal" style="color:#22c55e;">0</div>
                         <div class="stat-label">En proceso</div>
                     </div>
                     <div class="stat-card" onclick="switchTab('LEYENDAS')">
@@ -697,6 +655,20 @@
                     <p style="font-size:0.8rem; line-height:1.4; margin-bottom:12px;">
                         ¿Cierras un trato hoy? Muestra tu chat activo de Lubó en caja y recibe <strong>2x1 en café de autor</strong> al reunirte aquí.
                     </p>
+                </div>
+            </div>
+
+            <!-- WIDGET LATERAL: CONVERSACIÓN ACTIVA -->
+            <div class="side-widget">
+                <div class="widget-title">
+                    <span>💬 Negociación Comunitaria</span>
+                </div>
+                <div style="background:var(--widget-bg); padding:14px; border-radius:8px; font-size:0.85rem; color:var(--text-sub);">
+                    <p id="sideChatTitle" style="color:#fff; font-weight:bold; margin-bottom:4px;">Sin trato activo</p>
+                    <p id="sideChatSub" style="font-size:0.78rem; color:var(--gold-bright); margin-bottom:10px;">⏳ Esperando coordinación</p>
+                    <button class="btn-action" id="btnSideOpenChat" style="width:100%; padding:10px; font-size:0.8rem;" onclick="openActiveOrFirstDeal()">
+                        Abrir Canal de Negociación
+                    </button>
                 </div>
             </div>
         </aside>
@@ -772,28 +744,9 @@
             </div>
 
             <div style="font-size:0.8rem; color:var(--text-sub); line-height:1.6; display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow-y:auto; padding-right:6px;">
-                <p>
-                    <strong style="color:#fff;">1. Responsable del Tratamiento:</strong><br>
-                    Lubó opera como plataforma digital comunitaria accesible a través del dominio oficial <strong>lubo.com.mx</strong> para la coordinación de trueques e intercambios cívicos.
-                </p>
-                <p>
-                    <strong style="color:#fff;">2. Datos Personales Recabados:</strong><br>
-                    A través de la autenticación con Google Identity Services se recaban exclusivamente los datos públicos de tu perfil de Google (nombre, correo electrónico verificado y fotografía). Al publicar se fijan las coordenadas GPS del instante para situar el pin de la oportunidad en el mapa.
-                </p>
-                <p>
-                    <strong style="color:#fff;">3. Finalidad del Uso:</strong><br>
-                    • Conectar usuarios dentro de radios geográficos definidos.<br>
-                    • Permitir la apertura de canales de negociación efímeros.<br>
-                    • Prevenir abusos, fraudes y cuentas falsas.
-                </p>
-                <p>
-                    <strong style="color:#fff;">4. Deslinde de Responsabilidad Legal y Civil:</strong><br>
-                    Lubó no es parte contractual, intermediario financiero ni custodio de los bienes o favores intercambiados. La legalidad, calidad, seguridad física y cumplimiento de cualquier trato convenido es responsabilidad total y exclusiva de los usuarios participantes (+18).
-                </p>
-                <p>
-                    <strong style="color:#fff;">5. Ejercicio de Derechos ARCO:</strong><br>
-                    En cualquier momento el titular podrá solicitar el Acceso, Rectificación, Cancelación u Oposición del uso de sus datos contactando a <strong>privacidad@lubo.com.mx</strong>.
-                </p>
+                <p><strong style="color:#fff;">1. Responsable del Tratamiento:</strong><br>Lubó opera como plataforma digital comunitaria accesible a través del dominio oficial <strong>lubo.com.mx</strong>.</p>
+                <p><strong style="color:#fff;">2. Datos Personales Recabados:</strong><br>Perfil verificado con Google Identity Services y coordenadas GPS instantáneas al publicar.</p>
+                <p><strong style="color:#fff;">3. Deslinde Legal:</strong><br>Lubó es una plataforma de enlace entre particulares (+18) y no interviene ni se responsabiliza de los tratos realizados.</p>
             </div>
 
             <button class="btn-action" style="width:100%; margin-top:15px; padding:10px;" onclick="closeModal('privacyModal')">Entendido y Cerrar</button>
@@ -833,14 +786,43 @@
                     <span style="font-size:0.82rem; color:#fff;">🚫 Contenido ofensivo, violento o sospechoso</span>
                 </label>
 
-                <button type="submit" id="btnConfirmReport" class="btn-action" style="background: linear-gradient(135deg, #ef4444, #991b1b); color:#fff; margin-top:10px; padding:12px;">
+                <button type="submit" class="btn-action" style="background: linear-gradient(135deg, #ef4444, #991b1b); color:#fff; margin-top:10px; padding:12px;">
                     Confirmar y Enviar Reporte
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL PUBLICACIÓN CON EL SELLO DE DISCRECIÓN Y REGLA ANTI-DINERO -->
+    <!-- MODAL DEL CHAT EFÍMERO EN TIEMPO REAL -->
+    <div id="chatModal" class="modal" style="z-index: 69000;">
+        <div class="modal-content" style="border: 2px solid var(--gold-bright);">
+            <div class="modal-header">
+                <div>
+                    <h3 id="chatModalCounterpart" style="color:#fff; font-size:1.15rem;">Chat de Negociación</h3>
+                    <p id="chatModalPostTitle" style="font-size:0.75rem; color:var(--gold-bright); margin-top:2px;">Cargando trato...</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('chatModal')">&times;</button>
+            </div>
+
+            <div style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.4); padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; color: #4ade80; text-align: center; margin-bottom: 6px;">
+                ⏸️ Oportunidad congelada en el Muro (En Negociación Directa)
+            </div>
+
+            <div class="chat-box">
+                <div class="chat-messages" id="chatMessagesContainer"></div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatInputMessage" placeholder="Escribe tu mensaje para coordinar..." style="flex:1;" onkeydown="if(event.key==='Enter') sendChatMessage();">
+                    <button type="button" class="btn-action" style="padding:8px 14px;" onclick="sendChatMessage()">Enviar</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn-cancel-deal" onclick="cancelCurrentDeal()">
+                ❌ Cancelar Interés / Liberar Trato al Muro
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PUBLICACIÓN -->
     <div id="publishModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -869,7 +851,6 @@
                 <label>¿Pides u ofreces algo a cambio?</label>
                 <input type="text" id="postChange" placeholder="Ej. Abierto a propuestas en especie o favores" oninput="validateAntiMoneyRule()">
 
-                <!-- REGLA DE ORO ANTI-DINERO PREVENTIVA -->
                 <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--gold-bright); padding: 12px; border-radius: 8px;">
                     <div style="display: flex; align-items: center; gap: 6px; color: var(--gold-bright); font-size: 0.82rem; font-weight: bold; margin-bottom: 4px;">
                         <span>⚖️ Regla de Oro Lubó (Cero Dinero):</span>
@@ -879,7 +860,6 @@
                     </p>
                 </div>
 
-                <!-- ALERTA DINÁMICA SI ESCRIBE PALABRAS DE DINERO -->
                 <div id="moneyDetectedWarning" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 8px; font-size: 0.78rem; font-weight: bold;">
                     ⚠️ Atención: Has escrito términos relacionados con dinero en efectivo o pagos. Lubó es una red de trueque puro; por favor retira esas referencias para habilitar la publicación.
                 </div>
@@ -932,6 +912,7 @@
         var userCoords = { lat: 19.3900, lng: -99.1550 };
         var currentTab = 'TENGO';
         var currentCategory = 'TODAS';
+        var currentChatPost = null;
         var isSyncing = false;
 
         var BASE_POSTS = [
@@ -1022,7 +1003,6 @@
             if (p) p.style.display = 'flex';
         }
 
-        // APERTURA DE MODAL CON CALIBRACIÓN GPS SATELITAL FORZADA
         function openPublishModal() {
             if (!currentUser) {
                 showToast("Primero identifícate para participar");
@@ -1048,7 +1028,6 @@
             });
         }
 
-        // VALIDACIÓN PREVENTIVA DE LA REGLA DE ORO ANTI-DINERO
         function validateAntiMoneyRule() {
             var titleInput = document.getElementById('postTitle');
             var changeInput = document.getElementById('postChange');
@@ -1089,9 +1068,6 @@
             }
         }
 
-        // ====================================================
-        // SISTEMA DE REPORTE Y MODERACIÓN COMUNITARIA
-        // ====================================================
         function openReportModal(postId) {
             if (!currentUser) {
                 showToast("Identifícate para emitir un reporte comunitario");
@@ -1123,7 +1099,6 @@
             post.reports_count = (Number(post.reports_count) || 0) + 1;
             var newStatus = post.status;
 
-            // Si acumula 3 reportes, se congela/baja automáticamente
             if (post.reports_count >= 3) {
                 newStatus = 'flagged';
                 post.status = 'flagged';
@@ -1132,13 +1107,11 @@
                 showToast("🚩 Reporte recibido. Ocultando de tu muro");
             }
 
-            // Ocultar del muro del usuario actual de inmediato
             posts = posts.filter(function(p) { return p.id !== postId; });
             renderFeed();
             renderMapPins();
             closeModal('reportModal');
 
-            // Actualizar el conteo de reportes en Supabase
             try {
                 fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
                     method: "PATCH",
@@ -1156,10 +1129,6 @@
             } catch(err) {}
         }
 
-        function openActiveOrFirstDeal() {
-            showToast("Buscando conversaciones en tu radio...");
-        }
-
         function isCurrentUserAuthor(post) {
             if (!post || post.is_sponsor) return false;
             if (post.creator_id && post.creator_id === myDeviceId) return true;
@@ -1167,6 +1136,255 @@
                 if (currentUser.trim().toLowerCase() === post.user.trim().toLowerCase()) return true;
             }
             return false;
+        }
+
+        function isCurrentUserInterested(post) {
+            if (!post || post.is_sponsor) return false;
+            if (post.interested_device && post.interested_device === myDeviceId) return true;
+            if (currentUser && post.interested_user) {
+                if (currentUser.trim().toLowerCase() === post.interested_user.trim().toLowerCase()) return true;
+            }
+            return false;
+        }
+
+        // ====================================================
+        // CONEXIÓN Y OPERACIÓN DEL CHAT EFÍMERO EN TIEMPO REAL
+        // ====================================================
+        function initiateDealInterest(postId) {
+            if (!currentUser) {
+                showToast("Primero identifícate para iniciar un trato");
+                openRegisterModal();
+                return;
+            }
+
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+
+            var initialChatHistory = JSON.stringify([{
+                sender: currentUser,
+                text: "¡Hola! Vi tu publicación y me interesa coordinar este trato contigo.",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                deviceId: myDeviceId
+            }]);
+
+            post.status = 'in_deal';
+            post.interested_user = currentUser;
+            post.interested_device = myDeviceId;
+            post.chat_history = initialChatHistory;
+
+            renderFeed();
+            updateMapPins();
+            updateSideWidgetChatUI();
+            openChatModal(postId);
+
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        status: 'in_deal',
+                        interested_user: currentUser,
+                        interested_device: myDeviceId,
+                        chat_history: initialChatHistory
+                    })
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        function openChatModal(postId) {
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+
+            currentChatPost = post;
+            var isAuthor = isCurrentUserAuthor(post);
+            var counterpart = isAuthor ? (post.interested_user || "Usuario Interesado") : post.user;
+
+            var titleEl = document.getElementById('chatModalCounterpart');
+            var postTitleEl = document.getElementById('chatModalPostTitle');
+            if (titleEl) titleEl.innerText = "Trato con: " + counterpart;
+            if (postTitleEl) postTitleEl.innerText = post.title;
+
+            renderChatMessages();
+            var modal = document.getElementById('chatModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function renderChatMessages() {
+            var container = document.getElementById('chatMessagesContainer');
+            if (!container || !currentChatPost) return;
+            container.innerHTML = '';
+
+            var history = [];
+            if (currentChatPost.chat_history) {
+                try {
+                    history = typeof currentChatPost.chat_history === 'string' 
+                        ? JSON.parse(currentChatPost.chat_history) 
+                        : currentChatPost.chat_history;
+                } catch(e) { history = []; }
+            }
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-sub); font-size:0.8rem; padding:20px;">Canal efímero abierto. Envía un mensaje para coordinar punto y hora.</p>';
+                return;
+            }
+
+            for (var i = 0; i < history.length; i++) {
+                var m = history[i];
+                var isMe = (m.deviceId && m.deviceId === myDeviceId) || (currentUser && m.sender === currentUser);
+
+                var msgDiv = document.createElement('div');
+                msgDiv.className = 'msg ' + (isMe ? 'msg-me' : 'msg-them');
+                msgDiv.innerHTML = 
+                    '<div style="font-size:0.7rem; opacity:0.8; margin-bottom:2px; font-weight:bold;">' + (isMe ? 'Tú' : m.sender) + ' • ' + (m.time || '') + '</div>' +
+                    '<div>' + m.text + '</div>';
+                container.appendChild(msgDiv);
+            }
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            var input = document.getElementById('chatInputMessage');
+            if (!input || !input.value.trim() || !currentChatPost) return;
+
+            var messageText = input.value.trim();
+            input.value = '';
+
+            var history = [];
+            if (currentChatPost.chat_history) {
+                try {
+                    history = typeof currentChatPost.chat_history === 'string' 
+                        ? JSON.parse(currentChatPost.chat_history) 
+                        : currentChatPost.chat_history;
+                } catch(e) { history = []; }
+            }
+
+            var newMsg = {
+                sender: currentUser || 'Cazador',
+                text: messageText,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                deviceId: myDeviceId
+            };
+
+            history.push(newMsg);
+            currentChatPost.chat_history = JSON.stringify(history);
+
+            renderChatMessages();
+
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + currentChatPost.id, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        chat_history: currentChatPost.chat_history
+                    })
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        function cancelCurrentDeal() {
+            if (!currentChatPost) return;
+            if (!confirm("¿Deseas cancelar la negociación y liberar esta oportunidad nuevamente en el muro y mapa?")) return;
+
+            var postId = currentChatPost.id;
+            currentChatPost.status = 'active';
+            currentChatPost.interested_user = null;
+            currentChatPost.interested_device = null;
+            currentChatPost.chat_history = null;
+
+            closeModal('chatModal');
+            renderFeed();
+            updateMapPins();
+            updateSideWidgetChatUI();
+            showToast("🔓 Oportunidad liberada nuevamente en el radar");
+
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        status: 'active',
+                        interested_user: null,
+                        interested_device: null,
+                        chat_history: null
+                    })
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        function openActiveOrFirstDeal() {
+            var activeDeal = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].status === 'in_deal' && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
+                    activeDeal = posts[i];
+                    break;
+                }
+            }
+
+            if (activeDeal) {
+                openChatModal(activeDeal.id);
+            } else {
+                showToast("No tienes ninguna conversación activa. Elige un trato del muro para iniciar.");
+            }
+        }
+
+        function updateSideWidgetChatUI() {
+            var activeDeal = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].status === 'in_deal' && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
+                    activeDeal = posts[i];
+                    break;
+                }
+            }
+
+            var titleEl = document.getElementById('sideChatTitle');
+            var subEl = document.getElementById('sideChatSub');
+            var btnEl = document.getElementById('btnSideOpenChat');
+
+            if (activeDeal) {
+                if (titleEl) titleEl.innerText = "Trato: " + activeDeal.title.substring(0, 24) + "...";
+                if (subEl) {
+                    subEl.innerText = "🟢 Negociación activa en curso";
+                    subEl.style.color = "#4ade80";
+                }
+                if (btnEl) {
+                    btnEl.innerText = "Entrar al Chat Activo";
+                    btnEl.style.background = "#22c55e";
+                    btnEl.style.color = "#000";
+                }
+            } else {
+                if (titleEl) titleEl.innerText = "Sin trato activo";
+                if (subEl) {
+                    subEl.innerText = "⏳ Esperando coordinación";
+                    subEl.style.color = "var(--gold-bright)";
+                }
+                if (btnEl) {
+                    btnEl.innerText = "Abrir Canal de Negociación";
+                    btnEl.style.background = "var(--gold-gradient)";
+                    btnEl.style.color = "#000";
+                }
+            }
         }
 
         // ==========================================
@@ -1438,7 +1656,7 @@
             feed.innerHTML = '';
 
             var filtered = posts.filter(function(p) {
-                if (p.status === 'flagged') return false; // Ocultar tratos bloqueados por reporte
+                if (p.status === 'flagged') return false;
                 if (currentTab === 'LEYENDAS') return p.status === 'leyenda';
                 return p.type === currentTab && p.status !== 'leyenda';
             });
@@ -1457,26 +1675,37 @@
                 var post = filtered[i];
                 var card = document.createElement('div');
                 var isMyOwn = isCurrentUserAuthor(post);
+                var isInterested = isCurrentUserInterested(post);
+                var isInDeal = (post.status === 'in_deal');
 
                 card.id = 'card-' + post.id;
-                card.className = 'card ' + (post.is_sponsor ? 'sponsor-card' : '');
+                card.className = 'card ' + (post.is_sponsor ? 'sponsor-card ' : '') + (isInDeal ? 'in-deal ' : '');
 
                 var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
                 if (post.is_sponsor) badgeClass = 'badge-sponsor';
+                else if (isInDeal) badgeClass = 'badge-deal';
                 else if (post.status === 'leyenda') badgeClass = 'badge-leyenda';
 
-                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type);
+                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : (isInDeal ? '⏳ EN NEGOCIACIÓN' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type));
+
+                var timerLabel = isInDeal ? '⏸️ En Negociación' : '⏱️ Activo';
 
                 var actionBtnHTML = '';
                 if (post.is_sponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
+                } else if (isInDeal) {
+                    if (isMyOwn || isInterested) {
+                        actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChatModal(' + post.id + ')">💬 Ver Chat del Trato</button>';
+                    } else {
+                        actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--gold-bright);">⏳ Trato en proceso...</button>';
+                    }
                 } else if (post.status === 'leyenda') {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Leyenda comunitaria verificada\')">Ver Leyenda</button>';
                 } else if (isMyOwn) {
                     actionBtnHTML = '<button class="btn-action btn-own-post" disabled title="Tú creaste esta oportunidad">✓ Tu Publicación</button>';
                 } else {
                     var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
-                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Iniciando trato con ' + post.user + '...\')">' + actionText + '</button>';
+                    actionBtnHTML = '<button class="btn-action" onclick="initiateDealInterest(' + post.id + ')">' + actionText + '</button>';
                 }
 
                 var viewMapBtnHTML = '';
@@ -1484,7 +1713,6 @@
                     viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
                 }
 
-                // Botón discreto de reporte (no se muestra en publicaciones de aliados ni propias)
                 var reportBtnHTML = '';
                 if (!post.is_sponsor && !isMyOwn && post.status === 'active') {
                     reportBtnHTML = '<button type="button" class="btn-report-flag" onclick="openReportModal(' + post.id + ')" title="Reportar contenido inapropiado o cobro de dinero">🚩</button>';
@@ -1499,7 +1727,7 @@
                             (post.discretion ? '<span class="badge-discretion">🔒 Sello de Discreción</span>' : '') +
                         '</div>' +
                         '<div style="display:flex; align-items:center; gap:8px;">' +
-                            '<span class="timer">⏱️ Activo</span>' +
+                            '<span class="timer">' + timerLabel + '</span>' +
                             reportBtnHTML +
                         '</div>' +
                     '</div>' +
@@ -1523,6 +1751,7 @@
             }
 
             updateMetricsCounters();
+            updateSideWidgetChatUI();
         }
 
         // ====================================================
@@ -1561,9 +1790,6 @@
             }
         }
 
-        // ====================================================
-        // PINES EN EL MAPA REGISTRADOS PARA ENLACE BIDIRECCIONAL
-        // ====================================================
         function renderMapPins() {
             if (!markersLayer || typeof L === 'undefined') return;
             markersLayer.clearLayers();
@@ -1617,9 +1843,6 @@
             });
         }
 
-        // ====================================================
-        // CALIBRACIÓN SATELITAL CON ALTA PRECISIÓN (GPS REAL)
-        // ====================================================
         function locateUserGPS(callback) {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -1662,7 +1885,7 @@
         }
 
         // ====================================================
-        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (DEDUPLICADA)
+        // SINCRONIZACIÓN Y PUBLICACIÓN GLOBAL (CON CHAT EN VIVO)
         // ====================================================
         function syncFromCloud() {
             if (isSyncing) return;
@@ -1699,7 +1922,10 @@
                                 status: p.status || 'active',
                                 is_sponsor: Boolean(p.is_sponsor),
                                 reports_count: Number(p.reports_count) || 0,
-                                creator_id: p.creator_id || resolvedUser
+                                creator_id: p.creator_id || resolvedUser,
+                                interested_user: p.interested_user || null,
+                                interested_device: p.interested_device || null,
+                                chat_history: p.chat_history || null
                             };
                         });
 
@@ -1715,6 +1941,19 @@
                         posts = combined;
                         renderFeed();
                         renderMapPins();
+
+                        // Si el usuario tiene el modal del chat abierto, refrescar mensajes en tiempo real
+                        if (currentChatPost) {
+                            for (var k = 0; k < posts.length; k++) {
+                                if (posts[k].id === currentChatPost.id) {
+                                    if (posts[k].chat_history !== currentChatPost.chat_history) {
+                                        currentChatPost.chat_history = posts[k].chat_history;
+                                        renderChatMessages();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
                     }
                 })
                 .catch(function() {
@@ -1736,7 +1975,6 @@
             var title = document.getElementById('postTitle').value;
             var change = document.getElementById('postChange').value || 'Abierto a propuestas';
 
-            // Comprobación de seguridad final contra dinero
             var fullCheckText = (title + ' ' + change).toLowerCase();
             var forbidden = ['$', 'peso', 'pesos', 'efectivo', 'deposito', 'depósito', 'transferencia', 'transferir', 'cobro', 'cobrar', 'vendo', 'precio', 'tarifa', 'anticipo', 'dinero', 'mxn', 'usd'];
             for (var f = 0; f < forbidden.length; f++) {
