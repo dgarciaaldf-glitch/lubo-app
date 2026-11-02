@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 18 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 19 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -325,6 +325,12 @@
             box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
         }
 
+        .card.closed-candidate {
+            border: 2px solid var(--gold-bright) !important;
+            background: linear-gradient(145deg, #182236 0%, #0d1424 100%) !important;
+            box-shadow: 0 0 25px rgba(234, 179, 8, 0.35) !important;
+        }
+
         .card.card-focus-highlight {
             border-color: #ffd700 !important;
             box-shadow: 0 0 25px rgba(255, 215, 0, 0.8) !important;
@@ -358,7 +364,7 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
         
         .badge { font-size: 0.72rem; font-weight: 800; padding: 4px 9px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-tengo, .badge-quiero, .badge-leyenda { 
+        .badge-tengo, .badge-quiero { 
             background: var(--gold-soft); color: var(--gold-bright); border: 1px solid var(--gold-bright); box-shadow: var(--gold-glow); 
         }
         .badge-deal {
@@ -366,6 +372,18 @@
             color: #4ade80 !important;
             border: 1px solid #22c55e !important;
             font-weight: 900 !important;
+        }
+        .badge-candidate {
+            background: var(--gold-gradient) !important;
+            color: #000 !important;
+            font-weight: 900 !important;
+            box-shadow: var(--gold-glow) !important;
+        }
+        .badge-leyenda {
+            background: linear-gradient(135deg, #fbbf24, #d97706) !important;
+            color: #000 !important;
+            font-weight: 900 !important;
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.8) !important;
         }
 
         .badge-sponsor {
@@ -398,6 +416,50 @@
         .timer { font-size: 0.88rem; color: var(--gold-bright); font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; line-height: 1.6; text-align: justify; word-break: break-word; color: #fff; }
         .card-change { font-size: 0.88rem; color: var(--text-sub); margin-bottom: 14px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; text-align: justify; line-height: 1.5; border: 1px solid var(--border-gold); }
+        
+        /* BLOQUE DE VOTACIÓN A LEYENDA */
+        .legend-voting-box {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.35);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .legend-voting-bar-bg {
+            background: #1e293b;
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .legend-voting-bar-fill {
+            background: var(--gold-gradient);
+            height: 100%;
+            transition: width 0.3s;
+            box-shadow: var(--gold-glow);
+        }
+        .btn-vote-legend {
+            background: var(--gold-gradient);
+            color: #000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--gold-glow);
+        }
+        .btn-vote-legend:disabled {
+            background: #334155;
+            color: #94a3b8;
+            cursor: default;
+            box-shadow: none;
+        }
+
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--border-gold); padding-top: 12px; gap: 8px; flex-wrap: wrap; }
         .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--border-gold); color: var(--gold-bright); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; border: 1px solid #eab308; overflow:hidden; }
@@ -428,7 +490,6 @@
             cursor: default !important; font-size: 0.75rem !important; padding: 8px 10px !important; box-shadow: none !important; opacity: 1 !important;
         }
 
-        /* BOTÓN DE NEGOCIACIÓN PARA QUIEN YA SE POSTULÓ */
         .btn-my-interested {
             background: rgba(34, 197, 94, 0.15) !important;
             color: #4ade80 !important;
@@ -445,10 +506,19 @@
             box-shadow: 0 0 14px rgba(34, 197, 94, 0.7) !important; cursor: pointer !important;
         }
 
+        /* BOTÓN DE TRATO CERRADO EXITOSO */
+        .btn-deal-success {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #15803d 100%);
+            color: #000; border: none; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem;
+            font-weight: 900; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s;
+            box-shadow: 0 0 16px rgba(34, 197, 94, 0.6);
+        }
+        .btn-deal-success:hover { transform: scale(1.01); filter: brightness(1.1); }
+
         .btn-cancel-deal {
             background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444;
-            padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; cursor: pointer;
-            width: 100%; margin-top: 8px; transition: 0.2s;
+            padding: 9px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer;
+            width: 100%; margin-top: 6px; transition: 0.2s;
         }
         .btn-cancel-deal:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
 
@@ -490,13 +560,14 @@
 
         /* ESTILOS DEL CHAT EFÍMERO */
         .chat-box {
-            display: flex; flex-direction: column; height: 280px; background: var(--widget-bg);
+            display: flex; flex-direction: column; height: 260px; background: var(--widget-bg);
             border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
         }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .msg { max-width: 82%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; line-height: 1.35; text-align: justify; word-break: break-word; }
         .msg-them { background: #1e293b; align-self: flex-start; color: #fff; border: 1px solid var(--border-gold); }
         .msg-me { background: var(--gold-gradient); color: #000; align-self: flex-end; font-weight: 700; }
+        .msg-system { background: rgba(234, 179, 8, 0.15); color: var(--gold-bright); align-self: center; text-align: center; font-size: 0.78rem; border: 1px solid rgba(234, 179, 8, 0.4); }
         .chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
 
         .btn-google-sso {
@@ -519,8 +590,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 18 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 18 (CHAT ESTABLE Y CONTROL DE POSTULACIÓN)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 19 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 19 (TRATO CERRADO Y VOTACIÓN A LEYENDA 🏆)</div>
 
     <div id="toast">Notificación</div>
 
@@ -646,7 +717,7 @@
                         <div class="stat-label">En proceso</div>
                     </div>
                     <div class="stat-card" onclick="switchTab('LEYENDAS')">
-                        <div class="stat-number stat-count-legends" style="color:#94a3b8;">0</div>
+                        <div class="stat-number stat-count-legends" style="color:#ffd700;">0</div>
                         <div class="stat-label">Leyendas</div>
                     </div>
                 </div>
@@ -829,8 +900,13 @@
                 </div>
             </div>
 
+            <!-- BOTÓN OFICIAL DE CIERRE DE TRATO (PARA EL AUTOR) -->
+            <button type="button" id="btnAcceptDealSuccess" class="btn-deal-success" style="display:none;" onclick="closeDealSuccess()">
+                🤝 Trato Cerrado / Aceptar Propuesta
+            </button>
+
             <button type="button" id="btnCancelOrRejectDeal" class="btn-cancel-deal" onclick="cancelCurrentDeal()">
-                ❌ Cancelar Interés / Liberar Trato al Muro
+                ❌ Cancelar Interés / Salir de Negociación
             </button>
         </div>
     </div>
@@ -929,11 +1005,16 @@
         var isChatOpen = false;
         var isSyncing = false;
 
-        // Registro de intentos locales para postulaciones rechazadas (hasta 3)
         var attemptsRegistry = {};
         try {
             attemptsRegistry = JSON.parse(safeStorage.get("lubo_deal_attempts") || "{}");
         } catch(e) { attemptsRegistry = {}; }
+
+        // Registro local de votos para asegurar 1 voto por usuario por trato
+        var myVotesRegistry = {};
+        try {
+            myVotesRegistry = JSON.parse(safeStorage.get("lubo_my_votes") || "{}");
+        } catch(e) { myVotesRegistry = {}; }
 
         function recordAttempt(postId) {
             attemptsRegistry[postId] = (attemptsRegistry[postId] || 0) + 1;
@@ -948,6 +1029,7 @@
                 user: 'Café Obsidiana', rank: 'Aliado Oficial',
                 location: 'Del Valle Centro, CDMX',
                 lat: 19.3780, lng: -99.1650, discretion: false, is_sponsor: true, status: 'active',
+                votes: 0,
                 creator_id: 'sponsor_obsidiana'
             },
             {
@@ -957,6 +1039,7 @@
                 user: 'Diego I.', rank: 'Pacto de Confianza',
                 location: 'Coyoacán, CDMX', 
                 lat: 19.3498, lng: -99.1622, discretion: true, is_sponsor: false, status: 'active',
+                votes: 0,
                 creator_id: 'example_diego'
             },
             {
@@ -966,6 +1049,7 @@
                 user: 'Anónimo', rank: 'Cazador Novato',
                 location: 'Benito Juárez, CDMX', 
                 lat: 19.3984, lng: -99.1600, discretion: false, is_sponsor: false, status: 'active',
+                votes: 0,
                 creator_id: 'example_anon'
             },
             {
@@ -975,6 +1059,7 @@
                 user: 'Anónimo', rank: 'Leyenda Urbana',
                 location: 'Cuauhtémoc, CDMX', 
                 lat: 19.4326, lng: -99.1332, discretion: true, is_sponsor: false, status: 'leyenda',
+                votes: 26,
                 creator_id: 'example_legend'
             }
         ];
@@ -1221,10 +1306,16 @@
 
             var titleEl = document.getElementById('chatModalCounterpart');
             var postTitleEl = document.getElementById('chatModalPostTitle');
+            var btnAccept = document.getElementById('btnAcceptDealSuccess');
             var btnCancel = document.getElementById('btnCancelOrRejectDeal');
 
             if (titleEl) titleEl.innerText = isAuthor ? ("Trato con interesado: " + counterpart) : ("Trato con autor: " + counterpart);
             if (postTitleEl) postTitleEl.innerText = post.title;
+
+            // El botón de aceptar y cerrar trato solo se le muestra al autor si el trato sigue en negociación
+            if (btnAccept) {
+                btnAccept.style.display = (isAuthor && post.status === 'in_deal') ? 'block' : 'none';
+            }
 
             if (btnCancel) {
                 btnCancel.innerText = isAuthor ? "❌ Rechazar Trato y Liberar Publicación" : "❌ Cancelar mi Interés / Salir de Negociación";
@@ -1257,11 +1348,12 @@
             for (var i = 0; i < history.length; i++) {
                 var m = history[i];
                 var isMe = (m.deviceId && m.deviceId === myDeviceId) || (currentUser && m.sender === currentUser);
+                var isSys = (m.sender === 'SISTEMA');
 
                 var msgDiv = document.createElement('div');
-                msgDiv.className = 'msg ' + (isMe ? 'msg-me' : 'msg-them');
+                msgDiv.className = 'msg ' + (isSys ? 'msg-system' : (isMe ? 'msg-me' : 'msg-them'));
                 msgDiv.innerHTML = 
-                    '<div style="font-size:0.7rem; opacity:0.8; margin-bottom:2px; font-weight:bold;">' + (isMe ? 'Tú' : m.sender) + ' • ' + (m.time || '') + '</div>' +
+                    '<div style="font-size:0.7rem; opacity:0.8; margin-bottom:2px; font-weight:bold;">' + (isSys ? '🔱 Lubó Oficial' : (isMe ? 'Tú' : m.sender)) + ' • ' + (m.time || '') + '</div>' +
                     '<div>' + m.text + '</div>';
                 container.appendChild(msgDiv);
             }
@@ -1308,6 +1400,106 @@
                     },
                     body: JSON.stringify({
                         chat_history: currentChatPost.chat_history
+                    })
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        // ====================================================
+        // CIERRE EXITOSO Y VOTACIÓN COMUNITARIA (26 VOTOS)
+        // ====================================================
+        function closeDealSuccess() {
+            if (!currentChatPost) return;
+            if (!confirm("¿Confirmas que se llegó a un acuerdo y el trato queda cerrado? Pasará a votación comunitaria para ascender al Salón de Leyendas.")) return;
+
+            var history = [];
+            if (currentChatPost.chat_history) {
+                try {
+                    history = typeof currentChatPost.chat_history === 'string' ? JSON.parse(currentChatPost.chat_history) : currentChatPost.chat_history;
+                } catch(e) { history = []; }
+            }
+
+            history.push({
+                sender: 'SISTEMA',
+                text: "🎉 ¡TRATO CERRADO CON ÉXITO! Ambas partes han acordado el intercambio. La comunidad ahora puede votar este trato hacia el Salón de Leyendas.",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                deviceId: 'system'
+            });
+
+            currentChatPost.status = 'closed_deal';
+            currentChatPost.votes = Number(currentChatPost.votes) || 0;
+            currentChatPost.chat_history = JSON.stringify(history);
+
+            renderChatMessages();
+            renderFeed();
+            renderMapPins();
+            updateSideWidgetChatUI();
+            showToast("🤝 ¡Trato cerrado con éxito! Ahora es candidato a Leyenda");
+
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + currentChatPost.id, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        status: 'closed_deal',
+                        votes: currentChatPost.votes,
+                        chat_history: currentChatPost.chat_history
+                    })
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        function voteForLegend(postId) {
+            if (!currentUser) {
+                showToast("Inicia sesión para votar por este trato");
+                openRegisterModal();
+                return;
+            }
+
+            if (myVotesRegistry[postId]) {
+                showToast("Ya emitiste tu voto para esta hazaña");
+                return;
+            }
+
+            var post = null;
+            for (var i = 0; i < posts.length; i++) {
+                if (posts[i].id === postId) { post = posts[i]; break; }
+            }
+            if (!post) return;
+
+            post.votes = (Number(post.votes) || 0) + 1;
+            myVotesRegistry[postId] = true;
+            safeStorage.set("lubo_my_votes", JSON.stringify(myVotesRegistry));
+
+            // Si alcanza los 26 votos, asciende a Leyenda
+            if (post.votes >= 26) {
+                post.status = 'leyenda';
+                showToast("🏆 ¡Ha reunido 26 votos! Esta hazaña es ahora una Leyenda Oficial");
+                switchTab('LEYENDAS');
+            } else {
+                showToast("✨ Voto registrado (" + post.votes + "/26 votos)");
+            }
+
+            renderFeed();
+            renderMapPins();
+
+            try {
+                fetch(SUPABASE_REST_URL + "?id=eq." + postId, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify({
+                        votes: post.votes,
+                        status: post.status
                     })
                 }).catch(function() {});
             } catch(e) {}
@@ -1363,7 +1555,7 @@
         function openActiveOrFirstDeal() {
             var activeDeal = null;
             for (var i = 0; i < posts.length; i++) {
-                if (posts[i].status === 'in_deal' && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
+                if ((posts[i].status === 'in_deal' || posts[i].status === 'closed_deal') && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
                     activeDeal = posts[i];
                     break;
                 }
@@ -1379,7 +1571,7 @@
         function updateSideWidgetChatUI() {
             var activeDeal = null;
             for (var i = 0; i < posts.length; i++) {
-                if (posts[i].status === 'in_deal' && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
+                if ((posts[i].status === 'in_deal' || posts[i].status === 'closed_deal') && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
                     activeDeal = posts[i];
                     break;
                 }
@@ -1393,8 +1585,13 @@
                 var isAuthor = isCurrentUserAuthor(activeDeal);
                 if (titleEl) titleEl.innerText = "Trato: " + activeDeal.title.substring(0, 24) + "...";
                 if (subEl) {
-                    subEl.innerText = isAuthor ? "🟢 Un cazador está coordinando contigo" : "🟢 Estás coordinando este trato";
-                    subEl.style.color = "#4ade80";
+                    if (activeDeal.status === 'closed_deal') {
+                        subEl.innerText = "🤝 Trato cerrado (En votación a Leyenda)";
+                        subEl.style.color = "var(--gold-bright)";
+                    } else {
+                        subEl.innerText = isAuthor ? "🟢 Un cazador está coordinando contigo" : "🟢 Estás coordinando este trato";
+                        subEl.style.color = "#4ade80";
+                    }
                 }
                 if (btnEl) {
                     btnEl.innerText = "Entrar al Chat Activo";
@@ -1618,8 +1815,8 @@
 
             for (var i = 0; i < posts.length; i++) {
                 var p = posts[i];
-                if (p.status === 'active' && p.type === 'TENGO' && !p.is_sponsor) tengoCount++;
-                if (p.status === 'active' && p.type === 'QUIERO') quieroCount++;
+                if ((p.status === 'active' || p.status === 'closed_deal') && p.type === 'TENGO' && !p.is_sponsor) tengoCount++;
+                if ((p.status === 'active' || p.status === 'closed_deal') && p.type === 'QUIERO') quieroCount++;
                 if (p.status === 'in_deal') inDealCount++;
                 if (p.status === 'leyenda') legendCount++;
             }
@@ -1683,7 +1880,7 @@
             var filtered = posts.filter(function(p) {
                 if (p.status === 'flagged') return false;
                 if (currentTab === 'LEYENDAS') return p.status === 'leyenda';
-                return p.type === currentTab && p.status !== 'leyenda';
+                return (p.type === currentTab) && (p.status !== 'leyenda');
             });
 
             if (currentCategory !== 'TODAS') {
@@ -1702,40 +1899,52 @@
                 var isMyOwn = isCurrentUserAuthor(post);
                 var isInterested = isCurrentUserInterested(post);
                 var isInDeal = (post.status === 'in_deal');
+                var isClosedDeal = (post.status === 'closed_deal');
+                var isLegend = (post.status === 'leyenda');
                 var attempts = attemptsRegistry[post.id] || 0;
+                var currentVotes = Number(post.votes) || 0;
+                var hasVoted = Boolean(myVotesRegistry[post.id]);
 
                 card.id = 'card-' + post.id;
-                card.className = 'card ' + (post.is_sponsor ? 'sponsor-card ' : '') + (isInDeal ? 'in-deal ' : '');
+                card.className = 'card ' + 
+                    (post.is_sponsor ? 'sponsor-card ' : '') + 
+                    (isInDeal ? 'in-deal ' : '') + 
+                    (isClosedDeal ? 'closed-candidate ' : '');
 
                 var badgeClass = post.type === 'TENGO' ? 'badge-tengo' : 'badge-quiero';
                 if (post.is_sponsor) badgeClass = 'badge-sponsor';
+                else if (isClosedDeal) badgeClass = 'badge-candidate';
                 else if (isInDeal) badgeClass = 'badge-deal';
-                else if (post.status === 'leyenda') badgeClass = 'badge-leyenda';
+                else if (isLegend) badgeClass = 'badge-leyenda';
 
-                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : (isInDeal ? '⏳ EN NEGOCIACIÓN' : (post.status === 'leyenda' ? 'SALÓN DE LEYENDAS 🏆' : post.type));
+                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : 
+                    (isClosedDeal ? '🏆 CANDIDATA A LEYENDA' : 
+                    (isInDeal ? '⏳ EN NEGOCIACIÓN' : 
+                    (isLegend ? 'SALÓN DE LEYENDAS 🏆' : post.type)));
 
-                var timerLabel = isInDeal ? '⏸️ En Negociación' : '⏱️ Activo';
+                var timerLabel = isClosedDeal ? '✅ Trato Concluido' : (isInDeal ? '⏸️ En Negociación' : '⏱️ Activo');
 
                 var actionBtnHTML = '';
                 if (post.is_sponsor) {
                     actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
+                } else if (isClosedDeal) {
+                    // Si el trato ya cerró, se permite ver el chat final si participaste
+                    if (isMyOwn || isInterested) {
+                        actionBtnHTML = '<button class="btn-action" style="background:#22c55e; color:#000; font-weight:800;" onclick="openChatModal(' + post.id + ')">💬 Chat del Trato</button>';
+                    }
                 } else if (isInDeal) {
                     if (isMyOwn) {
-                        // El autor ve que alguien se postuló y puede entrar al chat
                         actionBtnHTML = '<button class="btn-action btn-in-deal-open" onclick="openChatModal(' + post.id + ')">💬 Usuario Interesado (Ver Chat)</button>';
                     } else if (isInterested) {
-                        // Tú eres el interesado y estás esperando respuesta
                         actionBtnHTML = '<button class="btn-action btn-my-interested" onclick="openChatModal(' + post.id + ')">⏳ Esperando respuesta (Ver Chat)</button>';
                     } else {
-                        // Otro usuario ajeno ve el trato pausado
                         actionBtnHTML = '<button class="btn-action" disabled style="background:#1e293b; color:var(--text-sub);">🔒 En negociación con otro cazador</button>';
                     }
-                } else if (post.status === 'leyenda') {
-                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Leyenda comunitaria verificada\')">Ver Leyenda</button>';
+                } else if (isLegend) {
+                    actionBtnHTML = '<button class="btn-action" style="background:var(--gold-gradient); color:#000;" onclick="showToast(\'Leyenda histórica comunitaria confirmada (26/26 votos)\')">🏆 Leyenda Consagrada</button>';
                 } else if (isMyOwn) {
                     actionBtnHTML = '<button class="btn-own-post" disabled title="Tú creaste esta oportunidad">✓ Tu Publicación</button>';
                 } else {
-                    // Si el autor te canceló anteriormente y tienes intentos restantes
                     if (attempts > 0 && attempts < 3) {
                         actionBtnHTML = '<button class="btn-action" style="border:1px solid #ef4444;" onclick="initiateDealInterest(' + post.id + ')">⚠️ Reintentar Trato (' + (3 - attempts) + ' restantes)</button>';
                     } else if (attempts >= 3) {
@@ -1744,6 +1953,28 @@
                         var actionText = post.type === 'TENGO' ? '¡Me interesa!' : '¡Yo te lo cumplo!';
                         actionBtnHTML = '<button class="btn-action" onclick="initiateDealInterest(' + post.id + ')">' + actionText + '</button>';
                     }
+                }
+
+                // Renderizado del bloque de votación para candidatos a leyenda (cerrados)
+                var legendVotingHTML = '';
+                if (isClosedDeal) {
+                    var progressPercent = Math.min(100, Math.round((currentVotes / 26) * 100));
+                    legendVotingHTML = 
+                        '<div class="legend-voting-box">' +
+                            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                                '<span style="font-size:0.75rem; color:var(--gold-bright); font-weight:800;">✨ Camino a Leyenda (Meta: 26 votos)</span>' +
+                                '<span style="font-size:0.8rem; color:#fff; font-weight:900;">' + currentVotes + ' / 26</span>' +
+                            '</div>' +
+                            '<div class="legend-voting-bar-bg">' +
+                                '<div class="legend-voting-bar-fill" style="width:' + progressPercent + '%;"></div>' +
+                            '</div>' +
+                            '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
+                                '<small style="font-size:0.7rem; color:var(--text-sub);">¿Te pareció un gran trueque? Vota para consagrarlo.</small>' +
+                                '<button type="button" class="btn-vote-legend" ' + (hasVoted ? 'disabled' : '') + ' onclick="voteForLegend(' + post.id + ')">' +
+                                    (hasVoted ? '✓ Ya Votaste' : '⭐ Votar a Leyenda') +
+                                '</button>' +
+                            '</div>' +
+                        '</div>';
                 }
 
                 var viewMapBtnHTML = '';
@@ -1771,6 +2002,7 @@
                     '</div>' +
                     '<div class="card-title">' + post.title + '</div>' +
                     '<div class="card-change">' + post.change + '</div>' +
+                    legendVotingHTML +
                     '<div class="card-footer">' +
                         '<div class="user-info">' +
                             '<div class="avatar">' + (post.user ? post.user[0] : 'U') + '</div>' +
@@ -1834,6 +2066,7 @@
             markersRegistry = {};
 
             posts.forEach(function(p) {
+                // Solo se muestran pines en el radar de oportunidades activas o en negociación
                 if (p.lat && p.lng && (p.status === 'active' || p.status === 'in_deal')) {
                     var iconEmoji = '';
                     var pinClass = '';
@@ -1960,6 +2193,7 @@
                                 discretion: Boolean(p.discretion),
                                 status: p.status || 'active',
                                 is_sponsor: Boolean(p.is_sponsor),
+                                votes: Number(p.votes) || 0,
                                 creator_id: p.creator_id || resolvedUser,
                                 interested_user: p.interested_user || null,
                                 interested_device: p.interested_device || null,
@@ -1980,7 +2214,6 @@
                         renderFeed();
                         renderMapPins();
 
-                        // Refrescar mensajes en vivo en el modal abierto sin parpadear
                         if (currentChatPost && isChatOpen) {
                             for (var k = 0; k < posts.length; k++) {
                                 if (posts[k].id === currentChatPost.id) {
@@ -2039,7 +2272,6 @@
             locateUserGPS(function(lat, lng) {
                 if (btnSubmit) btnSubmit.innerText = "Publicando...";
 
-                // Estructura de esquema que Supabase acepta
                 var payload = {
                     id: creationNow,
                     type: type,
