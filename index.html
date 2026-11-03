@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 22 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 23 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -550,6 +550,7 @@
             position: fixed; top: 0; left: -82%; width: 82%; max-width: 360px; height: 100%;
             background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
             padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out; box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; justify-content: space-between;
         }
         .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-gold); padding-bottom: 12px; }
 
@@ -618,8 +619,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 22 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 22 (AVISO COMERCIAL EN MENÚ LATERAL)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 23 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 23 (MENÚ LATERAL RESTAURADO Y FUNCIONAL)</div>
 
     <div id="toast">Notificación</div>
 
@@ -679,9 +680,9 @@
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
     </div>
 
-    <!-- MENÚ LATERAL IZQUIERDO HAMBURGUESA CON AVISO COMERCIAL -->
+    <!-- MENÚ LATERAL IZQUIERDO RESTAURADO CON FLEX Y AVISO COMERCIAL -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
-    <div id="drawerContent" class="drawer-content" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div id="drawerContent" class="drawer-content">
         <div>
             <div class="drawer-header">
                 <div style="display:flex; align-items:center; gap:8px;">
