@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 23 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 24 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -546,12 +546,16 @@
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 250; backdrop-filter: blur(4px);
         }
+        
+        /* MENÚ LATERAL CORREGIDO Y ROBUSTO */
         .drawer-content {
             position: fixed; top: 0; left: -82%; width: 82%; max-width: 360px; height: 100%;
             background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
             padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out; box-shadow: 10px 0 30px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column; justify-content: space-between;
+            display: flex !important; flex-direction: column !important; justify-content: space-between !important;
         }
+        .drawer-content.open { left: 0; }
+
         .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-gold); padding-bottom: 12px; }
 
         .modal {
@@ -619,8 +623,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 23 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 23 (MENÚ LATERAL RESTAURADO Y FUNCIONAL)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 24 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 24 (MENÚ LATERAL RESTAURADO Y FUNCIONAL)</div>
 
     <div id="toast">Notificación</div>
 
@@ -680,7 +684,7 @@
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
     </div>
 
-    <!-- MENÚ LATERAL IZQUIERDO RESTAURADO CON FLEX Y AVISO COMERCIAL -->
+    <!-- MENÚ LATERAL IZQUIERDO RESTAURADO CON AVISO COMERCIAL AL PIE -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
     <div id="drawerContent" class="drawer-content">
         <div>
@@ -702,7 +706,6 @@
             </div>
         </div>
 
-        <!-- AVISO COMERCIAL Y LEGAL EN EL FOOTER DEL MENÚ -->
         <div style="border-top: 1px solid var(--border-gold); padding-top: 15px; margin-top: 20px;">
             <p style="font-size: 0.72rem; color: var(--text-sub); line-height: 1.5; text-align: justify;">
                 ¿Tienes un negocio y deseas convertirte en Punto Seguro o Aliado Oficial de la comunidad? Escríbenos a <strong style="color: var(--gold-bright);">luboclientesyservicios@gmail.com</strong>.
@@ -796,7 +799,7 @@
         </aside>
     </div>
 
-    <!-- BOTONES FLOTANTES INFERIORES (+ Y BANDEJA DE CHAT) -->
+    <!-- BOTONES FLOTANTES INFERIORES -->
     <div class="floating-actions-row">
         <div class="fab-chat-wrapper">
             <button class="fab-chat" onclick="openActiveOrFirstDeal()" title="Bandeja de Conversaciones">💬</button>
