@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 21 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 22 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -242,6 +242,7 @@
             filter: brightness(0.75) invert(1) contrast(2.5) hue-rotate(185deg) saturate(0.4);
         }
 
+        /* PINES: TRIDENTE DORADO (OFERTA) VS DIANA CIAN (BÚSQUEDA) */
         .map-marker-tengo {
             background: var(--gold-gradient);
             border: 2px solid #ffffff;
@@ -550,8 +551,6 @@
             background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
             padding: 20px; overflow-y: auto; transition: left 0.3s ease-in-out; box-shadow: 10px 0 30px rgba(0,0,0,0.8);
         }
-        .drawer-content.open { left: 0; }
-
         .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-gold); padding-bottom: 12px; }
 
         .modal {
@@ -570,7 +569,7 @@
             background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
         }
 
-        /* ESTILOS DE LA BANDEJA DE ENTRADA DE CHATS MÚLTIPLES */
+        /* ESTILOS DE LA BANDEJA DE ENTRADA */
         .inbox-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; margin-top: 10px; }
         .inbox-item {
             background: var(--widget-bg); border: 1px solid var(--border-gold); border-radius: 8px; padding: 12px;
@@ -619,8 +618,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 21 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 21 (BANDEJA DE ENTRADA Y SELECTOR DE CHATS)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 22 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 22 (AVISO COMERCIAL EN MENÚ LATERAL)</div>
 
     <div id="toast">Notificación</div>
 
@@ -680,24 +679,33 @@
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
     </div>
 
-    <!-- MENÚ LATERAL IZQUIERDO HAMBURGUESA -->
+    <!-- MENÚ LATERAL IZQUIERDO HAMBURGUESA CON AVISO COMERCIAL -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
-    <div id="drawerContent" class="drawer-content">
-        <div class="drawer-header">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:1.4rem;">🔱</span>
-                <span class="header-title" style="font-size:1.3rem;">Menú Lubó</span>
+    <div id="drawerContent" class="drawer-content" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="drawer-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.4rem;">🔱</span>
+                    <span class="header-title" style="font-size:1.3rem;">Menú Lubó</span>
+                </div>
+                <button class="close-btn" type="button" onclick="toggleDrawer(false)">&times;</button>
             </div>
-            <button class="close-btn" type="button" onclick="toggleDrawer(false)">&times;</button>
+
+            <div id="drawerUserStatusBox" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); margin-bottom:15px;">
+                <p style="font-size:0.72rem; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px;">Cuenta Actual</p>
+                <p id="drawerUserLabel" style="font-weight:bold; color:#fff; font-size:0.92rem; margin-top:4px;">Sin sesión iniciada</p>
+                <p id="drawerUserRankLabel" style="font-size:0.75rem; color:var(--gold-bright); margin-top:3px; display:none;">Rango: Cazador Novato</p>
+                <button id="drawerLogoutBtn" class="btn-clean-logout" onclick="confirmLogout(); toggleDrawer(false);">
+                    Cerrar Sesión
+                </button>
+            </div>
         </div>
 
-        <div id="drawerUserStatusBox" style="background:var(--widget-bg); padding:14px; border-radius:8px; border:1px solid var(--border-gold); margin-bottom:15px;">
-            <p style="font-size:0.72rem; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px;">Cuenta Actual</p>
-            <p id="drawerUserLabel" style="font-weight:bold; color:#fff; font-size:0.92rem; margin-top:4px;">Sin sesión iniciada</p>
-            <p id="drawerUserRankLabel" style="font-size:0.75rem; color:var(--gold-bright); margin-top:3px; display:none;">Rango: Cazador Novato</p>
-            <button id="drawerLogoutBtn" class="btn-clean-logout" onclick="confirmLogout(); toggleDrawer(false);">
-                Cerrar Sesión
-            </button>
+        <!-- AVISO COMERCIAL Y LEGAL EN EL FOOTER DEL MENÚ -->
+        <div style="border-top: 1px solid var(--border-gold); padding-top: 15px; margin-top: 20px;">
+            <p style="font-size: 0.72rem; color: var(--text-sub); line-height: 1.5; text-align: justify;">
+                ¿Tienes un negocio y deseas convertirte en Punto Seguro o Aliado Oficial de la comunidad? Escríbenos a <strong style="color: var(--gold-bright);">luboclientesyservicios@gmail.com</strong>.
+            </p>
         </div>
     </div>
 
@@ -796,7 +804,7 @@
         <button class="fab" onclick="openPublishModal()" title="Crear Publicación">+</button>
     </div>
 
-    <!-- MODAL DE BANDEJA DE ENTRADA (SELECTOR DE CHATS MÚLTIPLES) -->
+    <!-- MODAL DE BANDEJA DE ENTRADA -->
     <div id="inboxModal" class="modal" style="z-index: 68500;">
         <div class="modal-content" style="border: 2px solid var(--gold-bright); max-width: 500px;">
             <div class="modal-header">
@@ -807,9 +815,7 @@
                 <button class="close-btn" onclick="closeModal('inboxModal')">&times;</button>
             </div>
 
-            <div class="inbox-list" id="inboxConversationsList">
-                <!-- Se llena dinámicamente -->
-            </div>
+            <div class="inbox-list" id="inboxConversationsList"></div>
 
             <button class="btn-action" style="width:100%; margin-top:15px; padding:10px;" onclick="closeModal('inboxModal')">Cerrar Bandeja</button>
         </div>
@@ -1344,7 +1350,6 @@
             }
         }
 
-        // APERTURA DE LA BANDEJA DE ENTRADA (SELECTOR DE CHATS)
         function openActiveOrFirstDeal() {
             var activeDeals = [];
             for (var i = 0; i < posts.length; i++) {
@@ -1359,12 +1364,10 @@
             }
 
             if (activeDeals.length === 1) {
-                // Si solo hay uno, abrir directamente
                 openChatModal(activeDeals[0].id);
                 return;
             }
 
-            // Si hay múltiples chats activos, mostrar la bandeja de selección
             var listContainer = document.getElementById('inboxConversationsList');
             if (!listContainer) return;
             listContainer.innerHTML = '';
@@ -1385,7 +1388,7 @@
                     '</div>' +
                     '<div class="inbox-actions-group">' +
                         '<button class="btn-action" style="padding:6px 12px; font-size:0.75rem;" onclick="closeModal(\'inboxModal\'); openChatModal(' + deal.id + ');">Abrir</button>' +
-                        '<button class="btn-in-box-delete" class="btn-inbox-delete" onclick="archiveChatInbox(' + deal.id + ')">Eliminar</button>' +
+                        '<button class="btn-inbox-delete" onclick="archiveChatInbox(' + deal.id + ')">Eliminar</button>' +
                     '</div>';
 
                 listContainer.appendChild(item);
@@ -1761,11 +1764,9 @@
 
         function updateSideWidgetChatUI() {
             var activeDealsCount = 0;
-            var sampleDeal = null;
             for (var i = 0; i < posts.length; i++) {
                 if ((posts[i].status === 'in_deal' || posts[i].status === 'closed_deal') && (isCurrentUserAuthor(posts[i]) || isCurrentUserInterested(posts[i]))) {
                     activeDealsCount++;
-                    if (!sampleDeal) sampleDeal = posts[i];
                 }
             }
 
@@ -2343,7 +2344,7 @@
         }
 
         // ====================================================
-        // SINCRONIZACIÓN Y PUBLICACIÓN (CON ALERTA DE MENSAJE NUEVO)
+        // SINCRONIZACIÓN Y PUBLICACIÓN
         // ====================================================
         function syncFromCloud() {
             if (isSyncing) return;
