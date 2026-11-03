@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 25 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 26 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -624,8 +624,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 25 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 25 (MARCOS DEFINIDOS Y PUBLICIDAD TENUE)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 26 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 26 (NAVEGACIÓN GPS PARA PATROCINADORES)</div>
 
     <div id="toast">Notificación</div>
 
@@ -1286,6 +1286,21 @@
                 if (currentUser.trim().toLowerCase() === post.interested_user.trim().toLowerCase()) return true;
             }
             return false;
+        }
+
+        // ====================================================
+        // NAVEGACIÓN GPS UNIVERSAL PARA PATROCINADORES
+        // ====================================================
+        function openSponsorNavigator(lat, lng, label) {
+            var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng;
+            var wazeUrl = "https://waze.com/ul?ll=" + lat + "," + lng + "&navigate=yes";
+
+            var choice = confirm("Abrir navegación hacia: " + label + "\n\n[Aceptar] = Google Maps / Apple Maps\n[Cancelar] = Waze");
+            if (choice) {
+                window.open(mapsUrl, '_blank');
+            } else {
+                window.open(wazeUrl, '_blank');
+            }
         }
 
         // ====================================================
@@ -2119,7 +2134,7 @@
 
                 var actionBtnHTML = '';
                 if (post.is_sponsor) {
-                    actionBtnHTML = '<button class="btn-action" style="background:rgba(255,255,255,0.08); color:var(--gold-bright); border:1px solid rgba(234,179,8,0.3);" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
+                    actionBtnHTML = '<button class="btn-action" style="background:rgba(255,255,255,0.08); color:var(--gold-bright); border:1px solid rgba(234,179,8,0.3);" onclick="openSponsorNavigator(' + post.lat + ', ' + post.lng + ', \'' + post.user + '\')">📍 Cómo llegar</button>';
                 } else if (isClosedDeal) {
                     if (isMyOwn || isInterested) {
                         actionBtnHTML = '<button class="btn-action" style="background:#22c55e; color:#000; font-weight:800;" onclick="openChatModal(' + post.id + ')">💬 Chat del Trato</button>';
@@ -2170,7 +2185,7 @@
                 }
 
                 var viewMapBtnHTML = '';
-                if (post.lat && post.lng && post.status === 'active') {
+                if (post.lat && post.lng && post.status === 'active' && !post.is_sponsor) {
                     viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
                 }
 
