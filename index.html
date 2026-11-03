@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 27 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 28 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -624,8 +624,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 27 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 27 (PATROCINADOR CON BOTÓN VER DETALLES)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 28 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 28 (PATROCINADOR CON BOTÓN DE MAPA Y RANGOS)</div>
 
     <div id="toast">Notificación</div>
 
@@ -1052,7 +1052,21 @@
         safeStorage.set("lubo_device_id", myDeviceId);
 
         var currentUser = safeStorage.get("lubo_user") || null;
-        var currentUserRank = safeStorage.get("lubo_rank") || "Cazador Novato";
+        
+        // RANGOS DE USUARIO BASADOS EN TRATOS CERRADOS
+        var userClosedDealsCount = Number(safeStorage.get("lubo_closed_deals_count") || 0);
+
+        function calculateUserRank(dealsCount) {
+            if (dealsCount >= 26) return "Leyenda Viva de Lubó 🏆";
+            if (dealsCount >= 19) return "Maestro del Trueque 👑";
+            if (dealsCount >= 9)  return "Pacto de Confianza 🛡️";
+            if (dealsCount >= 3)  return "Cazador de Rango Medio ⚔️";
+            return "Cazador Novato 🌱";
+        }
+
+        var currentUserRank = calculateUserRank(userClosedDealsCount);
+        safeStorage.set("lubo_rank", currentUserRank);
+
         var currentUserPhoto = safeStorage.get("lubo_photo") || null;
 
         var map = null;
@@ -1646,11 +1660,18 @@
             currentChatPost.votes = Number(currentChatPost.votes) || 0;
             currentChatPost.chat_history = JSON.stringify(history);
 
+            // ACTUALIZAR CONTADOR DE TRATOS CERRADOS Y RANGO
+            userClosedDealsCount++;
+            safeStorage.set("lubo_closed_deals_count", userClosedDealsCount);
+            currentUserRank = calculateUserRank(userClosedDealsCount);
+            safeStorage.set("lubo_rank", currentUserRank);
+
             renderChatMessages();
             renderFeed();
             renderMapPins();
             updateSideWidgetChatUI();
-            showToast("🤝 ¡Trato cerrado con éxito! Ahora es candidato a Leyenda");
+            updateUIForLoggedInUser();
+            showToast("🤝 ¡Trato cerrado con éxito! Rango actualizado a: " + currentUserRank);
 
             try {
                 fetch(SUPABASE_REST_URL + "?id=eq." + currentChatPost.id, {
@@ -1910,6 +1931,7 @@
 
             currentUser = alias;
             safeStorage.set("lubo_user", alias);
+            currentUserRank = calculateUserRank(userClosedDealsCount);
             safeStorage.set("lubo_rank", currentUserRank);
             safeStorage.set("lubo_consent_time", new Date().toISOString());
 
@@ -2170,8 +2192,9 @@
                 }
 
                 var viewMapBtnHTML = '';
-                if (post.lat && post.lng && post.status === 'active' && !post.is_sponsor) {
-                    viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">📍 Ver en Mapa</button>';
+                if (post.lat && post.lng && post.status === 'active') {
+                    var mapBtnText = post.is_sponsor ? '📍 Ver Local' : '📍 Ver en Mapa';
+                    viewMapBtnHTML = '<button type="button" class="btn-view-map" onclick="locatePostOnMap(' + post.lat + ', ' + post.lng + ', ' + post.id + ')" title="Ubicar en el mapa satelital">' + mapBtnText + '</button>';
                 }
 
                 var reportBtnHTML = '';
@@ -2283,12 +2306,11 @@
 
                     var marker = L.marker([p.lat, p.lng], { icon: pinIcon });
                     
-                    var titleBadge = p.type === 'TENGO' ? 'Yo Tengo 🔱' : 'Yo Quiero 🎯';
+                    var titleBadge = p.is_sponsor ? '☕ Patrocinador' : (p.type === 'TENGO' ? 'Yo Tengo 🔱' : 'Yo Quiero 🎯');
                     var statusNote = (p.status === 'in_deal') ? ' <span style="color:#22c55e; font-weight:bold;">[En Negociación]</span>' : '';
-                    var discretionTag = p.discretion ? ' <span style="color:#c084fc; font-weight:bold;">[🔒 Sello de Discreción]</span>' : '';
                     
                     var popupHtml = 
-                        '<div onclick="goToFeedCard(' + p.id + ', \'' + p.type + '\')" style="cursor:pointer; padding:6px; min-width:210px; border-radius:6px; transition:0.2s;" title="Haz clic para ver y coordinar en el Muro">' +
+                        '<div onclick="goToFeedCard(' + p.id + ', \'' + p.type + '\')" style="cursor:pointer; padding:6px; min-width:210px; border-radius:6px; transition:0.2s;" title="Haz clic para ver en el Muro">' +
                             '<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:4px; margin-bottom:6px;">' +
                                 '<span style="color:#ffd700; font-weight:900; font-size:0.75rem; text-transform:uppercase;">' + titleBadge + statusNote + '</span>' +
                                 '<span style="font-size:0.68rem; color:#4ade80; font-weight:bold;">VER ➔</span>' +
