@@ -45,7 +45,7 @@
 
         p, div, label { text-align: justify; }
 
-        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 24 */
+        /* FRANJA FIJA ULTRA VISIBLE: VERSIÓN 25 */
         #fixedVersionTracker {
             position: fixed !important;
             top: 0 !important;
@@ -314,22 +314,34 @@
 
         .feed { display: flex; flex-direction: column; gap: 15px; width: 100%; min-height: 200px; }
 
+        /* CLASIFICACIÓN DEFINITIVA DE MARCOS EN EL MURO */
         .card { 
             background: var(--card-bg); border-radius: 12px; padding: 18px; border: 1px solid var(--border-gold); 
             position: relative; display: flex; flex-direction: column; justify-content: space-between; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
         }
 
+        /* 🟢 VERDE ESMERALDA: TRATO EN NEGOCIACIÓN ACTIVA */
         .card.in-deal {
             border: 2px solid #22c55e !important;
             box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
         }
 
+        /* 🏆 DORADO: TRATO CERRADO / CANDIDATA A LEYENDA */
         .card.closed-candidate {
-            border: 2px solid var(--gold-bright) !important;
+            border: 2px solid #ffd700 !important;
             background: linear-gradient(145deg, #182236 0%, #0d1424 100%) !important;
             box-shadow: 0 0 25px rgba(234, 179, 8, 0.35) !important;
         }
+
+        /* ☕ PUBLICIDAD / PATROCINADOR TENUE Y SUTIL */
+        .card.sponsor-card {
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            background: rgba(15, 23, 42, 0.5) !important;
+            box-shadow: none !important;
+            opacity: 0.85;
+        }
+        .card.sponsor-card:hover { opacity: 1; border-color: rgba(234, 179, 8, 0.4) !important; }
 
         .card.card-focus-highlight {
             border-color: #ffd700 !important;
@@ -337,26 +349,19 @@
             transform: scale(1.02);
         }
 
-        .card.sponsor-card {
-            border: 2px solid #eab308;
-            background: linear-gradient(145deg, #141a29 0%, #0d121f 100%);
-            box-shadow: 0 4px 22px rgba(234, 179, 8, 0.25);
-            overflow: hidden;
-        }
-
         .sponsor-disclaimer-bar {
-            background: rgba(234, 179, 8, 0.15);
-            border-bottom: 1px solid rgba(234, 179, 8, 0.4);
-            margin: -18px -18px 12px -18px;
-            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin: -18px -18px 10px -18px;
+            padding: 6px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .sponsor-disclaimer-text {
-            font-size: 0.7rem;
-            color: var(--gold-bright);
-            font-weight: 800;
+            font-size: 0.68rem;
+            color: var(--text-sub);
+            font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
@@ -387,8 +392,7 @@
         }
 
         .badge-sponsor {
-            background: #eab308; color: #020617; border: none; font-weight: 900;
-            box-shadow: 0 0 10px rgba(234, 179, 8, 0.6);
+            background: rgba(255, 255, 255, 0.08); color: var(--text-sub); border: 1px solid #334155; font-weight: 700; font-size: 0.68rem;
         }
 
         .badge-category {
@@ -547,7 +551,6 @@
             background: rgba(0,0,0,0.8); z-index: 250; backdrop-filter: blur(4px);
         }
         
-        /* MENÚ LATERAL CORREGIDO Y ROBUSTO */
         .drawer-content {
             position: fixed; top: 0; left: -82%; width: 82%; max-width: 360px; height: 100%;
             background: var(--bg-dark); border-right: 1px solid var(--border-gold); z-index: 260;
@@ -574,7 +577,6 @@
             background: var(--widget-bg); border: 1px solid var(--border-gold); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem;
         }
 
-        /* ESTILOS DE LA BANDEJA DE ENTRADA */
         .inbox-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; margin-top: 10px; }
         .inbox-item {
             background: var(--widget-bg); border: 1px solid var(--border-gold); border-radius: 8px; padding: 12px;
@@ -591,7 +593,6 @@
         }
         .btn-inbox-delete:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
 
-        /* ESTILOS DEL CHAT EFÍMERO */
         .chat-box {
             display: flex; flex-direction: column; height: 260px; background: var(--widget-bg);
             border-radius: 8px; border: 1px solid var(--border-gold); padding: 10px; margin-top: 10px;
@@ -623,8 +624,8 @@
 </head>
 <body>
 
-    <!-- FRANJA FIJA CON VERSIÓN 24 -->
-    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 24 (MENÚ LATERAL RESTAURADO Y FUNCIONAL)</div>
+    <!-- FRANJA FIJA CON VERSIÓN 25 -->
+    <div id="fixedVersionTracker">🟢 LUBÓ - VERSIÓN 25 (MARCOS DEFINIDOS Y PUBLICIDAD TENUE)</div>
 
     <div id="toast">Notificación</div>
 
@@ -684,7 +685,7 @@
         <button class="cat-chip" onclick="filterByCategory('AVENTURAS', this)">🎲 Experiencias</button>
     </div>
 
-    <!-- MENÚ LATERAL IZQUIERDO RESTAURADO CON AVISO COMERCIAL AL PIE -->
+    <!-- MENÚ LATERAL IZQUIERDO HAMBURGUESA -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
     <div id="drawerContent" class="drawer-content">
         <div>
@@ -2109,7 +2110,7 @@
                 else if (isInDeal) badgeClass = 'badge-deal';
                 else if (isLegend) badgeClass = 'badge-leyenda';
 
-                var badgeLabel = post.is_sponsor ? 'ESPACIO ALIADO' : 
+                var badgeLabel = post.is_sponsor ? '☕ PATROCINADOR OFICIAL' : 
                     (isClosedDeal ? '🏆 CANDIDATA A LEYENDA' : 
                     (isInDeal ? '⏳ EN NEGOCIACIÓN' : 
                     (isLegend ? 'SALÓN DE LEYENDAS 🏆' : post.type)));
@@ -2118,7 +2119,7 @@
 
                 var actionBtnHTML = '';
                 if (post.is_sponsor) {
-                    actionBtnHTML = '<button class="btn-action" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
+                    actionBtnHTML = '<button class="btn-action" style="background:rgba(255,255,255,0.08); color:var(--gold-bright); border:1px solid rgba(234,179,8,0.3);" onclick="showToast(\'Punto seguro: Café Obsidiana\')">Ver Detalles</button>';
                 } else if (isClosedDeal) {
                     if (isMyOwn || isInterested) {
                         actionBtnHTML = '<button class="btn-action" style="background:#22c55e; color:#000; font-weight:800;" onclick="openChatModal(' + post.id + ')">💬 Chat del Trato</button>';
@@ -2179,7 +2180,7 @@
                 }
 
                 card.innerHTML = 
-                    (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">📢 Aliado Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
+                    (post.is_sponsor ? '<div class="sponsor-disclaimer-bar"><span class="sponsor-disclaimer-text">☕ Patrocinador Oficial</span><span style="font-size:0.65rem; color:var(--text-sub);">Punto Seguro</span></div>' : '') +
                     '<div class="card-header">' +
                         '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
                             '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
